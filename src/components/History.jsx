@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Button, IconButton } from './Button';
 import { GameDetailsModal } from './GameDetailsModal';
-import { ThemeToggle } from './ThemeToggle';
+import { LanguageToggle } from './LanguageToggle';
+import { useLanguage } from '../hooks/useLanguage';
 import './History.css';
 
 export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) => {
+  const { language, changeLanguage, t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState('');
   const [modalGame, setModalGame] = useState(null);
 
@@ -20,7 +22,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
   
   if (isNaN(date.getTime())) return '—';
   
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat(language === 'pt-BR' ? 'pt-BR' : language === 'fr-CA' ? 'fr-CA' : 'en-US', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -67,32 +69,32 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
 
   return (
     <>
-      <ThemeToggle />
+      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="history-container fade-in">
         <header className="history-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>
-            ← Voltar
+            {t('common.back')}
           </button>
-          <h1>Histórico de Partidas</h1>
+          <h1>{t('history.title')}</h1>
         </header>
 
         <div className="content">
         {games.length === 0 ? (
           <div className="empty-state">
             <span className="empty-icon">📭</span>
-            <p>Nenhuma partida registrada ainda</p>
+            <p>{t('history.noGames')}</p>
             <Button
               variant="accent"
               onClick={() => onNavigate('newgame')}
             >
-              Registrar primeira partida
+              {t('home.newGame')}
             </Button>
           </div>
         ) : (
           <>
             {/* Filter */}
             <div className="filter-section">
-              <div className="filter-label">Filtrar por jogo:</div>
+              <div className="filter-label">{t('history.game')}:</div>
               <div className="filter-buttons">
                 <button
                   className={`filter-btn ${!selectedFilter ? 'active' : ''}`}
@@ -116,11 +118,11 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
             {selectedFilter && getPlayerStats(selectedFilter) && (
               <div className="game-stats">
                 <div className="stat-row">
-                  <span>Vezes jogado:</span>
+                  <span>{t('stats.timesPlayed')}:</span>
                   <strong>{getPlayerStats(selectedFilter).totalGames}×</strong>
                 </div>
                 <div className="stat-row">
-                  <span>Jogadores:</span>
+                  <span>{t('stats.players')}:</span>
                   <strong>{getPlayerStats(selectedFilter).players.size}</strong>
                 </div>
                 {getPlayerStats(selectedFilter).averageDuration && (
@@ -154,11 +156,11 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                         <button
                           className="btn-delete"
                           onClick={() => {
-                            if (confirm('Tem certeza que deseja deletar?')) {
+                            if (confirm(t('history.confirmDelete'))) {
                               onDelete(game.id);
                             }
                           }}
-                          title="Deletar"
+                          title={t('history.delete')}
                         >
                           🗑️
                         </button>
@@ -186,7 +188,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                       <div className="card-stat">
                         <span className="icon">👑</span>
                         <div>
-                          <span className="label">Vencedor</span>
+                          <span className="label">{t('history.winner')}</span>
                           <span className="value">{game.winner}</span>
                         </div>
                       </div>
@@ -194,7 +196,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                       <div className="card-stat">
                         <span className="icon">👥</span>
                         <div>
-                          <span className="label">Jogadores</span>
+                          <span className="label">{t('newgame.players')}</span>
                           <span className="value">{game.players.length}</span>
                         </div>
                       </div>
@@ -212,7 +214,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                       <div className="card-stat">
                         <span className="icon">📅</span>
                         <div>
-                          <span className="label">Data</span>
+                          <span className="label">{t('history.date')}</span>
                           <span className="value">{formatDate(game.date)}</span>
                         </div>
                       </div>

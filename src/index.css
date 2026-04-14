@@ -23,19 +23,6 @@
   --radius-full: 9999px;
 }
 
-/* Light Theme */
-[data-theme='light'] {
-  --color-primary: #1e40af;
-  --color-primary-dark: #1e40af;
-  --color-accent: #ea580c;
-  --color-accent-light: #f97316;
-  --color-bg: #f8fafc;
-  --color-bg-secondary: #e2e8f0;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-border: #cbd5e1;
-}
-
 * {
   margin: 0;
   padding: 0;

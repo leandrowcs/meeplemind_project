@@ -12,19 +12,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Initialize theme from localStorage or system preference
-const initTheme = () => {
-  const savedTheme = localStorage.getItem('meeplemind-theme');
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  } else {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-  }
-};
-
-initTheme();
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

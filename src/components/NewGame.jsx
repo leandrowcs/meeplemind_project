@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button, IconButton } from './Button';
-import { ThemeToggle } from './ThemeToggle';
+import { LanguageToggle } from './LanguageToggle';
+import { useLanguage } from '../hooks/useLanguage';
 import './NewGame.css';
 
 export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
+  const { language, changeLanguage, t } = useLanguage();
   const [formData, setFormData] = useState({
     game: '',
     gameType: '', // 'competitive' | 'cooperative'
@@ -120,27 +122,27 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
     e.preventDefault();
 
     if (!formData.game.trim()) {
-      alert('Selecione um jogo');
+      alert(t('newgame.errorGame'));
       return;
     }
 
     if (!formData.gameType) {
-      alert('Selecione o tipo de jogo (competitivo ou cooperativo)');
+      alert(t('newgame.errorGameType'));
       return;
     }
 
     if (formData.players.length < 2) {
-      alert('Adicione pelo menos 2 jogadores');
+      alert(t('newgame.errorMinPlayers'));
       return;
     }
 
     if (formData.gameType === 'competitive' && !formData.winner) {
-      alert('Selecione o vencedor');
+      alert(t('newgame.errorWinner'));
       return;
     }
 
     if (formData.gameType === 'cooperative' && !formData.coopResult) {
-      alert('Informe se os jogadores venceram ou perderam');
+      alert(t('newgame.errorCoopResult'));
       return;
     }
 
@@ -167,24 +169,24 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
 
   return (
     <>
-      <ThemeToggle />
+      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="newgame-container fade-in">
         <header className="newgame-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>
-            ← Voltar
+            {t('common.back')}
           </button>
-          <h1>Nova Partida</h1>
+          <h1>{t('newgame.title')}</h1>
         </header>
 
         <form onSubmit={handleSubmit} className="newgame-form">
           {/* Game Selection */}
           <div className="form-group">
-            <label htmlFor="game">Qual jogo?</label>
+            <label htmlFor="game">{t('newgame.gameName')}</label>
             <div className="input-with-suggestions">
               <input
                 id="game"
                 type="text"
-                placeholder="Buscar ou digitar novo jogo..."
+                placeholder={t('newgame.selectGame')}
                 value={inputValues.game}
                 onChange={handleGameInputChange}
                 autoComplete="off"
@@ -212,7 +214,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
           {/* Game Type Selection */}
           {formData.game && (
             <div className="form-group">
-              <label>Tipo de Jogo</label>
+              <label>{t('newgame.selectGame')}</label>
               <div className="game-type-buttons">
                 <button
                   type="button"
@@ -239,12 +241,12 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
           {/* Players */}
           {formData.gameType && (
             <div className="form-group">
-              <label htmlFor="player">Jogadores</label>
+              <label htmlFor="player">{t('newgame.players')}</label>
               <div className="input-with-suggestions">
                 <input
                   id="player"
                   type="text"
-                  placeholder="Digite o nome do jogador e clique +"
+                  placeholder={t('newgame.playersPlaceholder')}
                   value={inputValues.newPlayer}
                   onChange={handlePlayerInputChange}
                   onKeyPress={(e) => {
@@ -311,7 +313,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
                   {/* Competitive: select winner */}
                   {formData.gameType === 'competitive' && (
                     <div className="winner-section">
-                      <label>Quem venceu?</label>
+                      <label>{t('newgame.selectWinner')}</label>
                       <div className="winner-buttons">
                         {formData.players.map((player) => (
                           <button
@@ -361,7 +363,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
           {/* Date */}
           {formData.players.length > 0 && (
             <div className="form-group">
-              <label htmlFor="date">Data da partida</label>
+              <label htmlFor="date">{t('history.date')}</label>
               <input
                 id="date"
                 type="date"
@@ -408,7 +410,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
             disabled={!isValid}
             className="submit-btn"
           >
-            ✓ Registrar Partida
+            ✓ {t('newgame.register')}
           </Button>
         </form>
       </div>

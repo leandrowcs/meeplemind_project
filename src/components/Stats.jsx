@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Button } from './Button';
-import { ThemeToggle } from './ThemeToggle';
+import { LanguageToggle } from './LanguageToggle';
+import { useLanguage } from '../hooks/useLanguage';
 import { PlayerStatsModal } from './PlayerStatsModal';
 import './Stats.css';
 
 export const Stats = ({ onNavigate, games, stats }) => {
+  const { language, changeLanguage, t } = useLanguage();
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   const getPlayerWins = () => {
@@ -47,13 +49,13 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   return (
     <>
-      <ThemeToggle />
+      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="stats-container fade-in">
         <header className="stats-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>
-            ← Voltar
+            {t('common.back')}
           </button>
-          <h1>🏆 Estatísticas</h1>
+          <h1>{t('stats.title')}</h1>
         </header>
 
         {games.length === 0 ? (
@@ -61,7 +63,7 @@ export const Stats = ({ onNavigate, games, stats }) => {
             <span className="empty-icon">📊</span>
             <p>Não há dados para exibir</p>
             <Button variant="accent" onClick={() => onNavigate('newgame')}>
-              Registrar primeira partida
+              {t('home.newGame')}
             </Button>
           </div>
         ) : (
@@ -72,21 +74,21 @@ export const Stats = ({ onNavigate, games, stats }) => {
                 <span className="summary-icon">🎮</span>
                 <div className="summary-content">
                   <span className="summary-value">{stats.totalGames}</span>
-                  <span className="summary-label">Total de Partidas</span>
+                  <span className="summary-label">{t('stats.totalGames')}</span>
                 </div>
               </div>
               <div className="summary-card">
                 <span className="summary-icon">🎯</span>
                 <div className="summary-content">
                   <span className="summary-value">{stats.uniqueGames}</span>
-                  <span className="summary-label">Jogos Diferentes</span>
+                  <span className="summary-label">{t('stats.gameStats')}</span>
                 </div>
               </div>
               <div className="summary-card">
                 <span className="summary-icon">👥</span>
                 <div className="summary-content">
                   <span className="summary-value">{stats.totalPlayers}</span>
-                  <span className="summary-label">Jogadores Únicos</span>
+                  <span className="summary-label">{t('stats.playerStats')}</span>
                 </div>
               </div>
             </div>
