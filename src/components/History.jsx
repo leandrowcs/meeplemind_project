@@ -13,13 +13,19 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
     : games;
 
   const formatDate = (isoDate) => {
-    const date = new Date(isoDate + 'T00:00:00');
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(date);
-  };
+  if (!isoDate) return '—';
+  
+  const dateStr = isoDate.includes('T') ? isoDate : isoDate + 'T00:00:00';
+  const date = new Date(dateStr);
+  
+  if (isNaN(date.getTime())) return '—';
+  
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+};
 
   const formatDuration = (minutes) => {
     if (!minutes) return null;
