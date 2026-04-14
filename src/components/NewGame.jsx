@@ -304,7 +304,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
           <div className="form-group">
             <label>Quanto tempo durou? (opcional)</label>
             <div className="duration-buttons">
-              {[30, 60, 90, 120].map((mins) => (
+              {[30, 60, 90, 120, 180, 240].map((mins) => (
                 <button
                   key={mins}
                   type="button"

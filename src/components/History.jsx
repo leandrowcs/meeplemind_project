@@ -13,13 +13,11 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
     : games;
 
   const formatDate = (isoDate) => {
-    const date = new Date(isoDate);
+    const date = new Date(isoDate + 'T00:00:00');
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     }).format(date);
   };
 
