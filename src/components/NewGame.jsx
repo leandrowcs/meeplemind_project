@@ -4,20 +4,21 @@ import { ThemeToggle } from './ThemeToggle';
 import './NewGame.css';
 
 export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
-  // Get today's date in YYYY-MM-DD format
-  const getTodayDate = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
-
   const [formData, setFormData] = useState({
     game: '',
     players: [],
     points: [],
     winner: '',
     duration: '',
-    date: getTodayDate(),
+    date: '',
   });
+
+  // Initialize date on mount
+  useEffect(() => {
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0];
+    setFormData((prev) => ({ ...prev, date: dateString }));
+  }, []);
 
   const [suggestions, setSuggestions] = useState({
     games: [],

@@ -11,25 +11,25 @@
   "categories": ["games", "entertainment"],
   "icons": [
     {
-      "src": "/assets/favicon.png",
+      "src": "/favicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/assets/favicon.png",
+      "src": "/favicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/assets/meeplemind_logo.png",
+      "src": "/meeplemind_logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/assets/meeplemind_logo.png",
+      "src": "/meeplemind_logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -37,7 +37,7 @@
   ],
   "screenshots": [
     {
-      "src": "/assets/meeplemind_logo.png",
+      "src": "/meeplemind_logo.png",
       "sizes": "540x720",
       "type": "image/png",
       "form_factor": "narrow"
