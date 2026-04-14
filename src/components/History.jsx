@@ -220,18 +220,21 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
 
                     {/* Players & Points */}
                     <div className="players-ranking">
-                      {game.players.map((player, index) => {
-                        const isWinner = player === game.winner;
-                        return (
-                          <div key={index} className={`ranking-item ${isWinner ? 'winner' : ''}`}>
-                            <span className="rank-icon">
-                              {isWinner ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '•'}
-                            </span>
-                            <span className="player-name">{player}</span>
-                            <span className="points">{game.points[index]} pts</span>
-                          </div>
-                        );
-                      })}
+                        {[...game.players]
+                            .map((player, index) => ({ player, points: game.points[index] }))
+                            .sort((a, b) => b.points - a.points)
+                            .map(({ player, points }, index) => {
+                            const isWinner = player === game.winner;
+                            return (
+                                <div key={index} className={`ranking-item ${isWinner ? 'winner' : ''}`}>
+                                <span className="rank-icon">
+                                    {isWinner ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '•'}
+                                </span>
+                                <span className="player-name">{player}</span>
+                                <span className="points">{points} pts</span>
+                                </div>
+                            );
+                        })}
                     </div>
                   </div>
                 ))
