@@ -1,10 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './Button';
-import { ThemeToggle } from './ThemeToggle';
+import { LanguageToggle } from './LanguageToggle';
+import { useLanguage } from '../hooks/useLanguage';
 import logoImage from '../assets/meeplemind_logo.png';
 import './Home.css';
 
 export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON }) => {
+  const { language, changeLanguage, t, isInitialized } = useLanguage();
+  const [shouldUpdateText, setShouldUpdateText] = useState(false);
+
+  // Update label texts when language changes
+  useEffect(() => {
+    if (isInitialized) {
+      setShouldUpdateText(prev => !prev);
+    }
+  }, [language, isInitialized]);
+
   const handleImport = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -13,15 +24,19 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON }) 
     }
   };
 
+  if (!isInitialized) {
+    return null;
+  }
+
   return (
     <>
-      <ThemeToggle />
+      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="home-container fade-in">
         <header className="home-header">
           <div className="logo">
             <img src={logoImage} alt="MeepleMind Logo" className="logo-image" />
           </div>
-          <p className="tagline">Registre suas partidas • Veja suas estatísticas • Divirta-se</p>
+          <p className="tagline">{t('home.tagline')}</p>
         </header>
 
         <main className="home-content">
@@ -30,21 +45,21 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON }) 
               <span className="stat-icon">🎮</span>
               <div className="stat-info">
                 <span className="stat-value" id="stat-games">0</span>
-                <span className="stat-label">Partidas</span>
+                <span className="stat-label">{t('home.games')}</span>
               </div>
             </div>
             <div className="stat-card">
               <span className="stat-icon">🏆</span>
               <div className="stat-info">
                 <span className="stat-value" id="stat-winner">—</span>
-                <span className="stat-label">Top Jogador</span>
+                <span className="stat-label">{t('home.topPlayer')}</span>
               </div>
             </div>
             <div className="stat-card">
               <span className="stat-icon">🎯</span>
               <div className="stat-info">
                 <span className="stat-value" id="stat-game">—</span>
-                <span className="stat-label">Mais Jogado</span>
+                <span className="stat-label">{t('home.mostPlayed')}</span>
               </div>
             </div>
           </div>
@@ -54,7 +69,7 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON }) 
             onClick={() => onNavigate('newgame')}
           >
             <span className="btn-icon">➕</span>
-            <span>Nova Partida</span>
+            <span>{t('home.newGame')}</span>
           </button>
 
           <div className="navigation-buttons">
@@ -63,44 +78,44 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON }) 
               onClick={() => onNavigate('history')}
               className="nav-btn"
             >
-              📜 Histórico
+              {t('home.history')}
             </Button>
             <Button
               variant="primary"
               onClick={() => onNavigate('stats')}
               className="nav-btn"
             >
-              🏅 Estatísticas
+              {t('home.stats')}
             </Button>
           </div>
 
           {/* Export/Import Section */}
           <div className="export-section">
-            <h3>Gerenciar Dados</h3>
+            <h3>{t('home.manageData')}</h3>
             <div className="export-buttons">
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={exportToCSV}
-                title="Exportar como CSV para planilha"
+                title={t('home.exportCSVTitle')}
               >
-                📊 Exportar CSV
+                {t('home.exportCSV')}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={exportToJSON}
-                title="Backup dos seus dados em JSON"
+                title={t('home.backupJSONTitle')}
               >
-                💾 Backup JSON
+                {t('home.backupJSON')}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => document.getElementById('import-input').click()}
-                title="Restaurar dados de um arquivo"
+                title={t('home.importJSONTitle')}
               >
-                📥 Restaurar
+                {t('home.importJSON')}
               </Button>
               <input
                 id="import-input"
