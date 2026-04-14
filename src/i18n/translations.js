@@ -58,6 +58,60 @@ export const translations = {
     'stats.players': 'Jogadores',
     'stats.games': 'Jogos',
 
+    // History (extra)
+    'history.filterType': 'Tipo:',
+    'history.filterAll': 'Todos',
+    'history.filterCompetitive': '⚔️ Competitivo',
+    'history.filterCooperative': '🤝 Cooperativo',
+    'history.result': 'Resultado',
+    'history.coopWin': 'Vitória!',
+    'history.coopLoss': 'Derrota',
+    'history.duration': 'Duração',
+    'history.badgeCompetitive': '⚔️ Competitivo',
+    'history.badgeCooperative': '🤝 Cooperativo',
+
+    // Onboarding
+    'onboarding.title': 'Bem-vindo ao MeepleMind! 🎲',
+    'onboarding.description': 'Como você se chama? Seu nome será adicionado automaticamente a cada nova partida.',
+    'onboarding.placeholder': 'Seu nome...',
+    'onboarding.submit': 'Começar a jogar!',
+    'onboarding.error': 'Por favor, informe seu nome',
+    'onboarding.hi': 'Olá,',
+    'onboarding.changeName': 'Alterar nome',
+
+    // NewGame (extra)
+    'newgame.you': 'você',
+
+    // Page title
+    'page.title': 'MeepleMind - Registre suas partidas de boardgames',
+
+    // History (extra)
+    'history.filterType': 'Tipo:',
+    'history.filterAll': 'Todos',
+    'history.filterCompetitive': '⚔️ Competitivo',
+    'history.filterCooperative': '🤝 Cooperativo',
+    'history.result': 'Resultado',
+    'history.coopWin': 'Vitória!',
+    'history.coopLoss': 'Derrota',
+    'history.duration': 'Duração',
+    'history.badgeCompetitive': '⚔️ Competitivo',
+    'history.badgeCooperative': '🤝 Cooperativo',
+
+    // Onboarding
+    'onboarding.title': 'Bem-vindo ao MeepleMind! 🎲',
+    'onboarding.description': 'Como você se chama? Seu nome será adicionado automaticamente a cada nova partida.',
+    'onboarding.placeholder': 'Seu nome...',
+    'onboarding.submit': 'Começar a jogar!',
+    'onboarding.error': 'Por favor, informe seu nome',
+    'onboarding.hi': 'Olá,',
+    'onboarding.changeName': 'Alterar nome',
+
+    // NewGame (extra)
+    'newgame.you': 'você',
+
+    // Page title
+    'page.title': 'MeepleMind - Registre suas partidas de boardgames',
+
     // Common
     'common.back': '← Voltar',
     'common.close': 'Fechar',
@@ -127,6 +181,60 @@ export const translations = {
     'stats.players': 'Players',
     'stats.games': 'Games',
 
+    // History (extra)
+    'history.filterType': 'Type:',
+    'history.filterAll': 'All',
+    'history.filterCompetitive': '⚔️ Competitive',
+    'history.filterCooperative': '🤝 Cooperative',
+    'history.result': 'Result',
+    'history.coopWin': 'Victory!',
+    'history.coopLoss': 'Defeat',
+    'history.duration': 'Duration',
+    'history.badgeCompetitive': '⚔️ Competitive',
+    'history.badgeCooperative': '🤝 Cooperative',
+
+    // Onboarding
+    'onboarding.title': 'Welcome to MeepleMind! 🎲',
+    'onboarding.description': "What's your name? You'll be automatically added to every new game.",
+    'onboarding.placeholder': 'Your name...',
+    'onboarding.submit': 'Start playing!',
+    'onboarding.error': 'Please enter your name',
+    'onboarding.hi': 'Hi,',
+    'onboarding.changeName': 'Change name',
+
+    // NewGame (extra)
+    'newgame.you': 'you',
+
+    // Page title
+    'page.title': 'MeepleMind - Track your board game sessions',
+
+    // History (extra)
+    'history.filterType': 'Type:',
+    'history.filterAll': 'All',
+    'history.filterCompetitive': '⚔️ Competitive',
+    'history.filterCooperative': '🤝 Cooperative',
+    'history.result': 'Result',
+    'history.coopWin': 'Victory!',
+    'history.coopLoss': 'Defeat',
+    'history.duration': 'Duration',
+    'history.badgeCompetitive': '⚔️ Competitive',
+    'history.badgeCooperative': '🤝 Cooperative',
+
+    // Onboarding
+    'onboarding.title': 'Welcome to MeepleMind! 🎲',
+    'onboarding.description': "What's your name? You'll be automatically added to every new game.",
+    'onboarding.placeholder': 'Your name...',
+    'onboarding.submit': 'Start playing!',
+    'onboarding.error': 'Please enter your name',
+    'onboarding.hi': 'Hi,',
+    'onboarding.changeName': 'Change name',
+
+    // NewGame (extra)
+    'newgame.you': 'you',
+
+    // Page title
+    'page.title': 'MeepleMind - Track your board game sessions',
+
     // Common
     'common.back': '← Back',
     'common.close': 'Close',
@@ -195,6 +303,60 @@ export const translations = {
     'stats.timesPlayed': 'Fois Joué',
     'stats.players': 'Joueurs',
     'stats.games': 'Jeux',
+
+    // History (extra)
+    'history.filterType': 'Type :',
+    'history.filterAll': 'Tous',
+    'history.filterCompetitive': '⚔️ Compétitif',
+    'history.filterCooperative': '🤝 Coopératif',
+    'history.result': 'Résultat',
+    'history.coopWin': 'Victoire !',
+    'history.coopLoss': 'Défaite',
+    'history.duration': 'Durée',
+    'history.badgeCompetitive': '⚔️ Compétitif',
+    'history.badgeCooperative': '🤝 Coopératif',
+
+    // Onboarding
+    'onboarding.title': 'Bienvenue sur MeepleMind ! 🎲',
+    'onboarding.description': 'Quel est votre nom ? Il sera ajouté automatiquement à chaque nouvelle partie.',
+    'onboarding.placeholder': 'Votre nom...',
+    'onboarding.submit': 'Commencer à jouer !',
+    'onboarding.error': 'Veuillez entrer votre nom',
+    'onboarding.hi': 'Bonjour,',
+    'onboarding.changeName': 'Changer de nom',
+
+    // NewGame (extra)
+    'newgame.you': 'vous',
+
+    // Page title
+    'page.title': 'MeepleMind - Suivez vos parties de jeux de société',
+
+    // History (extra)
+    'history.filterType': 'Type :',
+    'history.filterAll': 'Tous',
+    'history.filterCompetitive': '⚔️ Compétitif',
+    'history.filterCooperative': '🤝 Coopératif',
+    'history.result': 'Résultat',
+    'history.coopWin': 'Victoire !',
+    'history.coopLoss': 'Défaite',
+    'history.duration': 'Durée',
+    'history.badgeCompetitive': '⚔️ Compétitif',
+    'history.badgeCooperative': '🤝 Coopératif',
+
+    // Onboarding
+    'onboarding.title': 'Bienvenue sur MeepleMind ! 🎲',
+    'onboarding.description': 'Quel est votre nom ? Il sera ajouté automatiquement à chaque nouvelle partie.',
+    'onboarding.placeholder': 'Votre nom...',
+    'onboarding.submit': 'Commencer à jouer !',
+    'onboarding.error': 'Veuillez entrer votre nom',
+    'onboarding.hi': 'Bonjour,',
+    'onboarding.changeName': 'Changer de nom',
+
+    // NewGame (extra)
+    'newgame.you': 'vous',
+
+    // Page title
+    'page.title': 'MeepleMind - Suivez vos parties de jeux de société',
 
     // Common
     'common.back': '← Retour',
