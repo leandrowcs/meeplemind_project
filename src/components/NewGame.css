@@ -132,6 +132,134 @@
   font-size: 0.9rem;
 }
 
+/* Game Type Selection */
+.game-type-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.game-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.game-type-btn:hover {
+  border-color: var(--color-primary);
+  background: rgba(30, 64, 175, 0.05);
+  transform: translateY(-2px);
+}
+
+.game-type-btn.selected {
+  border-color: var(--color-accent);
+  background: rgba(234, 88, 12, 0.1);
+  box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
+}
+
+.game-type-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.game-type-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+}
+
+.game-type-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+}
+
+/* Cooperative Result */
+.coop-result-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+}
+
+.coop-result-section label {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.coop-result-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.coop-result-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.coop-result-btn span:nth-child(2) {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.coop-result-sub {
+  font-size: 0.75rem !important;
+  color: var(--color-text-secondary) !important;
+  font-weight: 400 !important;
+}
+
+.coop-result-btn:hover {
+  transform: translateY(-2px);
+}
+
+.coop-result-btn.win:hover {
+  border-color: var(--color-success);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.coop-result-btn.loss:hover {
+  border-color: var(--color-error);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.coop-result-btn.win.selected {
+  border-color: var(--color-success);
+  background: rgba(16, 185, 129, 0.12);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+.coop-result-btn.loss.selected {
+  border-color: var(--color-error);
+  background: rgba(239, 68, 68, 0.12);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+}
+
+/* Players Section */
 .players-section {
   display: flex;
   flex-direction: column;
@@ -348,5 +476,10 @@
 
   .duration-buttons {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .game-type-buttons,
+  .coop-result-buttons {
+    grid-template-columns: 1fr;
   }
 }
