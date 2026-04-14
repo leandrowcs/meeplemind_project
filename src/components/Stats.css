@@ -117,7 +117,7 @@
 .stats-section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
   padding: var(--spacing-lg);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
@@ -129,6 +129,13 @@
   margin: 0;
   color: var(--color-accent);
   font-size: 1.3rem;
+}
+
+.stats-section-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-style: italic;
 }
 
 .empty-section {
@@ -152,12 +159,46 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
+  /* reset button styles when used as button */
+  width: 100%;
+  text-align: left;
+  cursor: default;
+  font: inherit;
+  color: inherit;
 }
 
 .leaderboard-item:hover {
   border-color: var(--color-primary);
   background: rgba(30, 64, 175, 0.05);
   transform: translateX(4px);
+}
+
+/* Clickable variant */
+.leaderboard-item.clickable {
+  cursor: pointer;
+}
+
+.leaderboard-item.clickable:hover {
+  border-color: var(--color-accent);
+  background: rgba(234, 88, 12, 0.05);
+  box-shadow: 0 2px 12px rgba(234, 88, 12, 0.1);
+}
+
+.leaderboard-item.clickable:active {
+  transform: translateX(2px) scale(0.99);
+}
+
+.leaderboard-chevron {
+  font-size: 1.3rem;
+  color: var(--color-accent);
+  opacity: 0.6;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.leaderboard-item.clickable:hover .leaderboard-chevron {
+  opacity: 1;
+  transform: translateX(3px);
 }
 
 .rank-badge {
