@@ -164,11 +164,67 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.card-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
 .card-header h3 {
   margin: 0;
   color: var(--color-accent);
   font-size: 1.2rem;
-  flex: 1;
+}
+
+.game-type-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+  width: fit-content;
+}
+
+.game-type-badge.competitive {
+  background: rgba(30, 64, 175, 0.18);
+  color: #93c5fd;
+  border: 1px solid rgba(30, 64, 175, 0.35);
+}
+
+.game-type-badge.coop {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.coop-result.win {
+  color: #6ee7b7;
+  font-weight: 700;
+}
+
+.coop-result.loss {
+  color: #f87171;
+  font-weight: 700;
+}
+
+.players-coop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.coop-player-chip {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-text-secondary);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .header-actions {

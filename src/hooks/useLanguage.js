@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { translations } from '../i18n/translations';
 
+const updateDocumentTitle = (language) => {
+  const title = translations[language]?.['page.title'];
+  if (title) document.title = title;
+};
+
 const LANGUAGE_STORAGE_KEY = 'meeplemind-language';
 const DEFAULT_LANGUAGE = 'pt-BR';
 const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'fr-CA'];
@@ -28,10 +33,18 @@ export const useLanguage = () => {
     setIsInitialized(true);
   }, []);
 
+  // Sync document.title whenever language changes
+  useEffect(() => {
+    if (isInitialized) {
+      updateDocumentTitle(language);
+    }
+  }, [language, isInitialized]);
+
   const changeLanguage = useCallback((newLanguage) => {
     if (SUPPORTED_LANGUAGES.includes(newLanguage)) {
       setLanguage(newLanguage);
       localStorage.setItem(LANGUAGE_STORAGE_KEY, newLanguage);
+      updateDocumentTitle(newLanguage);
     }
   }, []);
 

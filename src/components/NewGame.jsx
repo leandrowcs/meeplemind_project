@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button, IconButton } from './Button';
 import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import './NewGame.css';
 
-export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
+export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPlayer }) => {
   const { language, changeLanguage, t } = useLanguage();
+  const mainPlayerAdded = useRef(false);
   const [formData, setFormData] = useState({
     game: '',
     gameType: '', // 'competitive' | 'cooperative'
@@ -22,6 +23,18 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
     const dateString = today.toISOString().split('T')[0];
     setFormData((prev) => ({ ...prev, date: dateString }));
   }, []);
+
+  // Auto-add the main player once on mount
+  useEffect(() => {
+    if (mainPlayer && !mainPlayerAdded.current) {
+      mainPlayerAdded.current = true;
+      setFormData((prev) => ({
+        ...prev,
+        players: [mainPlayer],
+        points: [0],
+      }));
+    }
+  }, [mainPlayer]);
 
   const [suggestions, setSuggestions] = useState({
     games: [],
@@ -287,7 +300,12 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
                     {formData.players.map((player, index) => (
                       <div key={index} className="player-item">
                         <div className="player-info">
-                          <span className="player-name">{player}</span>
+                          <span className="player-name">
+                            {player}
+                            {player === mainPlayer && (
+                              <span className="you-badge">{t('newgame.you')}</span>
+                            )}
+                          </span>
                           {formData.gameType === 'competitive' && (
                             <input
                               type="number"
