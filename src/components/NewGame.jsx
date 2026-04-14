@@ -17,6 +17,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
   useEffect(() => {
     const today = new Date();
     const dateString = today.toISOString().split('T')[0];
+    console.log('[NewGame] Initializing date:', dateString);
     setFormData((prev) => ({ ...prev, date: dateString }));
   }, []);
 
@@ -33,14 +34,15 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
   const handleGameInputChange = (e) => {
     const value = e.target.value;
     setInputValues((prev) => ({ ...prev, game: value }));
+    setFormData((prev) => ({ ...prev, game: value }));
 
     if (value.length > 0) {
-      const filtered = uniqueGames.filter((g) =>
+        const filtered = uniqueGames.filter((g) =>
         g.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions((prev) => ({ ...prev, games: filtered }));
+        );
+        setSuggestions((prev) => ({ ...prev, games: filtered }));
     } else {
-      setSuggestions((prev) => ({ ...prev, games: [] }));
+        setSuggestions((prev) => ({ ...prev, games: [] }));
     }
   };
 
@@ -136,6 +138,18 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
   };
 
   const isValid = formData.game && formData.players.length >= 2 && formData.winner && formData.date;
+
+  // Debug validation state
+  useEffect(() => {
+    console.log('[NewGame] Form State:', {
+      game: !!formData.game,
+      playersCount: formData.players.length,
+      winner: !!formData.winner,
+      date: !!formData.date,
+      isValid,
+      dateValue: formData.date
+    });
+  }, [formData, isValid]);
 
   return (
     <>
