@@ -4,12 +4,19 @@ import { ThemeToggle } from './ThemeToggle';
 import './NewGame.css';
 
 export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
     game: '',
     players: [],
     points: [],
     winner: '',
     duration: '',
+    date: getTodayDate(),
   });
 
   const [suggestions, setSuggestions] = useState({
@@ -121,12 +128,13 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
       points: formData.points,
       winner: formData.winner,
       duration: formData.duration ? parseInt(formData.duration) : null,
+      date: formData.date,
     });
 
     onNavigate('home');
   };
 
-  const isValid = formData.game && formData.players.length >= 2 && formData.winner;
+  const isValid = formData.game && formData.players.length >= 2 && formData.winner && formData.date;
 
   return (
     <>
@@ -261,6 +269,20 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers }) => {
             </div>
           )}
         </div>
+
+        {/* Date */}
+        {formData.players.length > 0 && (
+          <div className="form-group">
+            <label htmlFor="date">Data da partida</label>
+            <input
+              id="date"
+              type="date"
+              value={formData.date}
+              onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+              className="date-input"
+            />
+          </div>
+        )}
 
         {/* Duration */}
         {formData.players.length > 0 && (

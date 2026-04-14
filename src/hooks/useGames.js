@@ -42,7 +42,7 @@ export const useGames = () => {
     const newGame = {
       id: uuidv4(),
       ...gameData,
-      date: new Date().toISOString(),
+      date: gameData.date ? new Date(gameData.date).toISOString() : new Date().toISOString(),
       rating: 0, // 0-5 stars
       notes: '', // User notes
     };
