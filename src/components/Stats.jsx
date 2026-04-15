@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from './Button';
 import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
@@ -10,7 +10,8 @@ export const Stats = ({ onNavigate, games, stats }) => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [activeTab, setActiveTab] = useState('competitive'); // 'competitive' | 'cooperative'
 
-  const getCompetitiveStats = () => {
+  // Memoize competitive stats to avoid recalculation
+  const competitiveStats = useMemo(() => {
     const competitiveGames = games.filter((g) => (g.gameType || 'competitive') === 'competitive');
     const wins = {};
     const appearances = {};
@@ -25,9 +26,10 @@ export const Stats = ({ onNavigate, games, stats }) => {
     });
 
     return { wins, appearances };
-  };
+  }, [games]);
 
-  const getCooperativeStats = () => {
+  // Memoize cooperative stats
+  const cooperativeStats = useMemo(() => {
     const cooperativeGames = games.filter((g) => g.gameType === 'cooperative');
     const wins = cooperativeGames.filter((g) => g.coopResult === 'win').length;
     const losses = cooperativeGames.filter((g) => g.coopResult === 'loss').length;
@@ -36,40 +38,53 @@ export const Stats = ({ onNavigate, games, stats }) => {
       : 0;
 
     return { wins, losses, successRate, total: cooperativeGames.length };
-  };
+  }, [games]);
 
-  const getGameFrequencyByType = (gameType) => {
+  // Memoize game frequency for competitive games
+  const competitiveGameFreq = useMemo(() => {
     const freq = {};
     games
-      .filter((g) => (gameType === 'competitive' ? (g.gameType || 'competitive') === 'competitive' : g.gameType === 'cooperative'))
+      .filter((g) => (g.gameType || 'competitive') === 'competitive')
       .forEach((game) => {
         freq[game.game] = (freq[game.game] || 0) + 1;
       });
     return Object.entries(freq)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10);
-  };
+  }, [games]);
 
-  const competitiveStats = getCompetitiveStats();
-  const cooperativeStats = getCooperativeStats();
-  const competitiveGameFreq = getGameFrequencyByType('competitive');
-  const cooperativeGameFreq = getGameFrequencyByType('cooperative');
+  // Memoize game frequency for cooperative games
+  const cooperativeGameFreq = useMemo(() => {
+    const freq = {};
+    games
+      .filter((g) => g.gameType === 'cooperative')
+      .forEach((game) => {
+        freq[game.game] = (freq[game.game] || 0) + 1;
+      });
+    return Object.entries(freq)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10);
+  }, [games]);
 
-  // Top Winners/Competitive Players
-  const competitiveWins = Object.entries(competitiveStats.wins)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10);
+  // Memoize competitive wins
+  const competitiveWins = useMemo(() => {
+    return Object.entries(competitiveStats.wins)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10);
+  }, [competitiveStats]);
 
-  // Competitive Players by appearances with win rate
-  const competitivePlayerStats = Object.entries(competitiveStats.appearances)
-    .map(([player, appearances]) => ({
-      player,
-      appearances,
-      wins: competitiveStats.wins[player] || 0,
-      winRate: Math.round(((competitiveStats.wins[player] || 0) / appearances) * 100),
-    }))
-    .sort(([, a], [, b]) => b.winRate - a.winRate)
-    .slice(0, 10);
+  // Memoize competitive player stats
+  const competitivePlayerStats = useMemo(() => {
+    return Object.entries(competitiveStats.appearances)
+      .map(([player, appearances]) => ({
+        player,
+        appearances,
+        wins: competitiveStats.wins[player] || 0,
+        winRate: Math.round(((competitiveStats.wins[player] || 0) / appearances) * 100),
+      }))
+      .sort(([, a], [, b]) => b.winRate - a.winRate)
+      .slice(0, 10);
+  }, [competitiveStats]);
 
   return (
     <>
@@ -123,13 +138,13 @@ export const Stats = ({ onNavigate, games, stats }) => {
                 className={`tab-btn ${activeTab === 'competitive' ? 'active' : ''}`}
                 onClick={() => setActiveTab('competitive')}
               >
-                ⚔️ {t('stats.competitive')}
+                {t('stats.competitive')}
               </button>
               <button
                 className={`tab-btn ${activeTab === 'cooperative' ? 'active' : ''}`}
                 onClick={() => setActiveTab('cooperative')}
               >
-                🤝 {t('stats.cooperative')}
+                {t('stats.cooperative')}
               </button>
             </div>
 
