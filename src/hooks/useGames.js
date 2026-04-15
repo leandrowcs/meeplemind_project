@@ -151,7 +151,6 @@ export const useGames = () => {
     link.click();
     URL.revokeObjectURL(url);
   };
-  };
 
   const exportToJSON = () => {
     if (games.length === 0) {

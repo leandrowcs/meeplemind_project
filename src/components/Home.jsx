@@ -74,13 +74,13 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, st
             <Button
               variant="primary"
               onClick={() => onNavigate('stats')}
-              className="nav-btn"- REMOVED, now in SideMenu */}type="file"
-                accept=".json"
-                onChange={handleImport}
-                style={{ display: 'none' }}
-              />
-            </div>
+              className="nav-btn"
+            >
+              {t('home.stats')}
+            </Button>
           </div>
+
+          {/* Export/Import Section - REMOVED, now in SideMenu */}
         </main>
       </div>
     </>
