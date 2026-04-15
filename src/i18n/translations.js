@@ -153,6 +153,39 @@ export const translations = {
 
     // Home
     'home.profile': '👤 Meu Perfil',
+    'home.library': '📚 Biblioteca',
+
+    // Library
+    'library.title': '📚 Minha Biblioteca',
+    'library.addGame': 'Adicionar Jogo',
+    'library.gameName': 'Nome do Jogo',
+    'library.gameNamePlaceholder': 'Ex: Catan, Ticket to Ride...',
+    'library.category': 'Categoria',
+    'library.categoryNone': 'Nenhuma',
+    'library.minPlayers': 'Mín. Jogadores',
+    'library.maxPlayers': 'Máx. Jogadores',
+    'library.noGames': 'Biblioteca vazia. Adicione seus jogos!',
+    'library.remove': 'Remover da biblioteca',
+    'library.categoryStrategy': 'Estratégia',
+    'library.categoryCooperative': 'Cooperativo',
+    'library.categoryFamily': 'Família',
+    'library.categoryParty': 'Festa/Party',
+    'library.categoryRPG': 'RPG',
+    'library.categoryDeckBuilding': 'Construção de Deck',
+    'library.categoryWorkerPlacement': 'Colocação de Trabalhadores',
+    'library.categoryAbstract': 'Abstrato',
+    'library.categoryEuro': 'Euro',
+    'library.categoryOther': 'Outro',
+
+    // Google Auth / Drive sync
+    'auth.loginGoogle': 'Entrar com Google',
+    'auth.logout': 'Sair',
+    'auth.synced': 'Sincronizado com Drive',
+    'auth.syncing': 'Sincronizando...',
+    'auth.syncError': 'Erro ao sincronizar',
+
+    // NewGame library hint
+    'newgame.fromLibrary': 'Da biblioteca',
   },
   'en-US': {
     // Home
@@ -308,6 +341,39 @@ export const translations = {
 
     // Home
     'home.profile': '👤 My Profile',
+    'home.library': '📚 Library',
+
+    // Library
+    'library.title': '📚 My Library',
+    'library.addGame': 'Add Game',
+    'library.gameName': 'Game Name',
+    'library.gameNamePlaceholder': 'e.g. Catan, Ticket to Ride...',
+    'library.category': 'Category',
+    'library.categoryNone': 'None',
+    'library.minPlayers': 'Min. Players',
+    'library.maxPlayers': 'Max. Players',
+    'library.noGames': 'Library is empty. Add your games!',
+    'library.remove': 'Remove from library',
+    'library.categoryStrategy': 'Strategy',
+    'library.categoryCooperative': 'Cooperative',
+    'library.categoryFamily': 'Family',
+    'library.categoryParty': 'Party',
+    'library.categoryRPG': 'RPG',
+    'library.categoryDeckBuilding': 'Deck Building',
+    'library.categoryWorkerPlacement': 'Worker Placement',
+    'library.categoryAbstract': 'Abstract',
+    'library.categoryEuro': 'Euro',
+    'library.categoryOther': 'Other',
+
+    // Google Auth / Drive sync
+    'auth.loginGoogle': 'Sign in with Google',
+    'auth.logout': 'Sign out',
+    'auth.synced': 'Synced with Drive',
+    'auth.syncing': 'Syncing...',
+    'auth.syncError': 'Sync error',
+
+    // NewGame library hint
+    'newgame.fromLibrary': 'From library',
   },
   'fr-CA': {
     // Home
@@ -436,6 +502,40 @@ export const translations = {
 
     // Home
     'home.profile': '👤 Mon Profil',
+    'home.library': '📚 Bibliothèque',
+
+    // Library
+    'library.title': '📚 Ma Bibliothèque',
+    'library.addGame': 'Ajouter un Jeu',
+    'library.gameName': 'Nom du Jeu',
+    'library.gameNamePlaceholder': 'Ex : Catan, Les Aventuriers du Rail...',
+    'library.category': 'Catégorie',
+    'library.categoryNone': 'Aucune',
+    'library.minPlayers': 'Min. Joueurs',
+    'library.maxPlayers': 'Max. Joueurs',
+    'library.noGames': 'Bibliothèque vide. Ajoutez vos jeux !',
+    'library.remove': 'Retirer de la bibliothèque',
+    'library.categoryStrategy': 'Stratégie',
+    'library.categoryCooperative': 'Coopératif',
+    'library.categoryFamily': 'Famille',
+    'library.categoryParty': 'Ambiance',
+    'library.categoryRPG': 'JDR',
+    'library.categoryDeckBuilding': 'Construction de Deck',
+    'library.categoryWorkerPlacement': "Placement d'Ouvriers",
+    'library.categoryAbstract': 'Abstrait',
+    'library.categoryEuro': 'Euro',
+    'library.categoryOther': 'Autre',
+
+    // Google Auth / Drive sync
+    'auth.loginGoogle': 'Se connecter avec Google',
+    'auth.logout': 'Se déconnecter',
+    'auth.synced': 'Synchronisé avec Drive',
+    'auth.syncing': 'Synchronisation...',
+    'auth.syncError': 'Erreur de synchronisation',
+
+    // NewGame library hint
+    'newgame.fromLibrary': 'De la bibliothèque',
+
     'onboarding.placeholder': 'Votre nom...',
     'onboarding.submit': 'Commencer à jouer !',
     'onboarding.error': 'Veuillez entrer votre nom',
