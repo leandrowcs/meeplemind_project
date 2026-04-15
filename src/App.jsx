@@ -190,6 +190,7 @@ function App() {
           library={lib.library}
           onAdd={lib.addToLibrary}
           onRemove={lib.removeFromLibrary}
+          onUpdate={lib.updateInLibrary}
           games={games}
         />
       )}

@@ -1,7 +1,6 @@
 import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { LanguageToggle } from './LanguageToggle';
-import { GoogleAuthButton } from './GoogleAuthButton';
 import { useLanguage } from '../hooks/useLanguage';
 import logoImage from '../assets/meeplemind_logo.png';
 import './Home.css';
@@ -31,6 +30,8 @@ export const Home = ({
         onExportJSON={exportToJSON}
         onImportJSON={importFromJSON}
         onClearData={clearAllData}
+        auth={auth}
+        syncStatus={syncStatus}
       />
       <div className="home-container fade-in">
         <header className="home-header">
@@ -104,12 +105,6 @@ export const Home = ({
               {t('home.library')}
             </Button>
           </div>
-
-          {auth?.isConfigured && (
-            <div className="home-auth-section">
-              <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
-            </div>
-          )}
 
           {/* Export/Import Section - REMOVED, now in SideMenu */}
         </main>

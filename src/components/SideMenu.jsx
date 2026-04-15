@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from './Button';
+import { GoogleAuthButton } from './GoogleAuthButton';
 import { useLanguage } from '../hooks/useLanguage';
 import './SideMenu.css';
 
-export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData }) => {
+export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData, auth, syncStatus }) => {
   const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -110,6 +111,12 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData 
             <span>{t('menu.clearData')}</span>
           </button>
         </div>
+
+        {auth?.isConfigured && (
+          <div className="menu-footer">
+            <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
+          </div>
+        )}
       </div>
     </>
   );

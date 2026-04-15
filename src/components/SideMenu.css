@@ -109,6 +109,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  overflow-y: auto;
+}
+
+.menu-footer {
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
 }
 
 .menu-item {

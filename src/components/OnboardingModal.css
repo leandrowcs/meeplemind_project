@@ -1,12 +1,23 @@
 .onboarding-overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1a2744 60%, #0f172a 100%);
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   padding: var(--spacing-xl);
+  isolation: isolate;
+}
+
+.onboarding-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/meeplemind_background_no_logo_small_icons_faded.png') center center / cover no-repeat;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .onboarding-card {
