@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGames } from './hooks/useGames';
 import { Home } from './components/Home';
 import { NewGame } from './components/NewGame';
@@ -28,19 +28,6 @@ function App() {
     importFromJSON,
   } = useGames();
   const stats = getStats();
-
-  // Update home page stats
-  useEffect(() => {
-    if (currentPage === 'home') {
-      const totalGamesEl = document.getElementById('stat-games');
-      const topWinnerEl = document.getElementById('stat-winner');
-      const topGameEl = document.getElementById('stat-game');
-
-      if (totalGamesEl) totalGamesEl.textContent = stats.totalGames;
-      if (topWinnerEl) topWinnerEl.textContent = stats.topWinner || '—';
-      if (topGameEl) topGameEl.textContent = stats.mostPlayedGame || '—';
-    }
-  }, [currentPage, stats]);
 
   if (isLoading) {
     return (
@@ -75,6 +62,7 @@ function App() {
             localStorage.setItem(PRIMARY_PLAYER_KEY, name);
             setPrimaryPlayer(name);
           }}
+          stats={stats}
         />
       )}
       {currentPage === 'newgame' && (

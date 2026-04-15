@@ -1,20 +1,11 @@
-import { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import logoImage from '../assets/meeplemind_logo.png';
 import './Home.css';
 
-export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON }) => {
+export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, stats }) => {
   const { language, changeLanguage, t, isInitialized } = useLanguage();
-  const [shouldUpdateText, setShouldUpdateText] = useState(false);
-
-  // Update label texts when language changes
-  useEffect(() => {
-    if (isInitialized) {
-      setShouldUpdateText(prev => !prev);
-    }
-  }, [language, isInitialized]);
 
   const handleImport = (e) => {
     const file = e.target.files?.[0];
@@ -44,21 +35,21 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON }) 
             <div className="stat-card">
               <span className="stat-icon">🎮</span>
               <div className="stat-info">
-                <span className="stat-value" id="stat-games">0</span>
+                <span className="stat-value">{stats?.totalGames || 0}</span>
                 <span className="stat-label">{t('home.games')}</span>
               </div>
             </div>
             <div className="stat-card">
               <span className="stat-icon">🏆</span>
               <div className="stat-info">
-                <span className="stat-value" id="stat-winner">—</span>
+                <span className="stat-value">{stats?.topWinner || '—'}</span>
                 <span className="stat-label">{t('home.topPlayer')}</span>
               </div>
             </div>
             <div className="stat-card">
               <span className="stat-icon">🎯</span>
               <div className="stat-info">
-                <span className="stat-value" id="stat-game">—</span>
+                <span className="stat-value">{stats?.mostPlayedGame || '—'}</span>
                 <span className="stat-label">{t('home.mostPlayed')}</span>
               </div>
             </div>
