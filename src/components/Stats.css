@@ -62,6 +62,56 @@
   gap: var(--spacing-2xl);
 }
 
+.stats-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+/* Tab Navigation */
+.stats-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--spacing-md);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.tab-btn.active {
+  color: var(--color-accent);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -var(--spacing-md);
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+}
+
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -123,6 +173,10 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   animation: slideIn 0.3s ease;
+}
+
+.stats-section.full-width {
+  grid-column: 1 / -1;
 }
 
 .stats-section h2 {
@@ -243,7 +297,92 @@
 }
 
 .progress-fill {
-  height: 100%;
+ 
+
+/* Success Rate Card */
+.success-rate-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-lg);
+}
+
+.success-rate-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.rate-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.rate-value {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6ee7b7 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rate-label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rate-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.rate-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.rate-icon {
+  font-size: 1.5rem;
+}
+
+.rate-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.rate-text {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rate-divider {
+  color: var(--color-border);
+  font-size: 1.5rem;
+}
+
+.progress-bar-large {
+  height: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  width: 100%;
+} height: 100%;
   background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
   border-radius: var(--radius-full);
   transition: width 0.5s ease;

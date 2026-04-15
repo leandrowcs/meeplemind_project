@@ -1,0 +1,318 @@
+.profile-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0f172a 0%, #1a2744 100%);
+  padding: var(--spacing-xl);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.profile-header .back-btn {
+  background: transparent;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.profile-header .back-btn:hover {
+  background: rgba(234, 88, 12, 0.1);
+  box-shadow: 0 0 10px rgba(234, 88, 12, 0.2);
+}
+
+.profile-header h1 {
+  flex: 1;
+}
+
+.profile-content {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+/* Player Banner */
+.player-banner {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.15) 0%, rgba(234, 88, 12, 0.1) 100%);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  text-align: center;
+  animation: slideIn 0.4s ease;
+}
+
+.player-banner h2 {
+  margin: 0;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Stats Cards Grid */
+.stats-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+.stat-card-large {
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  transition: all 0.3s ease;
+  animation: slideIn 0.4s ease;
+}
+
+.stat-card-large:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card-large.competitive-card {
+  border-color: rgba(30, 64, 175, 0.35);
+}
+
+.stat-card-large.competitive-card:hover {
+  border-color: #93c5fd;
+  background: rgba(30, 64, 175, 0.05);
+}
+
+.stat-card-large.cooperative-card {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.stat-card-large.cooperative-card:hover {
+  border-color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+/* Card Header */
+.stat-card-large .card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-md);
+}
+
+.stat-card-large .card-icon {
+  font-size: 1.8rem;
+}
+
+.stat-card-large .card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-text-primary);
+}
+
+/* Card Stats */
+.card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.big-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.stat-item .stat-icon {
+  font-size: 1.8rem;
+}
+
+.stat-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.stat-divider {
+  color: var(--color-border);
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+/* Progress Container */
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.progress-bar {
+  height: 10px;
+  background: var(--color-bg);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, var(--color-accent) 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.progress-fill.cooperative {
+  background: linear-gradient(90deg, #10b981 0%, #6ee7b7 100%);
+}
+
+.progress-label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Overall Stats */
+.overall-stats {
+  padding: var(--spacing-lg);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  animation: slideIn 0.4s ease;
+}
+
+.overall-stats h3 {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+}
+
+.overall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.overall-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(30, 64, 175, 0.2);
+}
+
+.overall-item .overall-icon {
+  font-size: 1.5rem;
+}
+
+.overall-value {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.overall-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Profile Actions */
+.profile-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xl);
+}
+
+.profile-actions button {
+  min-height: 48px;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-container {
+    padding: var(--spacing-lg);
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .player-banner h2 {
+    font-size: 1.8rem;
+  }
+
+  .stats-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .big-stat {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .overall-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-actions {
+    grid-template-columns: 1fr;
+  }
+}

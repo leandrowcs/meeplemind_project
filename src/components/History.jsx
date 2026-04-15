@@ -173,6 +173,25 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                             <span className={`game-type-badge ${isCoop ? 'coop' : 'competitive'}`}>
                               {isCoop ? t('history.badgeCooperative') : t('history.badgeCompetitive')}
                             </span>
+                            {/* Collapsed badges - only visible when not expanded */}
+                            {!isExpanded && (
+                              <>
+                                <span className="collapsed-badge date-badge">
+                                  📅 {formatDate(game.date)}
+                                </span>
+                                <span className={`collapsed-badge result-badge ${isCoop ? 'coop-result' : 'competitive-result'}`}>
+                                  {isCoop ? (
+                                    <>
+                                      {game.coopResult === 'win' ? '🏆' : '💀'} {game.coopResult === 'win' ? t('history.coopWin') : t('history.coopLoss')}
+                                    </>
+                                  ) : (
+                                    <>
+                                      👑 {t('history.competitiveWinner')} {game.winner}
+                                    </>
+                                  )}
+                                </span>
+                              </>
+                            )}
                           </div>
                           <div className="header-actions" onClick={(e) => e.stopPropagation()}>
                             <button

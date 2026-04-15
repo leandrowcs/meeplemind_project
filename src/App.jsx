@@ -4,6 +4,7 @@ import { Home } from './components/Home';
 import { NewGame } from './components/NewGame';
 import { History } from './components/History';
 import { Stats } from './components/Stats';
+import { Profile } from './components/Profile';
 import { OnboardingModal } from './components/OnboardingModal';
 import './App.css';
 
@@ -21,6 +22,9 @@ function App() {
     deleteGame, 
     updateGame,
     getStats, 
+    getCompetitiveStats,
+    getCooperativeStats,
+    getPlayerStats,
     getUniqueGames, 
     getUniquePlayers,
     exportToCSV,
@@ -85,7 +89,23 @@ function App() {
           uniqueGames={getUniqueGames()}
         />
       )}
-      {currentPage === 'stats' && <Stats onNavigate={setCurrentPage} games={games} stats={stats} />}
+      {currentPage === 'stats' && (
+        <Stats 
+          onNavigate={setCurrentPage} 
+          games={games} 
+          stats={stats}
+          getCompetitiveStats={getCompetitiveStats}
+          getCooperativeStats={getCooperativeStats}
+        />
+      )}
+      {currentPage === 'profile' && (
+        <Profile 
+          onNavigate={setCurrentPage}
+          games={games}
+          primaryPlayer={primaryPlayer}
+          getPlayerStats={getPlayerStats}
+        />
+      )}
     </div>
   );
 }
