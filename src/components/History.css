@@ -37,6 +37,7 @@
 
 .history-header h1 {
   flex: 1;
+  margin: 0 0 var(--spacing-xs) 0;
 }
 
 .content {
@@ -68,10 +69,10 @@
 }
 
 .filter-section {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .filter-label {
@@ -140,7 +141,8 @@
 .games-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
 .no-filter-results {
@@ -340,17 +342,17 @@
 }
 
 .players-ranking {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  padding: var(--spacing-md);
+  padding: var(--spacing-xs);
   background: var(--color-bg);
   border-radius: var(--radius-md);
   transition: all 0.2s ease;
@@ -363,7 +365,7 @@
 
 .ranking-item.winner {
   background: rgba(234, 88, 12, 0.1);
-  border: 1px solid var(--color-accent);
+  border: 1px solid #D3AF37;
   font-weight: 600;
 }
 
