@@ -191,6 +191,101 @@ export const useGames = () => {
     alert('🗑️ Todos os dados foram removidos!');
   };
 
+  const getCompetitiveStats = () => {
+    const competitiveGames = games.filter((g) => (g.gameType || 'competitive') === 'competitive');
+    
+    if (competitiveGames.length === 0) {
+      return {
+        totalGames: 0,
+        wins: {},
+        appearances: {},
+      };
+    }
+
+    const wins = {};
+    const appearances = {};
+
+    competitiveGames.forEach((game) => {
+      // Count wins
+      if (game.winner) {
+        wins[game.winner] = (wins[game.winner] || 0) + 1;
+      }
+      // Count appearances
+      game.players.forEach((player) => {
+        appearances[player] = (appearances[player] || 0) + 1;
+      });
+    });
+
+    return {
+      totalGames: competitiveGames.length,
+      wins,
+      appearances,
+    };
+  };
+
+  const getCooperativeStats = () => {
+    const cooperativeGames = games.filter((g) => g.gameType === 'cooperative');
+    
+    if (cooperativeGames.length === 0) {
+      return {
+        totalGames: 0,
+        wins: 0,
+        losses: 0,
+        successRate: 0,
+      };
+    }
+
+    const wins = cooperativeGames.filter((g) => g.coopResult === 'win').length;
+    const losses = cooperativeGames.filter((g) => g.coopResult === 'loss').length;
+    const successRate = wins > 0 ? Math.round((wins / cooperativeGames.length) * 100) : 0;
+
+    return {
+      totalGames: cooperativeGames.length,
+      wins,
+      losses,
+      successRate,
+    };
+  };
+
+  const getPlayerStats = (playerName) => {
+    const playerGames = games.filter((g) => g.players.includes(playerName));
+    
+    if (playerGames.length === 0) {
+      return {
+        totalGames: 0,
+        competitiveGames: 0,
+        competitiveWins: 0,
+        competitiveWinRate: 0,
+        cooperativeGames: 0,
+        cooperativeWins: 0,
+        cooperativeWinRate: 0,
+      };
+    }
+
+    const competitiveGames = playerGames.filter((g) => (g.gameType || 'competitive') === 'competitive');
+    const cooperativeGames = playerGames.filter((g) => g.gameType === 'cooperative');
+
+    const competitiveWins = competitiveGames.filter((g) => g.winner === playerName).length;
+    const competitiveWinRate = competitiveGames.length > 0 
+      ? Math.round((competitiveWins / competitiveGames.length) * 100) 
+      : 0;
+
+    const cooperativeWins = cooperativeGames.filter((g) => g.coopResult === 'win').length;
+    const cooperativeWinRate = cooperativeGames.length > 0 
+      ? Math.round((cooperativeWins / cooperativeGames.length) * 100) 
+      : 0;
+
+    return {
+      totalGames: playerGames.length,
+      competitiveGames: competitiveGames.length,
+      competitiveWins,
+      competitiveWinRate,
+      cooperativeGames: cooperativeGames.length,
+      cooperativeWins,
+      cooperativeWinRate,
+    };
+  };
+
   return {
     games,
     isLoading,
@@ -198,6 +293,9 @@ export const useGames = () => {
     deleteGame,
     updateGame,
     getStats,
+    getCompetitiveStats,
+    getCooperativeStats,
+    getPlayerStats,
     getUniqueGames,
     getUniquePlayers,
     filterGamesByName,

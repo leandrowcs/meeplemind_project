@@ -128,6 +128,31 @@ export const translations = {
     'common.edit': 'Editar',
     'common.save': 'Salvar',
     'common.language': 'Idioma',
+
+    // History - Collapsed badges
+    'history.competitiveWinner': 'Vencedor:',
+    'history.cooperativeResult': 'Resultado:',
+
+    // Stats - Competitive vs Cooperative
+    'stats.competitive': '⚔️ Competitivo',
+    'stats.cooperative': '🤝 Cooperativo',
+    'stats.competitiveStats': 'Ranking de Vitórias',
+    'stats.cooperativeStats': 'Taxa de Sucesso',
+    'stats.winRateLabel': 'Taxa de Vitória',
+    'stats.successRateLabel': 'Taxa de Sucesso',
+    'stats.topWinnersLabel': 'Top Vencedores',
+    'stats.mostPlayedLabel': 'Mais Jogados',
+    'stats.playerAppearancesLabel': 'Participações',
+
+    // Profile
+    'profile.title': '👤 Meu Perfil',
+    'profile.competitiveGames': 'Jogos Competitivos',
+    'profile.losses': 'Derrotas',
+    'profile.cooperativeGames': 'Jogos Cooperativos',
+    'profile.successRate': 'Taxa de Sucesso',
+
+    // Home
+    'home.profile': '👤 Meu Perfil',
   },
   'en-US': {
     // Home
@@ -258,6 +283,31 @@ export const translations = {
     'common.edit': 'Edit',
     'common.save': 'Save',
     'common.language': 'Language',
+
+    // History - Collapsed badges
+    'history.competitiveWinner': 'Winner:',
+    'history.cooperativeResult': 'Result:',
+
+    // Stats - Competitive vs Cooperative
+    'stats.competitive': '⚔️ Competitive',
+    'stats.cooperative': '🤝 Cooperative',
+    'stats.competitiveStats': 'Victory Ranking',
+    'stats.cooperativeStats': 'Success Rate',
+    'stats.winRateLabel': 'Win Rate',
+    'stats.successRateLabel': 'Success Rate',
+    'stats.topWinnersLabel': 'Top Winners',
+    'stats.mostPlayedLabel': 'Most Played',
+    'stats.playerAppearancesLabel': 'Appearances',
+
+    // Profile
+    'profile.title': '👤 My Profile',
+    'profile.competitiveGames': 'Competitive Games',
+    'profile.losses': 'Losses',
+    'profile.cooperativeGames': 'Cooperative Games',
+    'profile.successRate': 'Success Rate',
+
+    // Home
+    'home.profile': '👤 My Profile',
   },
   'fr-CA': {
     // Home
@@ -361,6 +411,31 @@ export const translations = {
     // Onboarding
     'onboarding.title': 'Bienvenue sur MeepleMind ! 🎲',
     'onboarding.description': 'Quel est votre nom ? Il sera ajouté automatiquement à chaque nouvelle partie.',
+
+    // History - Collapsed badges
+    'history.competitiveWinner': 'Gagnant :',
+    'history.cooperativeResult': 'Résultat :',
+
+    // Stats - Competitive vs Cooperative
+    'stats.competitive': '⚔️ Compétitif',
+    'stats.cooperative': '🤝 Coopératif',
+    'stats.competitiveStats': 'Classement des Victoires',
+    'stats.cooperativeStats': 'Taux de Succès',
+    'stats.winRateLabel': 'Taux de Victoire',
+    'stats.successRateLabel': 'Taux de Succès',
+    'stats.topWinnersLabel': 'Meilleurs Gagnants',
+    'stats.mostPlayedLabel': 'Plus Joués',
+    'stats.playerAppearancesLabel': 'Apparitions',
+
+    // Profile
+    'profile.title': '👤 Mon Profil',
+    'profile.competitiveGames': 'Jeux Compétitifs',
+    'profile.losses': 'Défaites',
+    'profile.cooperativeGames': 'Jeux Coopératifs',
+    'profile.successRate': 'Taux de Succès',
+
+    // Home
+    'home.profile': '👤 Mon Profil',
     'onboarding.placeholder': 'Votre nom...',
     'onboarding.submit': 'Commencer à jouer !',
     'onboarding.error': 'Veuillez entrer votre nom',

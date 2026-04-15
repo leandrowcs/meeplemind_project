@@ -8,44 +8,68 @@ import './Stats.css';
 export const Stats = ({ onNavigate, games, stats }) => {
   const { language, changeLanguage, t } = useLanguage();
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [activeTab, setActiveTab] = useState('competitive'); // 'competitive' | 'cooperative'
 
-  const getPlayerWins = () => {
+  const getCompetitiveStats = () => {
+    const competitiveGames = games.filter((g) => (g.gameType || 'competitive') === 'competitive');
     const wins = {};
-    games.forEach((game) => {
+    const appearances = {};
+
+    competitiveGames.forEach((game) => {
       if (game.winner) {
         wins[game.winner] = (wins[game.winner] || 0) + 1;
       }
+      game.players.forEach((player) => {
+        appearances[player] = (appearances[player] || 0) + 1;
+      });
     });
-    return Object.entries(wins)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10);
+
+    return { wins, appearances };
   };
 
-  const getGameFrequency = () => {
+  const getCooperativeStats = () => {
+    const cooperativeGames = games.filter((g) => g.gameType === 'cooperative');
+    const wins = cooperativeGames.filter((g) => g.coopResult === 'win').length;
+    const losses = cooperativeGames.filter((g) => g.coopResult === 'loss').length;
+    const successRate = cooperativeGames.length > 0 
+      ? Math.round((wins / cooperativeGames.length) * 100) 
+      : 0;
+
+    return { wins, losses, successRate, total: cooperativeGames.length };
+  };
+
+  const getGameFrequencyByType = (gameType) => {
     const freq = {};
-    games.forEach((game) => {
-      freq[game.game] = (freq[game.game] || 0) + 1;
-    });
+    games
+      .filter((g) => (gameType === 'competitive' ? (g.gameType || 'competitive') === 'competitive' : g.gameType === 'cooperative'))
+      .forEach((game) => {
+        freq[game.game] = (freq[game.game] || 0) + 1;
+      });
     return Object.entries(freq)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10);
   };
 
-  const getPlayerAppearances = () => {
-    const appearances = {};
-    games.forEach((game) => {
-      game.players.forEach((player) => {
-        appearances[player] = (appearances[player] || 0) + 1;
-      });
-    });
-    return Object.entries(appearances)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10);
-  };
+  const competitiveStats = getCompetitiveStats();
+  const cooperativeStats = getCooperativeStats();
+  const competitiveGameFreq = getGameFrequencyByType('competitive');
+  const cooperativeGameFreq = getGameFrequencyByType('cooperative');
 
-  const playerWins = getPlayerWins();
-  const gameFreq = getGameFrequency();
-  const playerApps = getPlayerAppearances();
+  // Top Winners/Competitive Players
+  const competitiveWins = Object.entries(competitiveStats.wins)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+
+  // Competitive Players by appearances with win rate
+  const competitivePlayerStats = Object.entries(competitiveStats.appearances)
+    .map(([player, appearances]) => ({
+      player,
+      appearances,
+      wins: competitiveStats.wins[player] || 0,
+      winRate: Math.round(((competitiveStats.wins[player] || 0) / appearances) * 100),
+    }))
+    .sort(([, a], [, b]) => b.winRate - a.winRate)
+    .slice(0, 10);
 
   return (
     <>
@@ -67,7 +91,7 @@ export const Stats = ({ onNavigate, games, stats }) => {
             </Button>
           </div>
         ) : (
-          <div className="stats-grid">
+          <div className="stats-content">
             {/* Summary Cards */}
             <div className="summary-cards">
               <div className="summary-card">
@@ -93,117 +117,191 @@ export const Stats = ({ onNavigate, games, stats }) => {
               </div>
             </div>
 
-            {/* Top Winners */}
-            <div className="stats-section">
-              <h2>🥇 Top Vencedores</h2>
-              <p className="stats-section-hint">Clique num jogador para ver detalhes</p>
-              {playerWins.length > 0 ? (
-                <div className="leaderboard">
-                  {playerWins.map(([player, wins], rank) => (
-                    <button
-                      key={player}
-                      className="leaderboard-item clickable"
-                      onClick={() => setSelectedPlayer(player)}
-                      title={`Ver estatísticas de ${player}`}
-                    >
-                      <span className="rank-badge">{rank + 1}</span>
-                      <div className="leaderboard-info">
-                        <span className="player-name">{player}</span>
-                        <span className="player-stat">
-                          {wins} vitória{wins !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: `${(wins / playerWins[0][1]) * 100}%` }}
-                        />
-                      </div>
-                      <span className="leaderboard-chevron">›</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="empty-section">Sem dados</p>
-              )}
+            {/* Tab Navigation */}
+            <div className="stats-tabs">
+              <button
+                className={`tab-btn ${activeTab === 'competitive' ? 'active' : ''}`}
+                onClick={() => setActiveTab('competitive')}
+              >
+                ⚔️ {t('stats.competitive')}
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'cooperative' ? 'active' : ''}`}
+                onClick={() => setActiveTab('cooperative')}
+              >
+                🤝 {t('stats.cooperative')}
+              </button>
             </div>
 
-            {/* Most Played Games */}
-            <div className="stats-section">
-              <h2>🎲 Jogos Mais Jogados</h2>
-              {gameFreq.length > 0 ? (
-                <div className="leaderboard">
-                  {gameFreq.map(([game, count], rank) => (
-                    <div key={game} className="leaderboard-item">
-                      <span className="rank-badge">{rank + 1}</span>
-                      <div className="leaderboard-info">
-                        <span className="player-name">{game}</span>
-                        <span className="player-stat">
-                          {count} partida{count !== 1 ? 's' : ''}
-                        </span>
+            {/* Competitive Stats */}
+            {activeTab === 'competitive' && (
+              <div className="stats-grid">
+                {/* Top Winners */}
+                <div className="stats-section">
+                  <h2>🥇 {t('stats.topWinnersLabel')}</h2>
+                  <p className="stats-section-hint">{t('history.filterCompetitive')}</p>
+                  {competitiveWins.length > 0 ? (
+                    <div className="leaderboard">
+                      {competitiveWins.map(([player, wins], rank) => (
+                        <button
+                          key={player}
+                          className="leaderboard-item clickable"
+                          onClick={() => setSelectedPlayer(player)}
+                          title={`Ver estatísticas de ${player}`}
+                        >
+                          <span className="rank-badge">{rank + 1}</span>
+                          <div className="leaderboard-info">
+                            <span className="player-name">{player}</span>
+                            <span className="player-stat">
+                              {wins} vitória{wins !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="progress-bar">
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${(wins / competitiveWins[0][1]) * 100}%` }}
+                            />
+                          </div>
+                          <span className="leaderboard-chevron">›</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="empty-section">Sem dados</p>
+                  )}
+                </div>
+
+                {/* Win Rates */}
+                <div className="stats-section">
+                  <h2>📊 {t('stats.winRateLabel')}</h2>
+                  <p className="stats-section-hint">Por jogador</p>
+                  {competitivePlayerStats.length > 0 ? (
+                    <div className="leaderboard">
+                      {competitivePlayerStats.map(({ player, winRate, wins, appearances }, rank) => (
+                        <button
+                          key={player}
+                          className="leaderboard-item clickable"
+                          onClick={() => setSelectedPlayer(player)}
+                          title={`Ver estatísticas de ${player}`}
+                        >
+                          <span className="rank-badge">{rank + 1}</span>
+                          <div className="leaderboard-info">
+                            <span className="player-name">{player}</span>
+                            <span className="player-stat">
+                              {wins}/{appearances} • {winRate}%
+                            </span>
+                          </div>
+                          <div className="progress-bar">
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${winRate}%` }}
+                            />
+                          </div>
+                          <span className="leaderboard-chevron">›</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="empty-section">Sem dados</p>
+                  )}
+                </div>
+
+                {/* Most Played Games (Competitive) */}
+                <div className="stats-section">
+                  <h2>🎲 {t('stats.mostPlayedLabel')}</h2>
+                  {competitiveGameFreq.length > 0 ? (
+                    <div className="leaderboard">
+                      {competitiveGameFreq.map(([game, count], rank) => (
+                        <div key={game} className="leaderboard-item">
+                          <span className="rank-badge">{rank + 1}</span>
+                          <div className="leaderboard-info">
+                            <span className="player-name">{game}</span>
+                            <span className="player-stat">
+                              {count} partida{count !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="progress-bar">
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${(count / competitiveGameFreq[0][1]) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="empty-section">Sem dados</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Cooperative Stats */}
+            {activeTab === 'cooperative' && (
+              <div className="stats-grid">
+                {/* Success Rate */}
+                <div className="stats-section full-width">
+                  <h2>🎯 {t('stats.successRateLabel')}</h2>
+                  {cooperativeStats.total > 0 ? (
+                    <div className="success-rate-card">
+                      <div className="success-rate-content">
+                        <div className="rate-display">
+                          <span className="rate-value">{cooperativeStats.successRate}%</span>
+                          <span className="rate-label">{t('stats.successRateLabel')}</span>
+                        </div>
+                        <div className="rate-stats">
+                          <div className="rate-item">
+                            <span className="rate-icon">🏆</span>
+                            <span className="rate-number">{cooperativeStats.wins}</span>
+                            <span className="rate-text">Vitória{cooperativeStats.wins !== 1 ? 's' : ''}</span>
+                          </div>
+                          <div className="rate-divider">|</div>
+                          <div className="rate-item">
+                            <span className="rate-icon">💀</span>
+                            <span className="rate-number">{cooperativeStats.losses}</span>
+                            <span className="rate-text">Derrota{cooperativeStats.losses !== 1 ? 's' : ''}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="progress-bar">
+                      <div className="progress-bar-large">
                         <div
                           className="progress-fill"
-                          style={{ width: `${(count / gameFreq[0][1]) * 100}%` }}
+                          style={{ width: `${cooperativeStats.successRate}%` }}
                         />
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    <p className="empty-section">Nenhum jogo cooperativo registrado</p>
+                  )}
                 </div>
-              ) : (
-                <p className="empty-section">Sem dados</p>
-              )}
-            </div>
 
-            {/* Participation */}
-            <div className="stats-section">
-              <h2>👤 Participação</h2>
-              <p className="stats-section-hint">Clique num jogador para ver detalhes</p>
-              {playerApps.length > 0 ? (
-                <div className="leaderboard">
-                  {playerApps.map(([player, appearances], rank) => {
-                    const winCount = games.filter((g) => g.winner === player).length;
-                    const competitiveCount = games.filter(
-                      (g) =>
-                        g.players.includes(player) &&
-                        (!g.gameType || g.gameType === 'competitive')
-                    ).length;
-                    const winRate =
-                      competitiveCount > 0
-                        ? ((winCount / competitiveCount) * 100).toFixed(1)
-                        : '0.0';
-                    return (
-                      <button
-                        key={player}
-                        className="leaderboard-item clickable"
-                        onClick={() => setSelectedPlayer(player)}
-                        title={`Ver estatísticas de ${player}`}
-                      >
-                        <span className="rank-badge">{rank + 1}</span>
-                        <div className="leaderboard-info">
-                          <span className="player-name">{player}</span>
-                          <span className="player-stat">
-                            {appearances} participação{appearances !== 1 ? 's' : ''} • {winRate}% vitórias
-                          </span>
+                {/* Most Played Games (Cooperative) */}
+                {cooperativeGameFreq.length > 0 && (
+                  <div className="stats-section">
+                    <h2>🎲 {t('stats.mostPlayedLabel')}</h2>
+                    <div className="leaderboard">
+                      {cooperativeGameFreq.map(([game, count], rank) => (
+                        <div key={game} className="leaderboard-item">
+                          <span className="rank-badge">{rank + 1}</span>
+                          <div className="leaderboard-info">
+                            <span className="player-name">{game}</span>
+                            <span className="player-stat">
+                              {count} partida{count !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="progress-bar">
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${(count / cooperativeGameFreq[0][1]) * 100}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="progress-bar">
-                          <div
-                            className="progress-fill"
-                            style={{
-                              width: `${(appearances / playerApps[0][1]) * 100}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="leaderboard-chevron">›</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="empty-section">Sem dados</p>
-              )}
-            </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

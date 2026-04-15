@@ -66,6 +66,13 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, st
           <div className="navigation-buttons">
             <Button
               variant="primary"
+              onClick={() => onNavigate('profile')}
+              className="nav-btn"
+            >
+              {t('home.profile')}
+            </Button>
+            <Button
+              variant="primary"
               onClick={() => onNavigate('history')}
               className="nav-btn"
             >
