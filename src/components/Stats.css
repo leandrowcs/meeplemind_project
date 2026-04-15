@@ -305,7 +305,11 @@
 }
 
 .progress-fill {
- 
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
 
 /* Success Rate Card */
 .success-rate-card {
@@ -393,10 +397,6 @@
   border-radius: var(--radius-full);
   overflow: hidden;
   width: 100%;
-} height: 100%;
-  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
-  border-radius: var(--radius-full);
-  transition: width 0.5s ease;
 }
 
 @media (max-width: 640px) {
