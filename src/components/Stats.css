@@ -175,8 +175,8 @@
 .stats-section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -331,6 +331,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-md);
+  padding: var(--spacing-xs);
 }
 
 .rate-value {
@@ -356,7 +357,7 @@
 }
 
 .rate-item {
-  display: flex;
+  display: inline-block;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-sm);
@@ -380,6 +381,8 @@
 }
 
 .rate-divider {
+  display: inline-block;
+  padding: var(--spacing-sm);
   color: var(--color-border);
   font-size: 1.5rem;
 }

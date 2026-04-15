@@ -37,6 +37,7 @@
 
 .profile-header h1 {
   flex: 1;
+  margin: 0 0 var(--spacing-xs) 0;
 }
 
 .profile-content {
@@ -45,7 +46,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2xl);
+  gap: var(--spacing-lg);
   padding: var(--spacing-xl);
 }
 
@@ -79,10 +80,10 @@
   background: var(--color-bg-secondary);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
   transition: all 0.3s ease;
   animation: slideIn 0.4s ease;
 }
@@ -116,7 +117,7 @@
   align-items: center;
   gap: var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
-  padding-bottom: var(--spacing-md);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .stat-card-large .card-icon {
@@ -133,15 +134,15 @@
 .card-stats {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
 }
 
 .big-stat {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
   background: var(--color-bg);
   border-radius: var(--radius-md);
 }
@@ -149,7 +150,7 @@
 .stat-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .stat-item .stat-icon {
@@ -190,11 +191,11 @@
 .progress-container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .progress-bar {
-  height: 10px;
+  height: 15px;
   background: var(--color-bg);
   border-radius: var(--radius-full);
   overflow: hidden;
@@ -220,7 +221,7 @@
 
 /* Overall Stats */
 .overall-stats {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -228,7 +229,6 @@
 }
 
 .overall-stats h3 {
-  margin: 0 0 var(--spacing-md) 0;
   color: var(--color-accent);
   font-size: 1.1rem;
 }
@@ -236,14 +236,14 @@
 .overall-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
 }
 
 .overall-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   background: var(--color-bg);
   border-radius: var(--radius-md);
   border: 1px solid rgba(30, 64, 175, 0.2);
@@ -266,14 +266,14 @@
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  font-weight: 600;
 }
 
 /* Profile Actions */
 .profile-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-xl);
+  gap: var(--spacing-sm);
 }
 
 .profile-actions button {

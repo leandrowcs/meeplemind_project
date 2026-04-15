@@ -18,7 +18,7 @@ export const translations = {
     'home.importJSONTitle': 'Restaurar dados anteriormente salvos',
 
     // NewGame
-    'newgame.title': 'Nova Partida',
+    'newgame.title': '➕ Nova Partida',
     'newgame.gameName': 'Nome do Jogo',
     'newgame.selectGame': 'Selecionar jogo',
     'newgame.players': 'Jogadores',
@@ -36,7 +36,7 @@ export const translations = {
     'newgame.success': 'Partida registrada com sucesso!',
 
     // History
-    'history.title': 'Histórico de Partidas',
+    'history.title': '📜 Histórico de Partidas',
     'history.date': 'Data',
     'history.game': 'Jogo',
     'history.winner': 'Vencedor',
@@ -47,7 +47,7 @@ export const translations = {
     'history.confirmDelete': 'Tem certeza que quer deletar esta partida?',
 
     // Stats
-    'stats.title': 'Estatísticas',
+    'stats.title': '🏅 Estatísticas',
     'stats.totalGames': 'Total de Partidas',
     'stats.topWinner': 'Melhor Jogador',
     'stats.mostPlayedGame': 'Jogo Mais Jogado',
@@ -173,7 +173,7 @@ export const translations = {
     'home.importJSONTitle': 'Restore previously saved data',
 
     // NewGame
-    'newgame.title': 'New Game',
+    'newgame.title': '➕ New Game',
     'newgame.gameName': 'Game Name',
     'newgame.selectGame': 'Select game',
     'newgame.players': 'Players',
@@ -191,7 +191,7 @@ export const translations = {
     'newgame.success': 'Game registered successfully!',
 
     // History
-    'history.title': 'Game History',
+    'history.title': '📜 Game History',
     'history.date': 'Date',
     'history.game': 'Game',
     'history.winner': 'Winner',
@@ -202,7 +202,7 @@ export const translations = {
     'history.confirmDelete': 'Are you sure you want to delete this game?',
 
     // Stats
-    'stats.title': 'Statistics',
+    'stats.title': '🏅 Statistics',
     'stats.totalGames': 'Total Games',
     'stats.topWinner': 'Best Player',
     'stats.mostPlayedGame': 'Most Played Game',
@@ -328,7 +328,7 @@ export const translations = {
     'home.importJSONTitle': 'Restaurer les données précédemment enregistrées',
 
     // NewGame
-    'newgame.title': 'Nouvelle Partie',
+    'newgame.title': '➕ Nouvelle Partie',
     'newgame.gameName': 'Nom du Jeu',
     'newgame.selectGame': 'Sélectionner le jeu',
     'newgame.players': 'Joueurs',
@@ -346,7 +346,7 @@ export const translations = {
     'newgame.success': 'Partie enregistrée avec succès!',
 
     // History
-    'history.title': 'Historique des Parties',
+    'history.title': '📜 Historique des Parties',
     'history.date': 'Date',
     'history.game': 'Jeu',
     'history.winner': 'Gagnant',
@@ -357,7 +357,7 @@ export const translations = {
     'history.confirmDelete': 'Êtes-vous sûr de vouloir supprimer cette partie?',
 
     // Stats
-    'stats.title': 'Statistiques',
+    'stats.title': '🏅 Statistiques',
     'stats.totalGames': 'Nombre Total de Parties',
     'stats.topWinner': 'Meilleur Joueur',
     'stats.mostPlayedGame': 'Jeu le Plus Joué',

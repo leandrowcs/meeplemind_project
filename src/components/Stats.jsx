@@ -12,6 +12,9 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   // Memoize competitive stats to avoid recalculation
   const competitiveStats = useMemo(() => {
+    if (!games || games.length === 0) {
+      return { wins: {}, appearances: {} };
+    }
     const competitiveGames = games.filter((g) => (g.gameType || 'competitive') === 'competitive');
     const wins = {};
     const appearances = {};
@@ -20,9 +23,11 @@ export const Stats = ({ onNavigate, games, stats }) => {
       if (game.winner) {
         wins[game.winner] = (wins[game.winner] || 0) + 1;
       }
-      game.players.forEach((player) => {
-        appearances[player] = (appearances[player] || 0) + 1;
-      });
+      if (game.players && Array.isArray(game.players)) {
+        game.players.forEach((player) => {
+          appearances[player] = (appearances[player] || 0) + 1;
+        });
+      }
     });
 
     return { wins, appearances };
@@ -30,6 +35,9 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   // Memoize cooperative stats
   const cooperativeStats = useMemo(() => {
+    if (!games || games.length === 0) {
+      return { wins: 0, losses: 0, successRate: 0, total: 0 };
+    }
     const cooperativeGames = games.filter((g) => g.gameType === 'cooperative');
     const wins = cooperativeGames.filter((g) => g.coopResult === 'win').length;
     const losses = cooperativeGames.filter((g) => g.coopResult === 'loss').length;
@@ -42,11 +50,16 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   // Memoize game frequency for competitive games
   const competitiveGameFreq = useMemo(() => {
+    if (!games || games.length === 0) {
+      return [];
+    }
     const freq = {};
     games
       .filter((g) => (g.gameType || 'competitive') === 'competitive')
       .forEach((game) => {
-        freq[game.game] = (freq[game.game] || 0) + 1;
+        if (game.game) {
+          freq[game.game] = (freq[game.game] || 0) + 1;
+        }
       });
     return Object.entries(freq)
       .sort(([, a], [, b]) => b - a)
@@ -55,11 +68,16 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   // Memoize game frequency for cooperative games
   const cooperativeGameFreq = useMemo(() => {
+    if (!games || games.length === 0) {
+      return [];
+    }
     const freq = {};
     games
       .filter((g) => g.gameType === 'cooperative')
       .forEach((game) => {
-        freq[game.game] = (freq[game.game] || 0) + 1;
+        if (game.game) {
+          freq[game.game] = (freq[game.game] || 0) + 1;
+        }
       });
     return Object.entries(freq)
       .sort(([, a], [, b]) => b - a)
@@ -68,6 +86,9 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   // Memoize competitive wins
   const competitiveWins = useMemo(() => {
+    if (!competitiveStats || !competitiveStats.wins) {
+      return [];
+    }
     return Object.entries(competitiveStats.wins)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10);
@@ -75,14 +96,19 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   // Memoize competitive player stats
   const competitivePlayerStats = useMemo(() => {
+    if (!competitiveStats || !competitiveStats.appearances) {
+      return [];
+    }
     return Object.entries(competitiveStats.appearances)
       .map(([player, appearances]) => ({
         player,
         appearances,
         wins: competitiveStats.wins[player] || 0,
-        winRate: Math.round(((competitiveStats.wins[player] || 0) / appearances) * 100),
+        winRate: appearances > 0
+          ? Math.round(((competitiveStats.wins[player] || 0) / appearances) * 100)
+          : 0,
       }))
-      .sort(([, a], [, b]) => b.winRate - a.winRate)
+      .sort((a, b) => b.winRate - a.winRate)
       .slice(0, 10);
   }, [competitiveStats]);
 
@@ -97,7 +123,12 @@ export const Stats = ({ onNavigate, games, stats }) => {
           <h1>{t('stats.title')}</h1>
         </header>
 
-        {games.length === 0 ? (
+        {!games ? (
+          <div className="empty-stats">
+            <span className="empty-icon">⚠️</span>
+            <p>Erro: dados não carregaram corretamente</p>
+          </div>
+        ) : games.length === 0 ? (
           <div className="empty-stats">
             <span className="empty-icon">📊</span>
             <p>Não há dados para exibir</p>
@@ -112,21 +143,21 @@ export const Stats = ({ onNavigate, games, stats }) => {
               <div className="summary-card">
                 <span className="summary-icon">🎮</span>
                 <div className="summary-content">
-                  <span className="summary-value">{stats.totalGames}</span>
+                  <span className="summary-value">{stats?.totalGames || 0}</span>
                   <span className="summary-label">{t('stats.totalGames')}</span>
                 </div>
               </div>
               <div className="summary-card">
                 <span className="summary-icon">🎯</span>
                 <div className="summary-content">
-                  <span className="summary-value">{stats.uniqueGames}</span>
+                  <span className="summary-value">{stats?.uniqueGames || 0}</span>
                   <span className="summary-label">{t('stats.gameStats')}</span>
                 </div>
               </div>
               <div className="summary-card">
                 <span className="summary-icon">👥</span>
                 <div className="summary-content">
-                  <span className="summary-value">{stats.totalPlayers}</span>
+                  <span className="summary-value">{stats?.totalPlayers || 0}</span>
                   <span className="summary-label">{t('stats.playerStats')}</span>
                 </div>
               </div>
@@ -261,7 +292,7 @@ export const Stats = ({ onNavigate, games, stats }) => {
                     <div className="success-rate-card">
                       <div className="success-rate-content">
                         <div className="rate-display">
-                          <span className="rate-value">{cooperativeStats.successRate}%</span>
+                          <span className="rate-value">{cooperativeStats.successRate}% </span>
                           <span className="rate-label">{t('stats.successRateLabel')}</span>
                         </div>
                         <div className="rate-stats">
