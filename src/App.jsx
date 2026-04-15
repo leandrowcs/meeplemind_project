@@ -34,6 +34,13 @@ function App() {
   } = useGames();
   const stats = getStats();
 
+  const handleClearAllData = () => {
+    clearAllData();
+    // Also clear the primary player
+    localStorage.removeItem(PRIMARY_PLAYER_KEY);
+    setPrimaryPlayer(null);
+  };
+
   if (isLoading) {
     return (
       <div className="loading-screen">
@@ -68,7 +75,7 @@ function App() {
             setPrimaryPlayer(name);
           }}
           stats={stats}
-          clearAllData={clearAllData}
+          clearAllData={handleClearAllData}
         />
       )}
       {currentPage === 'newgame' && (
