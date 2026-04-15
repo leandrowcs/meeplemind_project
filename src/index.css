@@ -44,6 +44,16 @@ body {
   margin: 0;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('/meeplemind_background_no_logo_small_icons.png') repeat;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: -1;
+}
+
 #root {
   min-height: 100vh;
   display: flex;

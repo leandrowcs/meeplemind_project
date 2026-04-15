@@ -116,10 +116,12 @@ Depois push para main e o GitHub Actions fará o deploy automaticamente!
 ## 📱 Como Usar
 
 ### Home
+
 - Veja resumo de partidas, top vencedor e jogo mais jogado
 - Clique no botão grande "Nova Partida" para registrar
 
 ### Nova Partida
+
 1. Selecione o jogo (autocomplete)
 2. Adicione jogadores (autocomplete)
 3. Coloque pontuação de cada um
@@ -128,11 +130,13 @@ Depois push para main e o GitHub Actions fará o deploy automaticamente!
 6. Clique em "Registrar Partida"
 
 ### Histórico
+
 - Veja todas as partidas em ordem reversa (mais recente primeiro)
 - Filtre por jogo
 - Delete partidas se necessário
 
 ### Statistics
+
 - Top vencedores com número de vitórias
 - Jogos mais jogados
 - Participações e taxa de vitória de cada jogador
@@ -158,21 +162,10 @@ Depois push para main e o GitHub Actions fará o deploy automaticamente!
 - **Background**: Dark Navy `#0f172a`
 - **Text Primary**: Slate Light `#f1f5f9`
 
-## 🔮 Melhorias Futuras
-
-- [ ] Adicionar imagem do jogo (URL)
-- [ ] Classificação/rating de partidas
-- [ ] Notas sobre a partida
-- [ ] Export de dados (CSV/JSON)
-- [ ] Backup para nuvem
-- [ ] Modo claro
-- [ ] PWA - funcionar offline
-- [ ] Multiplayer sincronizado
-
 ## 📝 Licença
 
 Uso pessoal - sinta-se livre para modificar e personalizar!
 
 ---
 
-**Desenvolvido com ❤️ para amigos e boardgames**
+### **Desenvolvido com ❤️ para amigos e boardgames**

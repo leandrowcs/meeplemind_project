@@ -1,5 +1,6 @@
 .gauth-signin {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 1rem;
