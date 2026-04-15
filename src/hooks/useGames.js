@@ -141,13 +141,16 @@ export const useGames = () => {
       ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
     ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    // Add UTF-8 BOM to fix encoding issues with special characters in Excel
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
     link.setAttribute('download', `meepl mind_${new Date().toISOString().split('T')[0]}.csv`);
     link.click();
     URL.revokeObjectURL(url);
+  };
   };
 
   const exportToJSON = () => {
@@ -184,6 +187,11 @@ export const useGames = () => {
     reader.readAsText(file);
   };
 
+  const clearAllData = () => {
+    setGames([]);
+    alert('🗑️ Todos os dados foram removidos!');
+  };
+
   return {
     games,
     isLoading,
@@ -197,5 +205,6 @@ export const useGames = () => {
     exportToCSV,
     exportToJSON,
     importFromJSON,
+    clearAllData,
   };
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, IconButton } from './Button';
 import { GameDetailsModal } from './GameDetailsModal';
 import { LanguageToggle } from './LanguageToggle';
@@ -10,6 +10,12 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
   const [selectedFilter, setSelectedFilter] = useState('');
   const [gameTypeFilter, setGameTypeFilter] = useState('all'); // 'all' | 'competitive' | 'cooperative'
   const [modalGame, setModalGame] = useState(null);
+  const [expandedGameId, setExpandedGameId] = useState(null);
+
+  // Reset game filter when game type changes
+  useEffect(() => {
+    setSelectedFilter('');
+  }, [gameTypeFilter]);
 
   const filteredGames = games.filter((g) => {
     const matchesName = !selectedFilter || g.game === selectedFilter;
@@ -48,6 +54,16 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
     });
     if (durationCount > 0) stats.averageDuration = Math.round(totalDuration / durationCount);
     return stats;
+  };
+
+  // Get unique games filtered by selected game type
+  const getFilteredGamesList = () => {
+    const filtered = games.filter((g) => {
+      const type = g.gameType || 'competitive';
+      return gameTypeFilter === 'all' || type === gameTypeFilter;
+    });
+    const gameNames = new Set(filtered.map((g) => g.game));
+    return Array.from(gameNames).sort();
   };
 
   return (
@@ -98,7 +114,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                   >
                     {t('history.filterAll')}
                   </button>
-                  {uniqueGames.map((game) => (
+                  {getFilteredGamesList().map((game) => (
                     <button
                       key={game}
                       className={`filter-btn ${selectedFilter === game ? 'active' : ''}`}
@@ -139,16 +155,26 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                 ) : (
                   filteredGames.map((game) => {
                     const isCoop = (game.gameType || 'competitive') === 'cooperative';
+                    const isExpanded = expandedGameId === game.id;
                     return (
-                      <div key={game.id} className="game-card">
-                        <div className="card-header">
+                      <div 
+                        key={game.id} 
+                        className={`game-card ${isExpanded ? 'expanded' : 'collapsed'}`}
+                      >
+                        {/* Collapsed Header - Always visible */}
+                        <div 
+                          className="card-header collapsed-header"
+                          onClick={() => setExpandedGameId(isExpanded ? null : game.id)}
+                          style={{ cursor: 'pointer' }}
+                        >
                           <div className="card-header-title">
+                            <span className="expand-icon">{isExpanded ? '▼' : '▶'}</span>
                             <h3>{game.game}</h3>
                             <span className={`game-type-badge ${isCoop ? 'coop' : 'competitive'}`}>
                               {isCoop ? t('history.badgeCooperative') : t('history.badgeCompetitive')}
                             </span>
                           </div>
-                          <div className="header-actions">
+                          <div className="header-actions" onClick={(e) => e.stopPropagation()}>
                             <button
                               className="btn-edit"
                               onClick={() => setModalGame(game)}
@@ -168,96 +194,101 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                           </div>
                         </div>
 
-                        {/* Rating & Notes */}
-                        {(game.rating > 0 || game.notes) && (
-                          <div className="card-details">
-                            {game.rating > 0 && (
-                              <div className="rating-display">
-                                <span>{'⭐'.repeat(game.rating)}</span>
-                                <span className="rating-text">{game.rating}/5</span>
-                              </div>
-                            )}
-                            {game.notes && (
-                              <div className="notes-display">
-                                <span className="notes-text">{game.notes}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="card-content">
-                          {isCoop ? (
-                            <div className="card-stat">
-                              <span className="icon">{game.coopResult === 'win' ? '🏆' : '💀'}</span>
-                              <div>
-                                <span className="label">{t('history.result')}</span>
-                                <span className={`value coop-result ${game.coopResult === 'win' ? 'win' : 'loss'}`}>
-                                  {game.coopResult === 'win' ? t('history.coopWin') : t('history.coopLoss')}
-                                </span>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="card-stat">
-                              <span className="icon">👑</span>
-                              <div>
-                                <span className="label">{t('history.winner')}</span>
-                                <span className="value">{game.winner}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="card-stat">
-                            <span className="icon">👥</span>
-                            <div>
-                              <span className="label">{t('newgame.players')}</span>
-                              <span className="value">{game.players.length}</span>
-                            </div>
-                          </div>
-
-                          {game.duration && (
-                            <div className="card-stat">
-                              <span className="icon">⏱️</span>
-                              <div>
-                                <span className="label">{t('history.duration')}</span>
-                                <span className="value">{formatDuration(game.duration)}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="card-stat">
-                            <span className="icon">📅</span>
-                            <div>
-                              <span className="label">{t('history.date')}</span>
-                              <span className="value">{formatDate(game.date)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Players section */}
-                        {isCoop ? (
-                          <div className="players-coop">
-                            {game.players.map((player, i) => (
-                              <span key={i} className="coop-player-chip">{player}</span>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="players-ranking">
-                            {[...game.players]
-                              .map((player, index) => ({ player, points: game.points[index] }))
-                              .sort((a, b) => b.points - a.points)
-                              .map(({ player, points }, index) => {
-                                const isWinner = player === game.winner;
-                                return (
-                                  <div key={index} className={`ranking-item ${isWinner ? 'winner' : ''}`}>
-                                    <span className="rank-icon">
-                                      {isWinner ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '•'}
-                                    </span>
-                                    <span className="player-name">{player}</span>
-                                    <span className="points">{points} pts</span>
+                        {/* Expanded Content - Only visible when expanded */}
+                        {isExpanded && (
+                          <>
+                            {/* Rating & Notes */}
+                            {(game.rating > 0 || game.notes) && (
+                              <div className="card-details">
+                                {game.rating > 0 && (
+                                  <div className="rating-display">
+                                    <span>{'⭐'.repeat(game.rating)}</span>
+                                    <span className="rating-text">{game.rating}/5</span>
                                   </div>
-                                );
-                              })}
-                          </div>
+                                )}
+                                {game.notes && (
+                                  <div className="notes-display">
+                                    <span className="notes-text">{game.notes}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="card-content">
+                              {isCoop ? (
+                                <div className="card-stat">
+                                  <span className="icon">{game.coopResult === 'win' ? '🏆' : '💀'}</span>
+                                  <div>
+                                    <span className="label">{t('history.result')}</span>
+                                    <span className={`value coop-result ${game.coopResult === 'win' ? 'win' : 'loss'}`}>
+                                      {game.coopResult === 'win' ? t('history.coopWin') : t('history.coopLoss')}
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="card-stat">
+                                  <span className="icon">👑</span>
+                                  <div>
+                                    <span className="label">{t('history.winner')}</span>
+                                    <span className="value">{game.winner}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="card-stat">
+                                <span className="icon">👥</span>
+                                <div>
+                                  <span className="label">{t('newgame.players')}</span>
+                                  <span className="value">{game.players.length}</span>
+                                </div>
+                              </div>
+
+                              {game.duration && (
+                                <div className="card-stat">
+                                  <span className="icon">⏱️</span>
+                                  <div>
+                                    <span className="label">{t('history.duration')}</span>
+                                    <span className="value">{formatDuration(game.duration)}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="card-stat">
+                                <span className="icon">📅</span>
+                                <div>
+                                  <span className="label">{t('history.date')}</span>
+                                  <span className="value">{formatDate(game.date)}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Players section */}
+                            {isCoop ? (
+                              <div className="players-coop">
+                                {game.players.map((player, i) => (
+                                  <span key={i} className="coop-player-chip">{player}</span>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="players-ranking">
+                                {[...game.players]
+                                  .map((player, index) => ({ player, points: game.points[index] }))
+                                  .sort((a, b) => b.points - a.points)
+                                  .map(({ player, points }, index) => {
+                                    const isWinner = player === game.winner;
+                                    return (
+                                      <div key={index} className={`ranking-item ${isWinner ? 'winner' : ''}`}>
+                                        <span className="rank-icon">
+                                          {isWinner ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '•'}
+                                        </span>
+                                        <span className="player-name">{player}</span>
+                                        <span className="points">{points} pts</span>
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     );
