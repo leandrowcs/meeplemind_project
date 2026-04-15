@@ -2,6 +2,7 @@ export const translations = {
   'pt-BR': {
     // Home
     'home.tagline': 'Registre suas partidas • Veja suas estatísticas • Divirta-se',
+    'home.welcome': 'Olá',
     'home.games': 'Partidas',
     'home.topPlayer': 'Top Jogador',
     'home.mostPlayed': 'Mais Jogado',
@@ -112,6 +113,12 @@ export const translations = {
     // Page title
     'page.title': 'MeepleMind - Registre suas partidas de boardgames',
 
+    // Menu
+    'menu.clearData': 'Limpar Dados',
+    'menu.clearDataTitle': 'Limpar todos os dados e remover histórico',
+    'menu.clearDataWarning': '⚠️ Atenção! Isso irá deletar TODOS os seus dados e histórico de partidas permanentemente.',
+    'menu.clearDataConfirm': 'Certifique-se de ter feito um backup antes de continuar. Deseja realmente limpar todos os dados?',
+
     // Common
     'common.back': '← Voltar',
     'common.close': 'Fechar',
@@ -125,6 +132,7 @@ export const translations = {
   'en-US': {
     // Home
     'home.tagline': 'Track your games • View your stats • Have fun',
+    'home.welcome': 'Hi',
     'home.games': 'Games',
     'home.topPlayer': 'Top Player',
     'home.mostPlayed': 'Most Played',
@@ -235,6 +243,12 @@ export const translations = {
     // Page title
     'page.title': 'MeepleMind - Track your board game sessions',
 
+    // Menu
+    'menu.clearData': 'Clear Data',
+    'menu.clearDataTitle': 'Clear all data and remove history',
+    'menu.clearDataWarning': '⚠️ Warning! This will permanently delete ALL your data and game history.',
+    'menu.clearDataConfirm': 'Make sure you have made a backup before continuing. Do you really want to clear all data?',
+
     // Common
     'common.back': '← Back',
     'common.close': 'Close',
@@ -248,6 +262,7 @@ export const translations = {
   'fr-CA': {
     // Home
     'home.tagline': 'Enregistrez vos parties • Consultez vos statistiques • Amusez-vous',
+    'home.welcome': 'Bonjour',
     'home.games': 'Parties',
     'home.topPlayer': 'Meilleur Joueur',
     'home.mostPlayed': 'Plus Joué',
@@ -357,7 +372,11 @@ export const translations = {
 
     // Page title
     'page.title': 'MeepleMind - Suivez vos parties de jeux de société',
-
+    // Menu
+    'menu.clearData': 'Effacer les Données',
+    'menu.clearDataTitle': 'Effacer toutes les données et supprimer l\'historique',
+    'menu.clearDataWarning': '⚠️ Attention! Cela supprimera définitivement TOUTES vos données et votre historique de parties.',
+    'menu.clearDataConfirm': 'Assurez-vous d\'avoir fait une sauvegarde avant de continuer. Voulez-vous vraiment effacer toutes les données?',
     // Common
     'common.back': '← Retour',
     'common.close': 'Fermer',

@@ -26,6 +26,7 @@ function App() {
     exportToCSV,
     exportToJSON,
     importFromJSON,
+    clearAllData,
   } = useGames();
   const stats = getStats();
 
@@ -63,6 +64,7 @@ function App() {
             setPrimaryPlayer(name);
           }}
           stats={stats}
+          clearAllData={clearAllData}
         />
       )}
       {currentPage === 'newgame' && (

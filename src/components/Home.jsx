@@ -1,19 +1,12 @@
 import { Button } from './Button';
+import { SideMenu } from './SideMenu';
 import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import logoImage from '../assets/meeplemind_logo.png';
 import './Home.css';
 
-export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, stats }) => {
+export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, stats, primaryPlayer, clearAllData }) => {
   const { language, changeLanguage, t, isInitialized } = useLanguage();
-
-  const handleImport = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      importFromJSON(file);
-      e.target.value = '';
-    }
-  };
 
   if (!isInitialized) {
     return null;
@@ -22,11 +15,18 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, st
   return (
     <>
       <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
+      <SideMenu
+        onExportCSV={exportToCSV}
+        onExportJSON={exportToJSON}
+        onImportJSON={importFromJSON}
+        onClearData={clearAllData}
+      />
       <div className="home-container fade-in">
         <header className="home-header">
           <div className="logo">
             <img src={logoImage} alt="MeepleMind Logo" className="logo-image" />
           </div>
+          <h2 className="welcome-message">{t('home.welcome')}, {primaryPlayer}!</h2>
           <p className="tagline">{t('home.tagline')}</p>
         </header>
 
@@ -74,43 +74,7 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, st
             <Button
               variant="primary"
               onClick={() => onNavigate('stats')}
-              className="nav-btn"
-            >
-              {t('home.stats')}
-            </Button>
-          </div>
-
-          {/* Export/Import Section */}
-          <div className="export-section">
-            <h3>{t('home.manageData')}</h3>
-            <div className="export-buttons">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={exportToCSV}
-                title={t('home.exportCSVTitle')}
-              >
-                {t('home.exportCSV')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={exportToJSON}
-                title={t('home.backupJSONTitle')}
-              >
-                {t('home.backupJSON')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => document.getElementById('import-input').click()}
-                title={t('home.importJSONTitle')}
-              >
-                {t('home.importJSON')}
-              </Button>
-              <input
-                id="import-input"
-                type="file"
+              className="nav-btn"- REMOVED, now in SideMenu */}type="file"
                 accept=".json"
                 onChange={handleImport}
                 style={{ display: 'none' }}
