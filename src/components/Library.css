@@ -1,0 +1,224 @@
+.library-container {
+  min-height: 100vh;
+  padding: 1rem;
+  padding-top: 4rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.library-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.library-header h1 {
+  flex: 1;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.library-count {
+  background: var(--primary-color, #3b82f6);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.15rem 0.55rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* Add game button */
+.btn-add-library {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px dashed var(--border-color, #374151);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--primary-color, #3b82f6);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  margin-bottom: 1rem;
+}
+
+.btn-add-library:hover,
+.btn-add-library.active {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--primary-color, #3b82f6);
+}
+
+/* Form */
+.library-form {
+  background: var(--card-bg, #1f2937);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.library-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.library-form label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.library-form input,
+.library-form select {
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color, #374151);
+  background: var(--input-bg, #111827);
+  color: var(--text-primary, #f9fafb);
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+.library-form input:focus,
+.library-form select:focus {
+  outline: none;
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.library-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save-lib {
+  padding: 0.55rem 1.25rem;
+  background: var(--primary-color, #3b82f6);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-save-lib:hover {
+  opacity: 0.88;
+}
+
+/* Empty state */
+.library-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--text-secondary, #9ca3af);
+  text-align: center;
+}
+
+.library-empty-icon {
+  font-size: 3rem;
+}
+
+/* Library list */
+.library-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.library-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--card-bg, #1f2937);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  transition: background 0.15s;
+}
+
+.library-item:hover {
+  background: var(--card-bg-hover, #273548);
+}
+
+.library-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.library-item-name {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #f9fafb);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.library-item-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.lib-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary, #9ca3af);
+}
+
+.lib-badge-cat {
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+}
+
+.lib-badge-plays {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+.btn-remove-lib {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #9ca3af);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-remove-lib:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}

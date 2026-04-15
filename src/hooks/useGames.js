@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { sanitizeText, sanitizePlayerName, sanitizeNumber, validateGameBackup } from '../utils/sanitize';
 
 const STORAGE_KEY = 'meeplemind_games';
 
@@ -38,27 +39,46 @@ export const useGames = () => {
     }
   }, [games, isLoading]);
 
-  const addGame = (gameData) => {
+  const addGame = useCallback((gameData) => {
     const newGame = {
       id: uuidv4(),
-      ...gameData,
+      game: sanitizeText(gameData.game),
+      gameType: gameData.gameType || 'competitive',
+      players: (gameData.players || []).map(sanitizePlayerName).filter(Boolean),
+      points: (gameData.points || []).map((p) => sanitizeNumber(p, -99999, 999999) ?? 0),
+      winner: gameData.winner ? sanitizePlayerName(gameData.winner) : null,
+      coopResult: gameData.coopResult || null,
+      duration: gameData.duration ? sanitizeNumber(gameData.duration, 1, 2880) : null,
       date: gameData.date ? new Date(gameData.date).toISOString() : new Date().toISOString(),
-      rating: 0, // 0-5 stars
-      notes: '', // User notes
+      rating: 0,
+      notes: '',
     };
     setGames((prevGames) => [newGame, ...prevGames]);
     return newGame;
-  };
+  }, []);
 
-  const deleteGame = (gameId) => {
+  const deleteGame = useCallback((gameId) => {
     setGames((prevGames) => prevGames.filter((g) => g.id !== gameId));
-  };
+  }, []);
 
-  const updateGame = (gameId, updates) => {
+  const updateGame = useCallback((gameId, updates) => {
     setGames((prevGames) =>
       prevGames.map((g) => (g.id === gameId ? { ...g, ...updates } : g))
     );
-  };
+  }, []);
+
+  /** Merge games loaded from Google Drive (union by ID, Drive fills missing). */
+  const mergeFromDrive = useCallback((driveGames) => {
+    if (!validateGameBackup(driveGames)) return;
+    setGames((local) => {
+      const localIds = new Set(local.map((g) => g.id));
+      const merged = [
+        ...local,
+        ...driveGames.filter((g) => !localIds.has(g.id)),
+      ].sort((a, b) => new Date(b.date) - new Date(a.date));
+      return merged;
+    });
+  }, []);
 
   const getStats = () => {
     if (games.length === 0) {
@@ -177,23 +197,28 @@ export const useGames = () => {
     reader.onload = (e) => {
       try {
         const imported = JSON.parse(e.target.result);
-        if (Array.isArray(imported)) {
-          setGames((prevGames) => [...imported, ...prevGames]);
-          alert('✅ Dados importados com sucesso!');
-        } else {
-          alert('❌ Formato de arquivo inválido');
+        if (!validateGameBackup(imported)) {
+          alert('❌ Formato de arquivo inválido ou corrompido');
+          return;
         }
+        setGames((prevGames) => {
+          const existingIds = new Set(prevGames.map((g) => g.id));
+          const newEntries = imported.filter((g) => !existingIds.has(g.id));
+          return [...newEntries, ...prevGames];
+        });
+        alert('✅ Dados importados com sucesso!');
       } catch (error) {
-        alert('❌ Erro ao importar: ' + error.message);
+        alert('❌ Erro ao importar: arquivo inválido');
+        console.error(error);
       }
     };
     reader.readAsText(file);
   };
 
-  const clearAllData = () => {
+  const clearAllData = useCallback(() => {
     setGames([]);
     alert('🗑️ Todos os dados foram removidos!');
-  };
+  }, []);
 
   const getCompetitiveStats = () => {
     const competitiveGames = games.filter((g) => (g.gameType || 'competitive') === 'competitive');
@@ -296,6 +321,7 @@ export const useGames = () => {
     addGame,
     deleteGame,
     updateGame,
+    mergeFromDrive,
     getStats,
     getCompetitiveStats,
     getCooperativeStats,

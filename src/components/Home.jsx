@@ -1,11 +1,22 @@
 import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { LanguageToggle } from './LanguageToggle';
+import { GoogleAuthButton } from './GoogleAuthButton';
 import { useLanguage } from '../hooks/useLanguage';
 import logoImage from '../assets/meeplemind_logo.png';
 import './Home.css';
 
-export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, stats, primaryPlayer, clearAllData }) => {
+export const Home = ({
+  onNavigate,
+  exportToCSV,
+  exportToJSON,
+  importFromJSON,
+  stats,
+  primaryPlayer,
+  clearAllData,
+  auth,
+  syncStatus,
+}) => {
   const { language, changeLanguage, t, isInitialized } = useLanguage();
 
   if (!isInitialized) {
@@ -85,7 +96,20 @@ export const Home = ({ onNavigate, exportToCSV, exportToJSON, importFromJSON, st
             >
               {t('home.stats')}
             </Button>
+            <Button
+              variant="primary"
+              onClick={() => onNavigate('library')}
+              className="nav-btn"
+            >
+              {t('home.library')}
+            </Button>
           </div>
+
+          {auth?.isConfigured && (
+            <div className="home-auth-section">
+              <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
+            </div>
+          )}
 
           {/* Export/Import Section - REMOVED, now in SideMenu */}
         </main>

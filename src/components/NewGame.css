@@ -123,6 +123,12 @@
   color: var(--color-accent);
 }
 
+.suggestion-lib-badge {
+  margin-right: 0.35rem;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
 .selected-item {
   padding: var(--spacing-sm) var(--spacing-md);
   background: rgba(16, 185, 129, 0.1);

@@ -4,7 +4,7 @@ import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import './NewGame.css';
 
-export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPlayer }) => {
+export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPlayer, libraryGames = [] }) => {
   const { language, changeLanguage, t } = useLanguage();
   const mainPlayerAdded = useRef(false);
   const [formData, setFormData] = useState({
@@ -38,6 +38,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
 
   const [suggestions, setSuggestions] = useState({
     games: [],
+    gamesFromLib: new Set(),
     players: [],
   });
 
@@ -52,12 +53,23 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
     setFormData((prev) => ({ ...prev, game: value }));
 
     if (value.length > 0) {
-      const filtered = uniqueGames.filter((g) =>
-        g.toLowerCase().includes(value.toLowerCase())
+      const lower = value.toLowerCase();
+      // Library games take priority, then history games not in library
+      const fromLib = libraryGames.filter((g) =>
+        g.toLowerCase().includes(lower)
       );
-      setSuggestions((prev) => ({ ...prev, games: filtered }));
+      const fromHistory = uniqueGames.filter(
+        (g) =>
+          g.toLowerCase().includes(lower) &&
+          !libraryGames.some((l) => l.toLowerCase() === g.toLowerCase())
+      );
+      setSuggestions((prev) => ({
+        ...prev,
+        games: [...fromLib, ...fromHistory],
+        gamesFromLib: new Set(fromLib.map((g) => g.toLowerCase())),
+      }));
     } else {
-      setSuggestions((prev) => ({ ...prev, games: [] }));
+      setSuggestions((prev) => ({ ...prev, games: [], gamesFromLib: new Set() }));
     }
   };
 
@@ -213,6 +225,11 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                       className="suggestion-item"
                       onClick={() => handleSelectGame(game)}
                     >
+                      {suggestions.gamesFromLib?.has(game.toLowerCase()) && (
+                        <span className="suggestion-lib-badge" title={t('newgame.fromLibrary')}>
+                          📚
+                        </span>
+                      )}
                       {game}
                     </button>
                   ))}
