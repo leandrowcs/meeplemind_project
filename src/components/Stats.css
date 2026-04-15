@@ -315,7 +315,7 @@
 .success-rate-card {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
   padding: var(--spacing-sm);
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
   border: 1px solid rgba(16, 185, 129, 0.3);
@@ -349,6 +349,7 @@
 
 .rate-label {
   font-size: 0.85rem;
+  font-weight: 600;
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -379,6 +380,7 @@
 
 .rate-text {
   font-size: 0.75rem;
+  font-weight: 600;
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.02em;
