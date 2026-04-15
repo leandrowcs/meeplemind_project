@@ -16,7 +16,7 @@
   position: absolute;
   inset: 0;
   background: url('/meeplemind_background_no_logo_small_icons_faded.png') center center / cover no-repeat;
-  opacity: 0.15;
+  opacity: 0.10;
   pointer-events: none;
   z-index: -1;
 }

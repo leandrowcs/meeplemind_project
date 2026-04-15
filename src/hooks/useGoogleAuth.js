@@ -60,12 +60,16 @@ export const useGoogleAuth = () => {
     if (window.google?.accounts) {
       init();
     } else {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.onload = init;
-      script.onerror = () => setIsLoading(false);
-      script.async = true;
-      document.head.appendChild(script);
+      // Script loaded via index.html — wait for it to be ready
+      const existing = document.querySelector(
+        'script[src="https://accounts.google.com/gsi/client"]'
+      );
+      if (existing) {
+        existing.addEventListener('load', init);
+        existing.addEventListener('error', () => setIsLoading(false));
+      } else {
+        setIsLoading(false);
+      }
     }
   }, []);
 
