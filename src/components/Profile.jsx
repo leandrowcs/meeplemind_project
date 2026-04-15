@@ -74,7 +74,7 @@ export const Profile = ({ onNavigate, games, primaryPlayer, getPlayerStats }) =>
               <div className="card-stats">
                 <div className="big-stat">
                   <div className="stat-item">
-                    <span className="stat-icon">🤝</span>
+                    <span className="stat-icon">🏆</span>
                     <div className="stat-group">
                       <span className="stat-number">{playerStats.cooperativeWins}</span>
                       <span className="stat-label">{t('stats.victories')}</span>

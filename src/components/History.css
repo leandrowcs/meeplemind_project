@@ -174,8 +174,10 @@
 
 .card-header-title {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
   flex: 1;
 }
 
@@ -426,13 +428,6 @@
   background: linear-gradient(135deg, rgba(30, 64, 175, 0.15) 0%, rgba(234, 88, 12, 0.08) 100%);
 }
 
-.card-header-title {
-  display: flex;
-  /* align-items: center; */
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
-}
-
 .expand-icon {
   font-size: 0.8rem;
   color: var(--color-text-secondary);
@@ -454,7 +449,7 @@
 /* Collapsed Badge Styles */
 .collapsed-badge {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 16px;

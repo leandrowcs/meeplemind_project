@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { useLanguage } from '../hooks/useLanguage';
 import './SideMenu.css';
 
 export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Close menu when language changes to ensure proper re-render
+  useEffect(() => {
+    setIsOpen(false);
+  }, [language]);
 
   const handleImport = (e) => {
     const file = e.target.files?.[0];
