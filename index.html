@@ -22,6 +22,10 @@
     />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/meeplemind_logo.png" />
+    <!-- Preconnect + preload Google Identity Services to reduce sign-in button latency -->
+    <link rel="preconnect" href="https://accounts.google.com" crossorigin />
+    <link rel="preload" href="https://accounts.google.com/gsi/client" as="script" />
+    <script src="https://accounts.google.com/gsi/client" async></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#1e40af" />
     <meta name="description" content="MeepleMind - Registre suas partidas de boardgames com amigos, acompanhe histórico e veja suas estatísticas!" />
