@@ -77,8 +77,12 @@ export const useGames = () => {
     const gameFreq = {};
 
     games.forEach((game) => {
-      wins[game.winner] = (wins[game.winner] || 0) + 1;
-      gameFreq[game.game] = (gameFreq[game.game] || 0) + 1;
+      if (game.winner) {  // Only count wins for competitive games
+        wins[game.winner] = (wins[game.winner] || 0) + 1;
+      }
+      if (game.game) {  // Only count games that have a game name
+        gameFreq[game.game] = (gameFreq[game.game] || 0) + 1;
+      }
     });
 
     const topWinner = Object.entries(wins).sort(([, a], [, b]) => b - a)[0];
