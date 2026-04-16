@@ -68,6 +68,7 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
       category: editingGame.category,
       minPlayers: editingGame.minPlayers ? parseInt(editingGame.minPlayers, 10) : null,
       maxPlayers: editingGame.maxPlayers ? parseInt(editingGame.maxPlayers, 10) : null,
+      owned: editingGame.owned,
     });
     setEditingGame(null);
   };
@@ -189,7 +190,14 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                 return (
                   <li key={game.id} className="library-item">
                     <div className="library-item-info">
-                      <span className="library-item-name">{game.name}</span>
+                      <div className="library-item-name-row">
+                        <span className="library-item-name">{game.name}</span>
+                        {game.owned && (
+                          <span className="lib-badge lib-badge-owned" title={t('library.ownedLabel')}>
+                            ⭐ {t('library.owned')}
+                          </span>
+                        )}
+                      </div>
                       <div className="library-item-badges">
                         {catMeta && (
                           <span className="lib-badge lib-badge-cat">
@@ -291,6 +299,23 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                     placeholder="8"
                   />
                 </div>
+              </div>
+
+              <div className="form-group form-checkbox">
+                <label htmlFor="edit-owned" className="checkbox-label">
+                  <input
+                    id="edit-owned"
+                    type="checkbox"
+                    checked={editingGame.owned ?? false}
+                    onChange={(e) =>
+                      setEditingGame((prev) => ({
+                        ...prev,
+                        owned: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>{t('library.ownedLabel')}</span>
+                </label>
               </div>
 
               <div className="form-actions">

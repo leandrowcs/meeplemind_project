@@ -176,6 +176,8 @@ export const translations = {
     'library.categoryAbstract': 'Abstrato',
     'library.categoryEuro': 'Euro',
     'library.categoryOther': 'Outro',
+    'library.owned': 'Dono',
+    'library.ownedLabel': 'Sou proprietário deste jogo',
 
     // Google Auth / Drive sync
     'auth.loginGoogle': 'Entrar com Google',
@@ -364,6 +366,8 @@ export const translations = {
     'library.categoryAbstract': 'Abstract',
     'library.categoryEuro': 'Euro',
     'library.categoryOther': 'Other',
+    'library.owned': 'Owner',
+    'library.ownedLabel': 'I own this game',
 
     // Google Auth / Drive sync
     'auth.loginGoogle': 'Sign in with Google',
@@ -525,6 +529,8 @@ export const translations = {
     'library.categoryAbstract': 'Abstrait',
     'library.categoryEuro': 'Euro',
     'library.categoryOther': 'Autre',
+    'library.owned': 'Patron',
+    'library.ownedLabel': 'Je suis propriétaire de ce jeu',
 
     // Google Auth / Drive sync
     'auth.loginGoogle': 'Se connecter avec Google',

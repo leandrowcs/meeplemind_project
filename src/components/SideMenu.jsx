@@ -64,7 +64,7 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData,
           <button
             className="menu-item"
             onClick={() => {
-              onExportCSV();
+              onExportCSV(language);
               setIsOpen(false);
             }}
             title={t('home.exportCSVTitle')}
