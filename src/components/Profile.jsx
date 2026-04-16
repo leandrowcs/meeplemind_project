@@ -1,16 +1,14 @@
 import { Button } from './Button';
-import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import './Profile.css';
 
 export const Profile = ({ onNavigate, games, primaryPlayer, getPlayerStats }) => {
-  const { language, changeLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
 
   const playerStats = getPlayerStats(primaryPlayer);
 
   return (
     <>
-      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="profile-container fade-in">
         <header className="profile-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>

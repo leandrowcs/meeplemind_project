@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button, IconButton } from './Button';
-import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import './NewGame.css';
 
@@ -194,7 +193,6 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
 
   return (
     <>
-      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="newgame-container fade-in">
         <header className="newgame-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>

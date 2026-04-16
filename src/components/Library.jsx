@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import { GAME_CATEGORIES } from '../hooks/useLibrary';
 import './Library.css';
@@ -83,7 +82,6 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
 
   return (
     <>
-      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="library-container fade-in">
         <header className="library-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>

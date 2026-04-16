@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button, IconButton } from './Button';
 import { GameDetailsModal } from './GameDetailsModal';
-import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import './History.css';
 
@@ -68,7 +67,6 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
 
   return (
     <>
-      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="history-container fade-in">
         <header className="history-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>
