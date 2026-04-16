@@ -138,6 +138,17 @@ export const useGames = () => {
     return Array.from(playerSet).sort();
   };
 
+  /** Count games played in the last 30 days from today */
+  const getGamesLast30Days = () => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    return games.filter((game) => {
+      const gameDate = new Date(game.date);
+      return gameDate >= thirtyDaysAgo && gameDate <= now;
+    }).length;
+  };
+
   const filterGamesByName = (gameName) => {
     if (!gameName) return games;
     return games.filter((g) => g.game.toLowerCase().includes(gameName.toLowerCase()));
@@ -439,6 +450,7 @@ export const useGames = () => {
     getPlayerStats,
     getUniqueGames,
     getUniquePlayers,
+    getGamesLast30Days,
     filterGamesByName,
     exportToCSV,
     exportToJSON,

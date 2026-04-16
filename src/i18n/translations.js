@@ -8,7 +8,7 @@ export const translations = {
     'home.mostPlayed': 'Mais Jogado',
     'home.newGame': 'Nova Partida',
     'home.history': '📜 Histórico',
-    'home.stats': '🏅 Estatísticas',
+    'home.stats': '📊 Estatísticas',
     'home.manageData': 'Gerenciar Dados',
     'home.exportCSV': 'Exportar CSV',
     'home.backupJSON': 'Backup JSON',
@@ -47,7 +47,7 @@ export const translations = {
     'history.confirmDelete': 'Tem certeza que quer deletar esta partida?',
 
     // Stats
-    'stats.title': '🏅 Estatísticas',
+    'stats.title': '📊 Estatísticas',
     'stats.totalGames': 'Total de Partidas',
     'stats.topWinner': 'Melhor Jogador',
     'stats.mostPlayedGame': 'Jogo Mais Jogado',
@@ -155,6 +155,10 @@ export const translations = {
     'home.profile': '👤 Meu Perfil',
     'home.library': '📚 Biblioteca',
 
+    // New Home Header
+    'home.gamesLast30Days': 'nos últimos 30 dias',
+    'home.urgentMessage': 'Você precisa jogar algo urgente!',
+
     // Library
     'library.title': '📚 Minha Biblioteca',
     'library.addGame': 'Adicionar Jogo',
@@ -198,7 +202,7 @@ export const translations = {
     'home.mostPlayed': 'Most Played',
     'home.newGame': 'New Game',
     'home.history': '📜 History',
-    'home.stats': '🏅 Statistics',
+    'home.stats': '📊 Statistics',
     'home.manageData': 'Manage Data',
     'home.exportCSV': 'Export CSV',
     'home.backupJSON': 'Backup JSON',
@@ -237,7 +241,7 @@ export const translations = {
     'history.confirmDelete': 'Are you sure you want to delete this game?',
 
     // Stats
-    'stats.title': '🏅 Statistics',
+    'stats.title': '📊 Statistics',
     'stats.totalGames': 'Total Games',
     'stats.topWinner': 'Best Player',
     'stats.mostPlayedGame': 'Most Played Game',
@@ -345,6 +349,10 @@ export const translations = {
     'home.profile': '👤 My Profile',
     'home.library': '📚 Library',
 
+    // New Home Header
+    'home.gamesLast30Days': 'in the last 30 days',
+    'home.urgentMessage': 'You need to play something urgent!',
+
     // Library
     'library.title': '📚 My Library',
     'library.addGame': 'Add Game',
@@ -388,7 +396,7 @@ export const translations = {
     'home.mostPlayed': 'Plus Joué',
     'home.newGame': 'Nouvelle Partie',
     'home.history': '📜 Historique',
-    'home.stats': '🏅 Statistiques',
+    'home.stats': '📊 Statistiques',
     'home.manageData': 'Gérer les Données',
     'home.exportCSV': 'Exporter CSV',
     'home.backupJSON': 'Sauvegarde JSON',
@@ -427,7 +435,7 @@ export const translations = {
     'history.confirmDelete': 'Êtes-vous sûr de vouloir supprimer cette partie?',
 
     // Stats
-    'stats.title': '🏅 Statistiques',
+    'stats.title': '📊 Statistiques',
     'stats.totalGames': 'Nombre Total de Parties',
     'stats.topWinner': 'Meilleur Joueur',
     'stats.mostPlayedGame': 'Jeu le Plus Joué',
@@ -507,6 +515,10 @@ export const translations = {
     // Home
     'home.profile': '👤 Mon Profil',
     'home.library': '📚 Bibliothèque',
+
+    // New Home Header
+    'home.gamesLast30Days': 'au cours des 30 derniers jours',
+    'home.urgentMessage': 'Vous devez jouer à quelque chose d\'urgent !',
 
     // Library
     'library.title': '📚 Ma Bibliothèque',
