@@ -83,7 +83,7 @@ function App() {
       } catch {
         setSyncStatus('error');
       }
-    }, 3000);
+    }, 5000);
   }, [auth.isSignedIn, drive, games, lib.library, lib.isLoading, isLoading]);
 
   useEffect(() => {
@@ -99,6 +99,20 @@ function App() {
       return saved;
     },
     [addGame, lib]
+  );
+
+  const handleExportToJSON = useCallback(() => {
+    exportToJSON(lib.library);
+  }, [exportToJSON, lib.library]);
+
+  const handleImportFromJSON = useCallback(
+    (file) => {
+      importFromJSON(file, (libraryData) => {
+        // Merge library data into existing library
+        lib.mergeFromDrive(libraryData);
+      });
+    },
+    [importFromJSON, lib]
   );
 
   const handleClearAllData = useCallback(() => {
@@ -135,8 +149,8 @@ function App() {
         <Home
           onNavigate={setCurrentPage}
           exportToCSV={exportToCSV}
-          exportToJSON={exportToJSON}
-          importFromJSON={importFromJSON}
+          exportToJSON={handleExportToJSON}
+          importFromJSON={handleImportFromJSON}
           primaryPlayer={primaryPlayer}
           onChangePrimaryPlayer={(name) => {
             localStorage.setItem(PRIMARY_PLAYER_KEY, name);

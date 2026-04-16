@@ -176,13 +176,20 @@ export const useGames = () => {
     URL.revokeObjectURL(url);
   };
 
-  const exportToJSON = () => {
+  const exportToJSON = (library) => {
     if (games.length === 0) {
       alert('Nenhuma partida para exportar');
       return;
     }
 
-    const json = JSON.stringify(games, null, 2);
+    const backup = {
+      version: '2.0',
+      games,
+      library: library || [],
+      exportedAt: new Date().toISOString(),
+    };
+
+    const json = JSON.stringify(backup, null, 2);
     const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -192,20 +199,43 @@ export const useGames = () => {
     URL.revokeObjectURL(url);
   };
 
-  const importFromJSON = (file) => {
+  const importFromJSON = (file, onLibraryImported) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const imported = JSON.parse(e.target.result);
-        if (!validateGameBackup(imported)) {
+        const data = JSON.parse(e.target.result);
+        let gamesToImport = data;
+        let libraryToImport = [];
+
+        // Suporte para formato v2 (com biblioteca) e v1 (apenas jogos)
+        if (data.version === '2.0' && data.games) {
+          gamesToImport = data.games;
+          libraryToImport = data.library || [];
+        } else if (Array.isArray(data)) {
+          // Formato v1 - array de jogos
+          gamesToImport = data;
+        } else {
           alert('❌ Formato de arquivo inválido ou corrompido');
           return;
         }
+
+        if (!validateGameBackup(gamesToImport)) {
+          alert('❌ Formato de arquivo inválido ou corrompido');
+          return;
+        }
+
+        // Importar jogos
         setGames((prevGames) => {
           const existingIds = new Set(prevGames.map((g) => g.id));
-          const newEntries = imported.filter((g) => !existingIds.has(g.id));
+          const newEntries = gamesToImport.filter((g) => !existingIds.has(g.id));
           return [...newEntries, ...prevGames];
         });
+
+        // Importar biblioteca se fornecida
+        if (libraryToImport.length > 0 && onLibraryImported) {
+          onLibraryImported(libraryToImport);
+        }
+
         alert('✅ Dados importados com sucesso!');
       } catch (error) {
         alert('❌ Erro ao importar: arquivo inválido');

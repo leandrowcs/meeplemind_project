@@ -2,12 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const SCOPES =
-  'https://www.googleapis.com/auth/drive.appdata openid email profile';
+  'https://www.googleapis.com/auth/drive.file openid email profile';
 const USER_KEY = 'meeplemind_google_user';
 
 /**
  * Manages Google OAuth 2.0 token-based authentication using
  * Google Identity Services (GIS) implicit flow.
+ *
+ * Uses 'drive.file' scope to store backups visibly on Google Drive,
+ * allowing users to access and download backups from Google Drive web.
  *
  * The app only stores display information (name, email, picture)
  * in localStorage — never the access token itself.
