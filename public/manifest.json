@@ -12,9 +12,33 @@
   "icons": [
     {
       "src": "/favicon.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/favicon.png",
@@ -23,13 +47,13 @@
       "purpose": "maskable"
     },
     {
-      "src": "/meeplemind_logo.png",
-      "sizes": "512x512",
+      "src": "/favicon.png",
+      "sizes": "256x256",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
     },
     {
-      "src": "/meeplemind_logo.png",
+      "src": "/favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
