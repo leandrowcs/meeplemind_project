@@ -1,6 +1,6 @@
 .language-toggle {
   position: fixed;
-  top: var(--spacing-lg);
+  bottom: var(--spacing-lg);
   right: var(--spacing-lg);
   z-index: 1000;
 }

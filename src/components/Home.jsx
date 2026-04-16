@@ -2,6 +2,7 @@ import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
+import { useGames } from '../hooks/useGames';
 import logoImage from '../assets/meeplemind_logo.png';
 import './Home.css';
 
@@ -17,10 +18,14 @@ export const Home = ({
   syncStatus,
 }) => {
   const { language, changeLanguage, t, isInitialized } = useLanguage();
+  const { getGamesLast30Days } = useGames();
 
   if (!isInitialized) {
     return null;
   }
+
+  const gamesLast30Days = getGamesLast30Days();
+  const showUrgentMessage = gamesLast30Days === 0;
 
   return (
     <>
@@ -35,11 +40,28 @@ export const Home = ({
       />
       <div className="home-container fade-in">
         <header className="home-header">
-          <div className="logo">
-            <img src={logoImage} alt="MeepleMind Logo" className="logo-image" />
+          <div className="header-top">
+            <div className="logo">
+              <img src={logoImage} alt="MeepleMind Logo" className="logo-image" />
+            </div>
+            <div className="header-info">
+              <div className="welcome-section">
+                <h2 className="welcome-message">
+                  {t('home.welcome')}, <span className="username">{primaryPlayer}</span>
+                  <span className="waving-hand">👋</span>
+                </h2>
+                <div className="stats-badge">
+                  <span className="fire-icon">🔥</span>
+                  <span className="stats-text">
+                    <strong>{gamesLast30Days}</strong> {t('home.gamesLast30Days')}
+                  </span>
+                </div>
+              </div>
+              {showUrgentMessage && (
+                <p className="urgent-message">{t('home.urgentMessage')}</p>
+              )}
+            </div>
           </div>
-          <h2 className="welcome-message">{t('home.welcome')}, {primaryPlayer}!</h2>
-          <p className="tagline">{t('home.tagline')}</p>
         </header>
 
         <main className="home-content">
