@@ -33,3 +33,5 @@ coverage-*.json
 
 # Internal docs
 docs/GOOGLE_CLOUD_SETUP.md
+
+.env
