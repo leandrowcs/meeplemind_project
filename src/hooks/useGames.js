@@ -149,25 +149,39 @@ export const useGames = () => {
     }).length;
   };
 
-  /** Get the last game played with all details */
-  const getLastGame = () => {
-    if (games.length === 0) return null;
-    const lastGame = games[0]; // Games are sorted by date descending
-    
-    // For cooperative games, show coopResult; for competitive, show winner(s)
-    let winner = null;
-    if (lastGame.gameType === 'cooperative') {
-      winner = lastGame.coopResult || 'N/A';
-    } else {
-      winner = lastGame.winner || 'N/A';
+  /** Get current win streak for a specific player */
+  const getWinStreak = (playerName) => {
+    let streak = 0;
+    // Iterate through games in reverse (most recent first)
+    for (let i = 0; i < games.length; i++) {
+      const game = games[i];
+      if (game.winner === playerName) {
+        streak++;
+      } else if (game.players.includes(playerName)) {
+        // If the player played but didn't win, streak is broken
+        break;
+      }
+      // If the player didn't play at all, continue checking
     }
+    return streak;
+  };
+
+  /** Get highlights: top player, most played game, and current win streak */
+  const getHighlights = () => {
+    const stats = getStats();
     
+    const topPlayer = stats.topWinner;
+    const topPlayerWins = stats.topWinnerWins;
+    const mostPlayedGame = stats.mostPlayedGame;
+    const mostPlayedCount = stats.mostPlayedGameCount;
+    const winStreak = topPlayer ? getWinStreak(topPlayer) : 0;
+
     return {
-      game: lastGame.game,
-      winner,
-      numPlayers: lastGame.players.length,
-      date: new Date(lastGame.date),
-      gameType: lastGame.gameType,
+      topPlayer,
+      topPlayerWins,
+      mostPlayedGame,
+      mostPlayedCount,
+      winStreak,
     };
   };
 
@@ -474,6 +488,7 @@ export const useGames = () => {
     getUniquePlayers,
     getGamesLast30Days,
     getLastGame,
+    getHighlights,
     filterGamesByName,
     exportToCSV,
     exportToJSON,
