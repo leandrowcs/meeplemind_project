@@ -143,37 +143,118 @@ export const useGames = () => {
     return games.filter((g) => g.game.toLowerCase().includes(gameName.toLowerCase()));
   };
 
-  const exportToCSV = () => {
+  const exportToCSV = (library, language = 'pt-BR') => {
     if (games.length === 0) {
       alert('Nenhuma partida para exportar');
       return;
     }
 
-    const headers = ['Data', 'Jogo', 'Jogadores', 'Vencedor', 'Duração (min)', 'Rating', 'Notas'];
-    const rows = games.map((g) => [
-      new Date(g.date).toLocaleDateString('pt-BR'),
-      g.game,
-      g.players.join(' | '),
-      g.winner,
-      g.duration || '-',
-      '⭐'.repeat(g.rating),
-      g.notes.replace(/"/g, '""'), // Escape quotes
-    ]);
+    try {
+      const XLSX = require('xlsx');
 
-    const csv = [
-      headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
-    ].join('\n');
+      // Localize headers based on language
+      const headerLabels = {
+        'pt-BR': {
+          date: 'Data',
+          game: 'Jogo',
+          players: 'Jogadores',
+          winner: 'Vencedor',
+          duration: 'Duração (min)',
+          rating: 'Rating',
+          notes: 'Notas',
+          name: 'Nome',
+          category: 'Categoria',
+          minPlayers: 'Min Jogadores',
+          maxPlayers: 'Max Jogadores',
+          owned: 'Dono',
+          yes: 'Sim',
+          no: 'Não',
+          gameHistory: 'Histórico de Jogos',
+          library: 'Biblioteca',
+        },
+        'en-US': {
+          date: 'Date',
+          game: 'Game',
+          players: 'Players',
+          winner: 'Winner',
+          duration: 'Duration (min)',
+          rating: 'Rating',
+          notes: 'Notes',
+          name: 'Name',
+          category: 'Category',
+          minPlayers: 'Min Players',
+          maxPlayers: 'Max Players',
+          owned: 'Owner',
+          yes: 'Yes',
+          no: 'No',
+          gameHistory: 'Game History',
+          library: 'Library',
+        },
+        'fr-CA': {
+          date: 'Date',
+          game: 'Jeu',
+          players: 'Joueurs',
+          winner: 'Gagnant',
+          duration: 'Durée (min)',
+          rating: 'Évaluation',
+          notes: 'Notes',
+          name: 'Nom',
+          category: 'Catégorie',
+          minPlayers: 'Min Joueurs',
+          maxPlayers: 'Max Joueurs',
+          owned: 'Patron',
+          yes: 'Oui',
+          no: 'Non',
+          gameHistory: 'Historique des Parties',
+          library: 'Bibliothèque',
+        },
+      };
 
-    // Add UTF-8 BOM to fix encoding issues with special characters in Excel
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `meepl mind_${new Date().toISOString().split('T')[0]}.csv`);
-    link.click();
-    URL.revokeObjectURL(url);
+      const labels = headerLabels[language] || headerLabels['pt-BR'];
+
+      // Aba 1: Histórico de Jogos
+      const gamesHeaders = [labels.date, labels.game, labels.players, labels.winner, labels.duration, labels.rating, labels.notes];
+      const gamesRows = games.map((g) => [
+        new Date(g.date).toLocaleDateString(
+          language === 'pt-BR' ? 'pt-BR' : language === 'fr-CA' ? 'fr-CA' : 'en-US'
+        ),
+        g.game,
+        g.players.join(' | '),
+        g.winner,
+        g.duration || '-',
+        '⭐'.repeat(g.rating),
+        g.notes,
+      ]);
+      const gamesData = [gamesHeaders, ...gamesRows];
+
+      // Aba 2: Biblioteca
+      const libraryHeaders = [labels.name, labels.category, labels.minPlayers, labels.maxPlayers, labels.owned];
+      const libraryRows = (library || []).map((game) => [
+        game.name,
+        game.category || '-',
+        game.minPlayers || '-',
+        game.maxPlayers || '-',
+        game.owned ? labels.yes : labels.no,
+      ]);
+      const libraryData = [libraryHeaders, ...libraryRows];
+
+      // Criar workbook Excel
+      const workbook = XLSX.utils.book_new();
+      const ws1 = XLSX.utils.aoa_to_sheet(gamesData);
+      const ws2 = XLSX.utils.aoa_to_sheet(libraryData);
+
+      // Ajustar largura das colunas
+      ws1['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 30 }];
+      ws2['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
+
+      XLSX.utils.book_append_sheet(workbook, ws1, labels.gameHistory);
+      XLSX.utils.book_append_sheet(workbook, ws2, labels.library);
+
+      XLSX.writeFile(workbook, `MeepleMind_${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      alert('❌ Erro ao exportar para Excel');
+    }
   };
 
   const exportToJSON = (library) => {

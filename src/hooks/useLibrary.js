@@ -59,6 +59,7 @@ export const useLibrary = () => {
           category: sanitizeText(category, 50),
           minPlayers: sanitizeNumber(minPlayers, 1, 20),
           maxPlayers: sanitizeNumber(maxPlayers, 1, 20),
+          owned: false,
           addedAt: new Date().toISOString(),
         };
         added = entry;
@@ -119,6 +120,7 @@ export const useLibrary = () => {
                 updates.maxPlayers !== undefined
                   ? sanitizeNumber(updates.maxPlayers, 1, 20)
                   : g.maxPlayers,
+              owned: updates.owned !== undefined ? updates.owned : g.owned,
             }
       )
     );

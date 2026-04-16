@@ -101,6 +101,10 @@ function App() {
     [addGame, lib]
   );
 
+  const handleExportToCSV = useCallback((language = 'pt-BR') => {
+    exportToCSV(lib.library, language);
+  }, [exportToCSV, lib.library]);
+
   const handleExportToJSON = useCallback(() => {
     exportToJSON(lib.library);
   }, [exportToJSON, lib.library]);
@@ -148,7 +152,7 @@ function App() {
       {currentPage === 'home' && (
         <Home
           onNavigate={setCurrentPage}
-          exportToCSV={exportToCSV}
+          exportToCSV={handleExportToCSV}
           exportToJSON={handleExportToJSON}
           importFromJSON={handleImportFromJSON}
           primaryPlayer={primaryPlayer}
