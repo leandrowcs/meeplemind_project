@@ -1,6 +1,5 @@
 import { Button } from './Button';
 import { SideMenu } from './SideMenu';
-import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import { useGames } from '../hooks/useGames';
 import logoImage from '../assets/meeplemind_logo.png';
@@ -18,18 +17,18 @@ export const Home = ({
   syncStatus,
 }) => {
   const { language, changeLanguage, t, isInitialized } = useLanguage();
-  const { getGamesLast30Days } = useGames();
+  const { getGamesLast30Days, getLastGame } = useGames();
 
   if (!isInitialized) {
     return null;
   }
 
   const gamesLast30Days = getGamesLast30Days();
+  const lastGame = getLastGame();
   const showUrgentMessage = gamesLast30Days === 0;
 
   return (
     <>
-      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <SideMenu
         onExportCSV={exportToCSV}
         onExportJSON={exportToJSON}
@@ -65,29 +64,18 @@ export const Home = ({
         </header>
 
         <main className="home-content">
-          <div className="quick-stats">
-            <div className="stat-card">
-              <span className="stat-icon">🎮</span>
-              <div className="stat-info">
-                <span className="stat-value">{stats?.totalGames || 0}</span>
-                <span className="stat-label">{t('home.games')}</span>
+          {lastGame && (
+            <div className="last-game-card">
+              <h3 className="card-title">🎲 {t('home.lastGame')}</h3>
+              <div className="card-content">
+                <p className="game-name">{lastGame.game}</p>
+                <p className="game-winner">🏆 {lastGame.winner}</p>
+                <p className="game-meta">
+                  👥 {lastGame.numPlayers} • 📅 {lastGame.date.toLocaleDateString()}
+                </p>
               </div>
             </div>
-            <div className="stat-card">
-              <span className="stat-icon">🏆</span>
-              <div className="stat-info">
-                <span className="stat-value">{stats?.topWinner || '—'}</span>
-                <span className="stat-label">{t('home.topPlayer')}</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <span className="stat-icon">🎯</span>
-              <div className="stat-info">
-                <span className="stat-value">{stats?.mostPlayedGame || '—'}</span>
-                <span className="stat-label">{t('home.mostPlayed')}</span>
-              </div>
-            </div>
-          </div>
+          )}
 
           <button
             className="btn-new-game"

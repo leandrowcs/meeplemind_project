@@ -50,8 +50,8 @@
 }
 
 .logo-image {
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
 }
@@ -295,8 +295,8 @@
   }
 
   .logo-image {
-    width: 80px;
-    height: 80px;
+    width: 150px;
+    height: 150px;
   }
 
   .header-info {
@@ -336,6 +336,59 @@
   .export-buttons button {
     width: 100%;
   }
+}
+
+/* Last Game Card */
+.last-game-card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  animation: slideIn 0.4s ease-out;
+}
+
+.card-title {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.game-name {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.game-winner {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.game-meta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .export-section {

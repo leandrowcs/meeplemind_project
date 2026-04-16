@@ -149,6 +149,28 @@ export const useGames = () => {
     }).length;
   };
 
+  /** Get the last game played with all details */
+  const getLastGame = () => {
+    if (games.length === 0) return null;
+    const lastGame = games[0]; // Games are sorted by date descending
+    
+    // For cooperative games, show coopResult; for competitive, show winner(s)
+    let winner = null;
+    if (lastGame.gameType === 'cooperative') {
+      winner = lastGame.coopResult || 'N/A';
+    } else {
+      winner = lastGame.winner || 'N/A';
+    }
+    
+    return {
+      game: lastGame.game,
+      winner,
+      numPlayers: lastGame.players.length,
+      date: new Date(lastGame.date),
+      gameType: lastGame.gameType,
+    };
+  };
+
   const filterGamesByName = (gameName) => {
     if (!gameName) return games;
     return games.filter((g) => g.game.toLowerCase().includes(gameName.toLowerCase()));
@@ -451,6 +473,7 @@ export const useGames = () => {
     getUniqueGames,
     getUniquePlayers,
     getGamesLast30Days,
+    getLastGame,
     filterGamesByName,
     exportToCSV,
     exportToJSON,

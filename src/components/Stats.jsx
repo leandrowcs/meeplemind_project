@@ -1,12 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Button } from './Button';
-import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../hooks/useLanguage';
 import { PlayerStatsModal } from './PlayerStatsModal';
 import './Stats.css';
 
 export const Stats = ({ onNavigate, games, stats }) => {
-  const { language, changeLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [activeTab, setActiveTab] = useState('competitive'); // 'competitive' | 'cooperative'
 
@@ -114,7 +113,6 @@ export const Stats = ({ onNavigate, games, stats }) => {
 
   return (
     <>
-      <LanguageToggle currentLanguage={language} onLanguageChange={changeLanguage} />
       <div className="stats-container fade-in">
         <header className="stats-header">
           <button className="back-btn" onClick={() => onNavigate('home')}>

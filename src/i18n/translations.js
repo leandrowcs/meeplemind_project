@@ -114,6 +114,9 @@ export const translations = {
     'page.title': 'MeepleMind - Registre suas partidas de boardgames',
 
     // Menu
+    'menu.settings': 'Configurações',
+    'menu.dataBackup': 'Dados & Backup',
+    'menu.version': 'Versão',
     'menu.clearData': 'Limpar Dados',
     'menu.clearDataTitle': 'Limpar todos os dados e remover histórico',
     'menu.clearDataWarning': '⚠️ Atenção! Isso irá deletar TODOS os seus dados e histórico de partidas permanentemente.',
@@ -156,6 +159,7 @@ export const translations = {
     'home.library': '📚 Biblioteca',
 
     // New Home Header
+    'home.lastGame': '🎲 Última Partida',
     'home.gamesLast30Days': 'nos últimos 30 dias',
     'home.urgentMessage': 'Você precisa jogar algo urgente!',
 
@@ -308,6 +312,9 @@ export const translations = {
     'page.title': 'MeepleMind - Track your board game sessions',
 
     // Menu
+    'menu.settings': 'Settings',
+    'menu.dataBackup': 'Data & Backup',
+    'menu.version': 'Version',
     'menu.clearData': 'Clear Data',
     'menu.clearDataTitle': 'Clear all data and remove history',
     'menu.clearDataWarning': '⚠️ Warning! This will permanently delete ALL your data and game history.',
@@ -350,6 +357,7 @@ export const translations = {
     'home.library': '📚 Library',
 
     // New Home Header
+    'home.lastGame': '🎲 Last Game',
     'home.gamesLast30Days': 'in the last 30 days',
     'home.urgentMessage': 'You need to play something urgent!',
 
@@ -516,8 +524,7 @@ export const translations = {
     'home.profile': '👤 Mon Profil',
     'home.library': '📚 Bibliothèque',
 
-    // New Home Header
-    'home.gamesLast30Days': 'au cours des 30 derniers jours',
+    // New Home Header    'home.lastGame': '🎲 Dernière Partie',    'home.gamesLast30Days': 'au cours des 30 derniers jours',
     'home.urgentMessage': 'Vous devez jouer à quelque chose d\'urgent !',
 
     // Library
@@ -566,6 +573,9 @@ export const translations = {
     // Page title
     'page.title': 'MeepleMind - Suivez vos parties de jeux de société',
     // Menu
+    'menu.settings': 'Paramètres',
+    'menu.dataBackup': 'Données & Sauvegarde',
+    'menu.version': 'Version',
     'menu.clearData': 'Effacer les Données',
     'menu.clearDataTitle': 'Effacer toutes les données et supprimer l\'historique',
     'menu.clearDataWarning': '⚠️ Attention! Cela supprimera définitivement TOUTES vos données et votre historique de parties.',
