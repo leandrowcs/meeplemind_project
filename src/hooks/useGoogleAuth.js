@@ -2,18 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const SCOPES =
-  'https://www.googleapis.com/auth/drive.file openid email profile';
+  'https://www.googleapis.com/auth/drive.appdata openid email profile';
 const USER_KEY = 'meeplemind_google_user';
+const TOKEN_KEY = 'meeplemind_google_token';
 
 /**
  * Manages Google OAuth 2.0 token-based authentication using
  * Google Identity Services (GIS) implicit flow.
  *
- * Uses 'drive.file' scope to store backups visibly on Google Drive,
- * allowing users to access and download backups from Google Drive web.
+ * Uses 'drive.appdata' scope to store backups in the app's hidden
+ * data folder on Google Drive, enabling cross-device sync.
  *
- * The app only stores display information (name, email, picture)
- * in localStorage — never the access token itself.
+ * Persists the access token in localStorage (with expiry) so login
+ * survives page refreshes. Display info (name, email, picture) is also cached.
  */
 export const useGoogleAuth = () => {
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -30,11 +31,33 @@ export const useGoogleAuth = () => {
     }
 
     const init = () => {
-      // Restore cached display info (never the token)
+      // Restore cached display info
       try {
         const saved = localStorage.getItem(USER_KEY);
         if (saved) setUser(JSON.parse(saved));
       } catch {}
+
+      // Restore access token if still valid
+      try {
+        const savedToken = localStorage.getItem(TOKEN_KEY);
+        if (savedToken) {
+          const { token, expiresAt } = JSON.parse(savedToken);
+          const remaining = expiresAt - Date.now();
+          if (remaining > 60_000) {
+            setAccessToken(token);
+            setIsSignedIn(true);
+            setTimeout(() => {
+              setAccessToken(null);
+              setIsSignedIn(false);
+              localStorage.removeItem(TOKEN_KEY);
+            }, remaining);
+          } else {
+            localStorage.removeItem(TOKEN_KEY);
+          }
+        }
+      } catch {
+        localStorage.removeItem(TOKEN_KEY);
+      }
 
       const client = window.google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
@@ -49,9 +72,16 @@ export const useGoogleAuth = () => {
           setIsSignedIn(true);
           // Invalidate token 60 s before actual expiry to force re-auth
           const ttl = ((response.expires_in || 3600) - 60) * 1000;
+          try {
+            localStorage.setItem(TOKEN_KEY, JSON.stringify({
+              token: response.access_token,
+              expiresAt: Date.now() + ttl,
+            }));
+          } catch {}
           setTimeout(() => {
             setAccessToken(null);
             setIsSignedIn(false);
+            localStorage.removeItem(TOKEN_KEY);
           }, ttl);
         },
       });
@@ -108,6 +138,7 @@ export const useGoogleAuth = () => {
     setAccessToken(null);
     setUser(null);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   }, [accessToken]);
 
   return {

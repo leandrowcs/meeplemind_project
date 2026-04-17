@@ -420,3 +420,126 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* ── Charts ──────────────────────────────────────────────────────────────── */
+.chart-wrapper {
+  width: 100%;
+  padding: var(--spacing-sm) 0;
+}
+
+.chart-wrapper-doughnut {
+  height: 240px !important;
+}
+
+/* ── Rivalry Tab ─────────────────────────────────────────────────────────── */
+.rivalry-card {
+  border-color: rgba(234, 88, 12, 0.3);
+  gap: var(--spacing-sm);
+}
+
+.rivalry-card-win {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.rivalry-card-loss {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.rivalry-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.rivalry-crown {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.rivalry-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-accent);
+}
+
+.rivalry-player-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding: var(--spacing-xs) 0;
+}
+
+.rivalry-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.rivalry-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-width: 80px;
+  flex: 1;
+}
+
+.rivalry-stat-item.win {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.rivalry-stat-item.loss {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.rivalry-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.rivalry-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.rivalry-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.rivalry-bar-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rivalry-bar {
+  flex: 1;
+  height: 10px;
+  background: rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.rivalry-fill.win {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #6ee7b7 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+}

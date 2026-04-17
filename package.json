@@ -17,7 +17,9 @@
     "test:report": "playwright show-report"
   },
   "dependencies": {
+    "chart.js": "^4.5.1",
     "react": "^19.2.4",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.4",
     "terser": "^5.46.1",
     "uuid": "^13.0.0",

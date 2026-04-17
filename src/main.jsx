@@ -12,6 +12,11 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Request persistent storage to prevent mobile browsers from evicting data
+if (navigator.storage?.persist) {
+  navigator.storage.persist().catch(() => {});
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

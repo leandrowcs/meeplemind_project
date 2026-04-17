@@ -40,6 +40,12 @@ export const useGames = () => {
     }
   }, [games, isLoading]);
 
+  // Immediately persist to localStorage for mobile reliability
+  // (effects may not run before the browser kills the page on mobile)
+  const persistGames = (gamesArr) => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(gamesArr)); } catch {}
+  };
+
   const addGame = useCallback((gameData) => {
     const newGame = {
       id: uuidv4(),
@@ -56,31 +62,54 @@ export const useGames = () => {
         : new Date().toISOString(),
       rating: 0,
       notes: '',
+      updatedAt: new Date().toISOString(),
     };
-    setGames((prevGames) => [newGame, ...prevGames]);
+    setGames((prevGames) => {
+      const updated = [newGame, ...prevGames];
+      persistGames(updated);
+      return updated;
+    });
     return newGame;
   }, []);
 
   const deleteGame = useCallback((gameId) => {
-    setGames((prevGames) => prevGames.filter((g) => g.id !== gameId));
+    setGames((prevGames) => {
+      const updated = prevGames.filter((g) => g.id !== gameId);
+      persistGames(updated);
+      return updated;
+    });
   }, []);
 
   const updateGame = useCallback((gameId, updates) => {
-    setGames((prevGames) =>
-      prevGames.map((g) => (g.id === gameId ? { ...g, ...updates } : g))
-    );
+    setGames((prevGames) => {
+      const updated = prevGames.map((g) =>
+        g.id === gameId ? { ...g, ...updates, updatedAt: new Date().toISOString() } : g
+      );
+      persistGames(updated);
+      return updated;
+    });
   }, []);
 
-  /** Merge games loaded from Google Drive (union by ID, Drive fills missing). */
+  /** Merge games loaded from Google Drive (last-write-wins by updatedAt). */
   const mergeFromDrive = useCallback((driveGames) => {
     if (!validateGameBackup(driveGames)) return;
     setGames((local) => {
-      const localIds = new Set(local.map((g) => g.id));
-      const merged = [
-        ...local,
-        ...driveGames.filter((g) => !localIds.has(g.id)),
-      ].sort((a, b) => new Date(b.date) - new Date(a.date));
-      return merged;
+      const localMap = new Map(local.map((g) => [g.id, g]));
+      const driveMap = new Map(driveGames.map((g) => [g.id, g]));
+      const allIds = new Set([...localMap.keys(), ...driveMap.keys()]);
+      const merged = Array.from(allIds).map((id) => {
+        const loc = localMap.get(id);
+        const drv = driveMap.get(id);
+        if (!loc) return drv;
+        if (!drv) return loc;
+        // Last-write-wins: compare updatedAt, fallback to date
+        const locTime = new Date(loc.updatedAt || loc.date).getTime();
+        const drvTime = new Date(drv.updatedAt || drv.date).getTime();
+        return drvTime > locTime ? drv : loc;
+      });
+      const sorted = merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+      persistGames(sorted);
+      return sorted;
     });
   }, []);
 
@@ -381,7 +410,9 @@ export const useGames = () => {
         setGames((prevGames) => {
           const existingIds = new Set(prevGames.map((g) => g.id));
           const newEntries = gamesToImport.filter((g) => !existingIds.has(g.id));
-          return [...newEntries, ...prevGames];
+          const updated = [...newEntries, ...prevGames];
+          persistGames(updated);
+          return updated;
         });
 
         // Importar biblioteca se fornecida
@@ -400,6 +431,7 @@ export const useGames = () => {
 
   const clearAllData = useCallback(() => {
     setGames([]);
+    persistGames([]);
     alert('🗑️ Todos os dados foram removidos!');
   }, []);
 
