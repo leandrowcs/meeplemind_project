@@ -160,11 +160,13 @@ export const translations = {
 
     // New Home Header
     'home.lastGame': '🎲 Última Partida',
-    'home.highlights': '🏆 Destaques',
+    'home.highlights': '⭐ Destaques',
     'home.gamesLast30Days': 'nos últimos 30 dias',
     'home.urgentMessage': 'Você precisa jogar algo urgente!',
     'home.victory': 'vitória',
     'home.victories': 'vitórias',
+    'home.game': 'partida',
+    'home.games': 'partidas',
     'home.streak': 'Sequência',
     'home.consecutiveVictory': 'vitória consecutiva',
     'home.consecutiveVictories': 'vitórias consecutivas',
@@ -364,11 +366,13 @@ export const translations = {
 
     // New Home Header
     'home.lastGame': '🎲 Last Game',
-    'home.highlights': '🏆 Highlights',
+    'home.highlights': '⭐ Highlights',
     'home.gamesLast30Days': 'in the last 30 days',
     'home.urgentMessage': 'You need to play something urgent!',
     'home.victory': 'victory',
     'home.victories': 'victories',
+    'home.game': 'game',
+    'home.games': 'games',
     'home.streak': 'Streak',
     'home.consecutiveVictory': 'consecutive victory',
     'home.consecutiveVictories': 'consecutive victories',
@@ -538,11 +542,13 @@ export const translations = {
 
     // New Home Header
     'home.lastGame': '🎲 Dernière Partie',
-    'home.highlights': '🏆 Points Forts',
+    'home.highlights': '⭐ Points Forts',
     'home.gamesLast30Days': 'au cours des 30 derniers jours',
     'home.urgentMessage': 'Vous devez jouer à quelque chose d\'urgent !',
     'home.victory': 'victoire',
     'home.victories': 'victoires',
+    'home.game': 'partie',
+    'home.games': 'parties',
     'home.streak': 'Séquence',
     'home.consecutiveVictory': 'victoire consécutive',
     'home.consecutiveVictories': 'victoires consécutives',

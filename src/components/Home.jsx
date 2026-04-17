@@ -2,6 +2,7 @@ import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
 import { useGames } from '../hooks/useGames';
+import { formatDateObj } from '../utils/dateFormat';
 import logoImage from '../assets/meeplemind_logo.png';
 import './Home.css';
 
@@ -10,13 +11,12 @@ export const Home = ({
   exportToCSV,
   exportToJSON,
   importFromJSON,
-  stats,
   primaryPlayer,
   clearAllData,
   auth,
   syncStatus,
 }) => {
-  const { language, changeLanguage, t, isInitialized } = useLanguage();
+  const { t, isInitialized, language } = useLanguage();
   const { getGamesLast30Days, getLastGame, getHighlights } = useGames();
 
   if (!isInitialized) {
@@ -67,12 +67,11 @@ export const Home = ({
         <main className="home-content">
           {lastGame && (
             <div className="last-game-card">
-              <h3 className="card-title">🎲 {t('home.lastGame')}</h3>
-              <div className="card-content">
+              <h3 className="card-title">{t('home.lastGame')}</h3>
+              <div className="card-content-home">
                 <p className="game-name">{lastGame.game}</p>
-                <p className="game-winner">🏆 {lastGame.winner}</p>
-                <p className="game-meta">
-                  👥 {lastGame.numPlayers} • 📅 {lastGame.date.toLocaleDateString()}
+                <p className="game-info-home">
+                  🏆 {lastGame.winner} &nbsp;•&nbsp; 👥 {lastGame.numPlayers} • 📅 {formatDateObj(lastGame.date, language)}
                 </p>
               </div>
             </div>
@@ -80,31 +79,25 @@ export const Home = ({
 
           {highlights.topPlayer && (
             <div className="highlights-card">
-              <h3 className="card-title">🏆 {t('home.highlights')}</h3>
-              <div className="card-content">
-                <div className="highlight-item">
-                  <span className="highlight-icon">🏆</span>
-                  <div className="highlight-text">
-                    <span className="highlight-label">{t('home.topPlayer')}:</span>
-                    <span className="highlight-value">{highlights.topPlayer}</span>
-                    <span className="highlight-meta">({highlights.topPlayerWins} {highlights.topPlayerWins === 1 ? t('home.victory') : t('home.victories')})</span>
-                  </div>
+              <h3 className="card-title">{t('home.highlights')}</h3>
+              <div className="card-content-home">
+                <div className="highlight-row">
+                  <span>🏆</span>
+                  <span className="highlight-row-label">{t('home.topPlayer')}:</span>
+                  <span className="highlight-row-value">{highlights.topPlayer}</span>
+                  <span className="highlight-row-meta">({highlights.topPlayerWins} {highlights.topPlayerWins === 1 ? t('home.victory') : t('home.victories')})</span>
                 </div>
-                <div className="highlight-item">
-                  <span className="highlight-icon">🎯</span>
-                  <div className="highlight-text">
-                    <span className="highlight-label">{t('home.mostPlayed')}:</span>
-                    <span className="highlight-value">{highlights.mostPlayedGame}</span>
-                    <span className="highlight-meta">({highlights.mostPlayedCount} {highlights.mostPlayedCount === 1 ? t('home.game') : t('home.games')})</span>
-                  </div>
+                <div className="highlight-row">
+                  <span>🎯</span>
+                  <span className="highlight-row-label">{t('home.mostPlayed')}:</span>
+                  <span className="highlight-row-value">{highlights.mostPlayedGame}</span>
+                  <span className="highlight-row-meta">({highlights.mostPlayedCount} {highlights.mostPlayedCount === 1 ? t('home.game') : t('home.games')})</span>
                 </div>
-                <div className="highlight-item">
-                  <span className="highlight-icon">🔥</span>
-                  <div className="highlight-text">
-                    <span className="highlight-label">{t('home.streak')}:</span>
-                    <span className="highlight-value">{highlights.winStreak}</span>
-                    <span className="highlight-meta">{highlights.winStreak === 1 ? t('home.consecutiveVictory') : t('home.consecutiveVictories')}</span>
-                  </div>
+                <div className="highlight-row">
+                  <span>🔥</span>
+                  <span className="highlight-row-label">{t('home.streak')}:</span>
+                  <span className="highlight-row-value">{highlights.winStreak}</span>
+                  <span className="highlight-row-meta">{highlights.winStreak === 1 ? t('home.consecutiveVictory') : t('home.consecutiveVictories')}</span>
                 </div>
               </div>
             </div>
