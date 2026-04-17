@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Button, IconButton } from './Button';
 import { GameDetailsModal } from './GameDetailsModal';
 import { useLanguage } from '../hooks/useLanguage';
+import { formatDate } from '../utils/dateFormat';
 import './History.css';
 
 export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) => {
-  const { language, changeLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState('');
   const [gameTypeFilter, setGameTypeFilter] = useState('all'); // 'all' | 'competitive' | 'cooperative'
   const [modalGame, setModalGame] = useState(null);
@@ -16,23 +17,14 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
     setSelectedFilter('');
   }, [gameTypeFilter]);
 
-  const filteredGames = games.filter((g) => {
-    const matchesName = !selectedFilter || g.game === selectedFilter;
-    const type = g.gameType || 'competitive';
-    const matchesType = gameTypeFilter === 'all' || type === gameTypeFilter;
-    return matchesName && matchesType;
-  });
-
-  const formatDate = (isoDate) => {
-    if (!isoDate) return '—';
-    const dateStr = isoDate.includes('T') ? isoDate : isoDate + 'T00:00:00';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '—';
-    return new Intl.DateTimeFormat(
-      language === 'pt-BR' ? 'pt-BR' : language === 'fr-CA' ? 'fr-CA' : 'en-US',
-      { day: '2-digit', month: '2-digit', year: 'numeric' }
-    ).format(date);
-  };
+  const filteredGames = games
+    .filter((g) => {
+      const matchesName = !selectedFilter || g.game === selectedFilter;
+      const type = g.gameType || 'competitive';
+      const matchesType = gameTypeFilter === 'all' || type === gameTypeFilter;
+      return matchesName && matchesType;
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const formatDuration = (minutes) => {
     if (!minutes) return null;
@@ -175,7 +167,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                             {!isExpanded && (
                               <>
                                 <span className="collapsed-badge date-badge">
-                                  📅 {formatDate(game.date)}
+                                  📅 {formatDate(game.date, language)}
                                 </span>
                                 <span className={`collapsed-badge result-badge ${isCoop ? 'coop-result' : 'competitive-result'}`}>
                                   {isCoop ? (
@@ -274,7 +266,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                                 <span className="icon">📅</span>
                                 <div>
                                   <span className="label">{t('history.date')}</span>
-                                  <span className="value">{formatDate(game.date)}</span>
+                                  <span className="value">{formatDate(game.date, language)}</span>
                                 </div>
                               </div>
                             </div>

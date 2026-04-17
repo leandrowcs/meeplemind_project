@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { sanitizeText, sanitizePlayerName, sanitizeNumber, validateGameBackup } from '../utils/sanitize';
+import { formatDate } from '../utils/dateFormat';
 
 const STORAGE_KEY = 'meeplemind_games';
 
@@ -49,7 +50,10 @@ export const useGames = () => {
       winner: gameData.winner ? sanitizePlayerName(gameData.winner) : null,
       coopResult: gameData.coopResult || null,
       duration: gameData.duration ? sanitizeNumber(gameData.duration, 1, 2880) : null,
-      date: gameData.date ? new Date(gameData.date).toISOString() : new Date().toISOString(),
+      // Parse date as local time to avoid UTC offset showing wrong day
+      date: gameData.date
+        ? (() => { const [y, m, d] = gameData.date.split('-'); return new Date(Number(y), Number(m) - 1, Number(d)).toISOString(); })()
+        : new Date().toISOString(),
       rating: 0,
       notes: '',
     };
@@ -149,19 +153,42 @@ export const useGames = () => {
     }).length;
   };
 
-  /** Get current win streak for a specific player */
+  /** Get the last game played with all details (sorted by date) */
+  const getLastGame = () => {
+    if (games.length === 0) return null;
+    const sorted = [...games].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const last = sorted[0];
+    let winner = null;
+    if (last.gameType === 'cooperative') {
+      winner = last.coopResult || 'N/A';
+    } else {
+      winner = last.winner || 'N/A';
+    }
+    // Parse date as local to avoid timezone showing wrong day
+    const dateOnly = last.date.split('T')[0];
+    const [y, m, d] = dateOnly.split('-');
+    return {
+      game: last.game,
+      winner,
+      numPlayers: last.players.length,
+      date: new Date(Number(y), Number(m) - 1, Number(d)),
+      gameType: last.gameType,
+    };
+  };
+
+  /** Get current win streak for a specific player (competitive games only) */
   const getWinStreak = (playerName) => {
     let streak = 0;
-    // Iterate through games in reverse (most recent first)
-    for (let i = 0; i < games.length; i++) {
-      const game = games[i];
+    const competitiveByDate = games
+      .filter((g) => (g.gameType || 'competitive') === 'competitive')
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+    for (let i = 0; i < competitiveByDate.length; i++) {
+      const game = competitiveByDate[i];
       if (game.winner === playerName) {
         streak++;
       } else if (game.players.includes(playerName)) {
-        // If the player played but didn't win, streak is broken
         break;
       }
-      // If the player didn't play at all, continue checking
     }
     return streak;
   };
@@ -262,9 +289,7 @@ export const useGames = () => {
       // Aba 1: Histórico de Jogos
       const gamesHeaders = [labels.date, labels.game, labels.players, labels.winner, labels.duration, labels.rating, labels.notes];
       const gamesRows = games.map((g) => [
-        new Date(g.date).toLocaleDateString(
-          language === 'pt-BR' ? 'pt-BR' : language === 'fr-CA' ? 'fr-CA' : 'en-US'
-        ),
+        formatDate(g.date, language),
         g.game,
         g.players.join(' | '),
         g.winner,
@@ -457,19 +482,47 @@ export const useGames = () => {
       ? Math.round((competitiveWins / competitiveGames.length) * 100) 
       : 0;
 
+    // Best game: the game where the player won the most times
+    const winsByGame = {};
+    competitiveGames.forEach((g) => {
+      if (g.winner === playerName && g.game) {
+        winsByGame[g.game] = (winsByGame[g.game] || 0) + 1;
+      }
+    });
+    const bestGameEntry = Object.entries(winsByGame).sort(([, a], [, b]) => b - a)[0];
+    const bestGame = bestGameEntry?.[0] || null;
+    const bestGameWins = bestGameEntry?.[1] || 0;
+
     const cooperativeWins = cooperativeGames.filter((g) => g.coopResult === 'win').length;
     const cooperativeWinRate = cooperativeGames.length > 0 
       ? Math.round((cooperativeWins / cooperativeGames.length) * 100) 
       : 0;
+
+    // Favorite coop team: top 4 players who appeared most in cooperative games
+    const coopPartnerCount = {};
+    cooperativeGames.forEach((g) => {
+      (g.players || []).forEach((p) => {
+        if (p !== playerName) {
+          coopPartnerCount[p] = (coopPartnerCount[p] || 0) + 1;
+        }
+      });
+    });
+    const favoriteCoopTeam = Object.entries(coopPartnerCount)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 4)
+      .map(([name]) => name);
 
     return {
       totalGames: playerGames.length,
       competitiveGames: competitiveGames.length,
       competitiveWins,
       competitiveWinRate,
+      bestGame,
+      bestGameWins,
       cooperativeGames: cooperativeGames.length,
       cooperativeWins,
       cooperativeWinRate,
+      favoriteCoopTeam,
     };
   };
 

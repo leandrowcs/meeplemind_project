@@ -4,6 +4,18 @@
   flex-direction: column;
 }
 
+.library-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--spacing-xl);
+}
+
 .library-header {
   position: sticky;
   top: 0;

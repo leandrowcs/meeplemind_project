@@ -387,15 +387,6 @@
 }
 
 @media (max-width: 640px) {
-  .history-container {
-    padding: var(--spacing-lg);
-  }
-
-  .history-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .card-content {
     grid-template-columns: 1fr 1fr;
   }

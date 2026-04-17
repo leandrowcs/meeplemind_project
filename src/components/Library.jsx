@@ -92,6 +92,16 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
         </header>
 
         <div className="library-content">
+          {/* Add game button / form toggle */}
+          <button
+            className={`btn btn-accent btn-md ${showForm ? 'active' : ''}`}
+            onClick={() => {
+              setShowForm((v) => !v);
+              setFormData(EMPTY_FORM);
+            }}
+          >
+            {showForm ? `✕ ${t('common.cancel')}` : `+ ${t('library.addGame')}`}
+          </button>
           {/* Add game form */}
           {showForm && (
             <form className="library-form" onSubmit={handleSubmit}>
@@ -166,16 +176,6 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
             <div className="library-empty">
               <span className="library-empty-icon">📚</span>
               <p>{t('library.noGames')}</p>
-              {/* Add game button / form toggle */}
-              <button
-                className={`btn btn-accent btn-md ${showForm ? 'active' : ''}`}
-                onClick={() => {
-                  setShowForm((v) => !v);
-                  setFormData(EMPTY_FORM);
-                }}
-              >
-                {showForm ? `✕ ${t('common.cancel')}` : `+ ${t('library.addGame')}`}
-              </button>
             </div>
           ) : (
             <ul className="library-list">

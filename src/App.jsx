@@ -200,6 +200,7 @@ function App() {
           games={games}
           primaryPlayer={primaryPlayer}
           getPlayerStats={getPlayerStats}
+          library={lib.library}
         />
       )}
       {currentPage === 'library' && (
