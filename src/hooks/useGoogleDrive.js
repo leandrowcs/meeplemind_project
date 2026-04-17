@@ -6,9 +6,9 @@ const GAMES_FILE = 'meeplemind_games.json';
 const LIBRARY_FILE = 'meeplemind_library.json';
 
 /**
- * CRUD helpers for Google Drive (visible to user).
- * Files are stored in the root of Google Drive and visible to the user,
- * allowing them to download/manage backups directly from Google Drive web.
+ * CRUD helpers for Google Drive app data folder.
+ * Files are stored in the hidden appDataFolder, enabling cross-device sync
+ * while keeping the user's Drive root clean.
  *
  * @param {string|null} accessToken  OAuth 2.0 access token from useGoogleAuth
  */

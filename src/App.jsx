@@ -190,6 +190,7 @@ function App() {
           onNavigate={setCurrentPage}
           games={games}
           stats={stats}
+          primaryPlayer={primaryPlayer}
           getCompetitiveStats={getCompetitiveStats}
           getCooperativeStats={getCooperativeStats}
         />

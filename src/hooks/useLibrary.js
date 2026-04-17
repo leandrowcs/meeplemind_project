@@ -41,6 +41,10 @@ export const useLibrary = () => {
     }
   }, [library, isLoading]);
 
+  const persistLibrary = (libraryArr) => {
+    try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryArr)); } catch {}
+  };
+
   const addToLibrary = useCallback(
     ({ name, category = '', minPlayers = null, maxPlayers = null } = {}) => {
       const cleanName = sanitizeText(name);
@@ -61,11 +65,14 @@ export const useLibrary = () => {
           maxPlayers: sanitizeNumber(maxPlayers, 1, 20),
           owned: false,
           addedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
         added = entry;
-        return [...prev, entry].sort((a, b) =>
+        const updated = [...prev, entry].sort((a, b) =>
           a.name.localeCompare(b.name)
         );
+        persistLibrary(updated);
+        return updated;
       });
       return added;
     },
@@ -91,18 +98,25 @@ export const useLibrary = () => {
         minPlayers: null,
         maxPlayers: null,
         addedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
-      return [...prev, entry].sort((a, b) => a.name.localeCompare(b.name));
+      const updated = [...prev, entry].sort((a, b) => a.name.localeCompare(b.name));
+      persistLibrary(updated);
+      return updated;
     });
   }, []);
 
   const removeFromLibrary = useCallback((gameId) => {
-    setLibrary((prev) => prev.filter((g) => g.id !== gameId));
+    setLibrary((prev) => {
+      const updated = prev.filter((g) => g.id !== gameId);
+      persistLibrary(updated);
+      return updated;
+    });
   }, []);
 
   const updateInLibrary = useCallback((gameId, updates) => {
-    setLibrary((prev) =>
-      prev.map((g) =>
+    setLibrary((prev) => {
+      const updated = prev.map((g) =>
         g.id !== gameId
           ? g
           : {
@@ -121,9 +135,12 @@ export const useLibrary = () => {
                   ? sanitizeNumber(updates.maxPlayers, 1, 20)
                   : g.maxPlayers,
               owned: updates.owned !== undefined ? updates.owned : g.owned,
+              updatedAt: new Date().toISOString(),
             }
-      )
-    );
+      );
+      persistLibrary(updated);
+      return updated;
+    });
   }, []);
 
   const getGameNames = useCallback(
@@ -131,20 +148,33 @@ export const useLibrary = () => {
     [library]
   );
 
-  /** Replace the full library (used when loading from Google Drive). */
+  /** Replace the full library (last-write-wins by updatedAt). */
   const mergeFromDrive = useCallback((driveData) => {
     if (!validateLibraryBackup(driveData)) return;
     setLibrary((local) => {
-      const localIds = new Set(local.map((g) => g.id));
-      const merged = [
-        ...local,
-        ...driveData.filter((g) => !localIds.has(g.id)),
-      ].sort((a, b) => a.name.localeCompare(b.name));
-      return merged;
+      const localMap = new Map(local.map((g) => [g.id, g]));
+      const driveMap = new Map(driveData.map((g) => [g.id, g]));
+      const allIds = new Set([...localMap.keys(), ...driveMap.keys()]);
+      const merged = Array.from(allIds).map((id) => {
+        const loc = localMap.get(id);
+        const drv = driveMap.get(id);
+        if (!loc) return drv;
+        if (!drv) return loc;
+        // Last-write-wins: compare updatedAt, fallback to addedAt
+        const locTime = new Date(loc.updatedAt || loc.addedAt).getTime();
+        const drvTime = new Date(drv.updatedAt || drv.addedAt).getTime();
+        return drvTime > locTime ? drv : loc;
+      });
+      const sorted = merged.sort((a, b) => a.name.localeCompare(b.name));
+      persistLibrary(sorted);
+      return sorted;
     });
   }, []);
 
-  const clearLibrary = useCallback(() => setLibrary([]), []);
+  const clearLibrary = useCallback(() => {
+    setLibrary([]);
+    persistLibrary([]);
+  }, []);
 
   return {
     library,
