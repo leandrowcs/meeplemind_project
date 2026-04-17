@@ -6,7 +6,25 @@ export default defineConfig({
   plugins: [react()],
   // Para GitHub Pages com subdomain, descomente:
   // base: '/MeepleMind_project/',
-  
+
+  server: {
+    proxy: {
+      // Rota /bggapi/* para boardgamegeek.com — resolve CORS no dev server
+      '/bggapi': {
+        target: 'https://boardgamegeek.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/bggapi/, '/xmlapi2'),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'application/xml, text/xml, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': 'https://boardgamegeek.com/',
+        },
+      },
+    },
+  },
+
   // Build configuration
   build: {
     outDir: 'dist',

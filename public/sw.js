@@ -1,6 +1,6 @@
 // NOTE: Increment this version on every production build to ensure
 // users always get the latest version of the app.
-const CACHE_NAME = 'meeplemind-v2';
+const CACHE_NAME = 'meeplemind-v3';
 
 // Install: pre-cache only the app shell HTML
 self.addEventListener('install', (event) => {
@@ -20,6 +20,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+
+  // Bypass SW entirely for API proxy paths (e.g. /bggapi/)
+  // These must reach the dev server proxy or production server directly
+  if (url.pathname.startsWith('/bggapi/')) return;
 
   // Cache-first for Vite hashed static assets (/assets/)
   // These files have content-hash names so they are safe to cache indefinitely
