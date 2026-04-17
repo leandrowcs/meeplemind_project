@@ -242,7 +242,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
           {/* Game Type Selection */}
           {formData.game && (
             <div className="form-group">
-              <label>{t('newgame.selectGame')}</label>
+              <label>{t('newgame.gameType')}</label>
               <div className="game-type-buttons">
                 <button
                   type="button"
@@ -250,8 +250,8 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                   onClick={() => handleGameTypeSelect('competitive')}
                 >
                   <span className="game-type-icon">⚔️</span>
-                  <span className="game-type-label">Competitivo</span>
-                  <span className="game-type-desc">Há um vencedor individual</span>
+                  <span className="game-type-label">{t('newgame.typeCompetitive')}</span>
+                  <span className="game-type-desc">{t('newgame.typeCompetitiveDesc')}</span>
                 </button>
                 <button
                   type="button"
@@ -259,8 +259,8 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                   onClick={() => handleGameTypeSelect('cooperative')}
                 >
                   <span className="game-type-icon">🤝</span>
-                  <span className="game-type-label">Cooperativo</span>
-                  <span className="game-type-desc">Todos jogam juntos</span>
+                  <span className="game-type-label">{t('newgame.typeCooperative')}</span>
+                  <span className="game-type-desc">{t('newgame.typeCooperativeDesc')}</span>
                 </button>
               </div>
             </div>
@@ -335,8 +335,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                           type="button"
                           className="btn-remove"
                           onClick={() => handleRemovePlayer(index)}
-                          title="Remover jogador"
-                        >
+                          title={t('newgame.removePlayer')}>
                           ✕
                         </button>
                       </div>
@@ -365,7 +364,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                   {/* Cooperative: win or loss */}
                   {formData.gameType === 'cooperative' && (
                     <div className="coop-result-section">
-                      <label>Resultado da Equipe</label>
+                      <label>{t('newgame.teamResult')}</label>
                       <div className="coop-result-buttons">
                         <button
                           type="button"
@@ -373,8 +372,8 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                           onClick={() => setFormData((prev) => ({ ...prev, coopResult: 'win' }))}
                         >
                           <span>🏆</span>
-                          <span>Vitória!</span>
-                          <span className="coop-result-sub">A equipe venceu juntos</span>
+                          <span>{t('history.coopWin')}</span>
+                          <span className="coop-result-sub">{t('newgame.coopWinSub')}</span>
                         </button>
                         <button
                           type="button"
@@ -382,8 +381,8 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                           onClick={() => setFormData((prev) => ({ ...prev, coopResult: 'loss' }))}
                         >
                           <span>💀</span>
-                          <span>Derrota</span>
-                          <span className="coop-result-sub">A equipe foi derrotada</span>
+                          <span>{t('history.coopLoss')}</span>
+                          <span className="coop-result-sub">{t('newgame.coopLossSub')}</span>
                         </button>
                       </div>
                     </div>
@@ -410,7 +409,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
           {/* Duration */}
           {formData.players.length > 0 && (
             <div className="form-group">
-              <label>Quanto tempo durou? (opcional)</label>
+              <label>{t('newgame.duration')}</label>
               <div className="duration-buttons">
                 {[30, 60, 90, 120, 180, 240].map((mins) => (
                   <button
@@ -425,7 +424,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                 <input
                   type="number"
                   className="duration-input"
-                  placeholder="outro"
+                  placeholder={t('newgame.durationOther')}
                   value={formData.duration || ''}
                   onChange={(e) => handleSetDuration(e.target.value)}
                   max="999"

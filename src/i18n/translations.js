@@ -204,6 +204,46 @@ export const translations = {
 
     // NewGame library hint
     'newgame.fromLibrary': 'Da biblioteca',
+
+    // Stats - missing i18n
+    'stats.dataError': 'Erro: dados não carregaram corretamente',
+    'stats.noData': 'Sem dados',
+    'stats.noCoopGames': 'Nenhum jogo cooperativo registrado',
+    'stats.winRateByPlayer': 'Taxa de vitória por jogador',
+    'stats.victory': 'Vitória',
+    'stats.defeat': 'Derrota',
+    'stats.defeats': 'Derrotas',
+    'stats.rivalry': 'Rivalidade',
+    'stats.rivalryEmpty': 'Registre mais partidas competitivas com outros jogadores para ver sua rivalidade!',
+    'stats.rivalMajor': 'Maior Rival',
+    'stats.rivalMajorHint': 'Quem mais cruzou seu caminho',
+    'stats.rivalFreg': 'Maior Freguês',
+    'stats.rivalFregHint': 'Quem você mais derrota',
+    'stats.rivalCarrasco': 'Maior Carrasco',
+    'stats.rivalCarrascoHint': 'Quem mais te derrota',
+    'stats.rivalGamesTogther': 'partidas juntos',
+    'stats.rivalMyWins': 'suas vitórias',
+    'stats.rivalTheirWins': 'vitórias deles',
+    'stats.viewPlayerStats': 'Ver estatísticas de',
+
+    // Profile - missing i18n
+    'profile.gamesRecord': 'Partidas:',
+    'profile.favTeam': 'Time Favorito',
+    'profile.bannerCompWin': 'vitória competitiva',
+    'profile.bannerCompWins': 'vitórias competitivas',
+
+    // NewGame - missing i18n
+    'newgame.gameType': 'Tipo de Jogo',
+    'newgame.typeCompetitive': 'Competitivo',
+    'newgame.typeCompetitiveDesc': 'Há um vencedor individual',
+    'newgame.typeCooperative': 'Cooperativo',
+    'newgame.typeCooperativeDesc': 'Todos jogam juntos',
+    'newgame.removePlayer': 'Remover jogador',
+    'newgame.teamResult': 'Resultado da Equipe',
+    'newgame.coopWinSub': 'A equipe venceu juntos',
+    'newgame.coopLossSub': 'A equipe foi derrotada',
+    'newgame.duration': 'Quanto tempo durou? (opcional)',
+    'newgame.durationOther': 'outro',
   },
   'en-US': {
     // Home
@@ -410,6 +450,46 @@ export const translations = {
 
     // NewGame library hint
     'newgame.fromLibrary': 'From library',
+
+    // Stats - missing i18n
+    'stats.dataError': 'Error: data failed to load',
+    'stats.noData': 'No data',
+    'stats.noCoopGames': 'No cooperative games registered',
+    'stats.winRateByPlayer': 'Win rate by player',
+    'stats.victory': 'Victory',
+    'stats.defeat': 'Defeat',
+    'stats.defeats': 'Defeats',
+    'stats.rivalry': 'Rivalry',
+    'stats.rivalryEmpty': 'Register more competitive games with other players to see your rivalry!',
+    'stats.rivalMajor': 'Top Rival',
+    'stats.rivalMajorHint': 'Who crossed your path the most',
+    'stats.rivalFreg': 'Top Victim',
+    'stats.rivalFregHint': 'Who you beat the most',
+    'stats.rivalCarrasco': 'Top Nemesis',
+    'stats.rivalCarrascoHint': 'Who beats you the most',
+    'stats.rivalGamesTogther': 'games together',
+    'stats.rivalMyWins': 'your wins',
+    'stats.rivalTheirWins': 'their wins',
+    'stats.viewPlayerStats': 'View stats for',
+
+    // Profile - missing i18n
+    'profile.gamesRecord': 'Record:',
+    'profile.favTeam': 'Favorite Team',
+    'profile.bannerCompWin': 'competitive win',
+    'profile.bannerCompWins': 'competitive wins',
+
+    // NewGame - missing i18n
+    'newgame.gameType': 'Game Type',
+    'newgame.typeCompetitive': 'Competitive',
+    'newgame.typeCompetitiveDesc': 'There is an individual winner',
+    'newgame.typeCooperative': 'Cooperative',
+    'newgame.typeCooperativeDesc': 'Everyone plays together',
+    'newgame.removePlayer': 'Remove player',
+    'newgame.teamResult': 'Team Result',
+    'newgame.coopWinSub': 'The team won together',
+    'newgame.coopLossSub': 'The team was defeated',
+    'newgame.duration': 'How long did it take? (optional)',
+    'newgame.durationOther': 'other',
   },
   'fr-CA': {
     // Home
@@ -615,5 +695,45 @@ export const translations = {
     'common.edit': 'Modifier',
     'common.save': 'Enregistrer',
     'common.language': 'Langue',
+
+    // Stats - missing i18n
+    'stats.dataError': 'Erreur : échec du chargement des données',
+    'stats.noData': 'Aucune donnée',
+    'stats.noCoopGames': 'Aucune partie coopérative enregistrée',
+    'stats.winRateByPlayer': 'Taux de victoire par joueur',
+    'stats.victory': 'Victoire',
+    'stats.defeat': 'Défaite',
+    'stats.defeats': 'Défaites',
+    'stats.rivalry': 'Rivalité',
+    'stats.rivalryEmpty': "Enregistrez plus de parties compétitives avec d'autres joueurs pour voir votre rivalité!",
+    'stats.rivalMajor': 'Plus Grand Rival',
+    'stats.rivalMajorHint': 'Celui qui a le plus croisé votre chemin',
+    'stats.rivalFreg': 'Plus Grande Victime',
+    'stats.rivalFregHint': 'Celui que vous battez le plus',
+    'stats.rivalCarrasco': 'Plus Grand Nemesis',
+    'stats.rivalCarrascoHint': 'Celui qui vous bat le plus',
+    'stats.rivalGamesTogther': 'parties ensemble',
+    'stats.rivalMyWins': 'vos victoires',
+    'stats.rivalTheirWins': 'leurs victoires',
+    'stats.viewPlayerStats': 'Voir les stats de',
+
+    // Profile - missing i18n
+    'profile.gamesRecord': 'Parties :',
+    'profile.favTeam': 'Équipe Favorite',
+    'profile.bannerCompWin': 'victoire compétitive',
+    'profile.bannerCompWins': 'victoires compétitives',
+
+    // NewGame - missing i18n
+    'newgame.gameType': 'Type de Jeu',
+    'newgame.typeCompetitive': 'Compétitif',
+    'newgame.typeCompetitiveDesc': 'Il y a un vainqueur individuel',
+    'newgame.typeCooperative': 'Coopératif',
+    'newgame.typeCooperativeDesc': 'Tout le monde joue ensemble',
+    'newgame.removePlayer': 'Supprimer le joueur',
+    'newgame.teamResult': "Résultat de l'Équipe",
+    'newgame.coopWinSub': "L'équipe a gagné ensemble",
+    'newgame.coopLossSub': "L'équipe a été vaincue",
+    'newgame.duration': 'Combien de temps a duré? (facultatif)',
+    'newgame.durationOther': 'autre',
   },
 };
