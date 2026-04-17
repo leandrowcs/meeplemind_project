@@ -207,12 +207,12 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
         {!games ? (
           <div className="empty-stats">
             <span className="empty-icon">⚠️</span>
-            <p>Erro: dados não carregaram corretamente</p>
+            <p>{t('stats.dataError')}</p>
           </div>
         ) : games.length === 0 ? (
           <div className="empty-stats">
             <span className="empty-icon">📊</span>
-            <p>Não há dados para exibir</p>
+            <p>{t('stats.noData')}</p>
             <Button variant="accent" onClick={() => onNavigate('newgame')}>
               {t('home.newGame')}
             </Button>
@@ -253,7 +253,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                 {t('stats.cooperative')}
               </button>
               <button className={`tab-btn ${activeTab === 'rivalry' ? 'active' : ''}`} onClick={() => setActiveTab('rivalry')}>
-                Rivalidade 😏
+                🤜💥🤛 {t('stats.rivalry')}
               </button>
             </div>
 
@@ -271,11 +271,11 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       </div>
                       <div className="leaderboard">
                         {competitiveWins.map(([player, wins], rank) => (
-                          <button key={player} className="leaderboard-item clickable" onClick={() => setSelectedPlayer(player)} title={`Ver estatísticas de ${player}`}>
+                          <button key={player} className="leaderboard-item clickable" onClick={() => setSelectedPlayer(player)} title={`${t('stats.viewPlayerStats')} ${player}`}>
                             <span className="rank-badge">{rank + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{player}</span>
-                              <span className="player-stat">{wins} vitória{wins !== 1 ? 's' : ''}</span>
+                              <span className="player-stat">{wins} {wins === 1 ? t('stats.victory') : t('stats.victories')}</span>
                             </div>
                             <div className="progress-bar">
                               <div className="progress-fill" style={{ width: `${(wins / competitiveWins[0][1]) * 100}%` }} />
@@ -286,14 +286,14 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Sem dados</p>
+                    <p className="empty-section">{t('stats.noData')}</p>
                   )}
                 </div>
 
                 {/* Win Rate + Bar Chart */}
                 <div className="stats-section">
                   <h2>📊 {t('stats.winRateLabel')}</h2>
-                  <p className="stats-section-hint">Taxa de vitória por jogador</p>
+                  <p className="stats-section-hint">{t('stats.winRateByPlayer')}</p>
                   {competitivePlayerStats.length > 0 ? (
                     <>
                       <div className="chart-wrapper" style={{ height: chartHeight(competitivePlayerStats.length) }}>
@@ -301,7 +301,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       </div>
                       <div className="leaderboard">
                         {competitivePlayerStats.map(({ player, winRate, wins, appearances }, rank) => (
-                          <button key={player} className="leaderboard-item clickable" onClick={() => setSelectedPlayer(player)} title={`Ver estatísticas de ${player}`}>
+                          <button key={player} className="leaderboard-item clickable" onClick={() => setSelectedPlayer(player)} title={`${t('stats.viewPlayerStats')} ${player}`}>
                             <span className="rank-badge">{rank + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{player}</span>
@@ -316,7 +316,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Sem dados</p>
+                    <p className="empty-section">{t('stats.noData')}</p>
                   )}
                 </div>
 
@@ -334,7 +334,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                             <span className="rank-badge">{rank + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{game}</span>
-                              <span className="player-stat">{count} partida{count !== 1 ? 's' : ''}</span>
+                              <span className="player-stat">{count} {count === 1 ? t('home.game') : t('home.games')}</span>
                             </div>
                             <div className="progress-bar">
                               <div className="progress-fill" style={{ width: `${(count / competitiveGameFreq[0][1]) * 100}%` }} />
@@ -344,7 +344,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Sem dados</p>
+                    <p className="empty-section">{t('stats.noData')}</p>
                   )}
                 </div>
               </div>
@@ -366,13 +366,13 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                           <div className="rate-item">
                             <span className="rate-icon">🏆</span>
                             <span className="rate-number">{cooperativeStats.wins}</span>
-                            <span className="rate-text">Vitória{cooperativeStats.wins !== 1 ? 's' : ''}</span>
+                            <span className="rate-text">{cooperativeStats.wins === 1 ? t('stats.victory') : t('stats.victories')}</span>
                           </div>
                           <div className="rate-divider">|</div>
                           <div className="rate-item">
                             <span className="rate-icon">💀</span>
                             <span className="rate-number">{cooperativeStats.losses}</span>
-                            <span className="rate-text">Derrota{cooperativeStats.losses !== 1 ? 's' : ''}</span>
+                            <span className="rate-text">{cooperativeStats.losses === 1 ? t('stats.defeat') : t('stats.defeats')}</span>
                           </div>
                         </div>
                       </div>
@@ -381,7 +381,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       </div>
                     </div>
                   ) : (
-                    <p className="empty-section">Nenhum jogo cooperativo registrado</p>
+                    <p className="empty-section">{t('stats.noCoopGames')}</p>
                   )}
                 </div>
 
@@ -397,7 +397,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                           <span className="rank-badge">{rank + 1}</span>
                           <div className="leaderboard-info">
                             <span className="player-name">{game}</span>
-                            <span className="player-stat">{count} partida{count !== 1 ? 's' : ''}</span>
+                            <span className="player-stat">{count} {count === 1 ? t('home.game') : t('home.games')}</span>
                           </div>
                           <div className="progress-bar">
                             <div className="progress-fill" style={{ width: `${(count / cooperativeGameFreq[0][1]) * 100}%` }} />
@@ -415,7 +415,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
               <div className="stats-grid">
                 {!rivalryData ? (
                   <div className="stats-section full-width">
-                    <p className="empty-section">Registre mais partidas competitivas com outros jogadores para ver sua rivalidade!</p>
+                    <p className="empty-section">{t('stats.rivalryEmpty')}</p>
                   </div>
                 ) : (
                   <>
@@ -424,23 +424,23 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       <div className="rivalry-header">
                         <span className="rivalry-crown">⚔️</span>
                         <div>
-                          <h2>Maior Rival</h2>
-                          <p className="stats-section-hint">Quem mais cruzou seu caminho</p>
+                          <h2>{t('stats.rivalMajor')}</h2>
+                          <p className="stats-section-hint">{t('stats.rivalMajorHint')}</p>
                         </div>
                       </div>
                       <div className="rivalry-player-name">{rivalryData.rival.name}</div>
                       <div className="rivalry-stats">
                         <div className="rivalry-stat-item">
                           <span className="rivalry-stat-value">{rivalryData.rival.games}</span>
-                          <span className="rivalry-stat-label">🎮 partidas juntos</span>
+                          <span className="rivalry-stat-label">🎮 {t('stats.rivalGamesTogther')}</span>
                         </div>
                         <div className="rivalry-stat-item win">
                           <span className="rivalry-stat-value">{rivalryData.rival.myWins}</span>
-                          <span className="rivalry-stat-label">📈 suas vitórias</span>
+                          <span className="rivalry-stat-label">📈 {t('stats.rivalMyWins')}</span>
                         </div>
                         <div className="rivalry-stat-item loss">
                           <span className="rivalry-stat-value">{rivalryData.rival.theirWins}</span>
-                          <span className="rivalry-stat-label">📉 vitórias deles</span>
+                          <span className="rivalry-stat-label">📉 {t('stats.rivalTheirWins')}</span>
                         </div>
                       </div>
                       <div className="rivalry-bar-wrap">
@@ -460,23 +460,23 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       <div className="rivalry-header">
                         <span className="rivalry-crown">👑</span>
                         <div>
-                          <h2>Maior Freguês</h2>
-                          <p className="stats-section-hint">Quem você mais derrota</p>
+                          <h2>{t('stats.rivalFreg')}</h2>
+                          <p className="stats-section-hint">{t('stats.rivalFregHint')}</p>
                         </div>
                       </div>
                       <div className="rivalry-player-name">{rivalryData.freg.name}</div>
                       <div className="rivalry-stats">
                         <div className="rivalry-stat-item">
                           <span className="rivalry-stat-value">{rivalryData.freg.games}</span>
-                          <span className="rivalry-stat-label">🎮 partidas juntos</span>
+                          <span className="rivalry-stat-label">🎮 {t('stats.rivalGamesTogther')}</span>
                         </div>
                         <div className="rivalry-stat-item win">
                           <span className="rivalry-stat-value">{rivalryData.freg.myWins}</span>
-                          <span className="rivalry-stat-label">📈 suas vitórias</span>
+                          <span className="rivalry-stat-label">📈 {t('stats.rivalMyWins')}</span>
                         </div>
                         <div className="rivalry-stat-item loss">
                           <span className="rivalry-stat-value">{rivalryData.freg.theirWins}</span>
-                          <span className="rivalry-stat-label">📉 vitórias deles</span>
+                          <span className="rivalry-stat-label">📉 {t('stats.rivalTheirWins')}</span>
                         </div>
                       </div>
                     </div>
@@ -486,23 +486,23 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       <div className="rivalry-header">
                         <span className="rivalry-crown">💀</span>
                         <div>
-                          <h2>Maior Carrasco</h2>
-                          <p className="stats-section-hint">Quem mais te derrota</p>
+                          <h2>{t('stats.rivalCarrasco')}</h2>
+                          <p className="stats-section-hint">{t('stats.rivalCarrascoHint')}</p>
                         </div>
                       </div>
                       <div className="rivalry-player-name">{rivalryData.carrasco.name}</div>
                       <div className="rivalry-stats">
                         <div className="rivalry-stat-item">
                           <span className="rivalry-stat-value">{rivalryData.carrasco.games}</span>
-                          <span className="rivalry-stat-label">🎮 partidas juntos</span>
+                          <span className="rivalry-stat-label">🎮 {t('stats.rivalGamesTogther')}</span>
                         </div>
                         <div className="rivalry-stat-item win">
                           <span className="rivalry-stat-value">{rivalryData.carrasco.myWins}</span>
-                          <span className="rivalry-stat-label">📈 suas vitórias</span>
+                          <span className="rivalry-stat-label">📈 {t('stats.rivalMyWins')}</span>
                         </div>
                         <div className="rivalry-stat-item loss">
                           <span className="rivalry-stat-value">{rivalryData.carrasco.theirWins}</span>
-                          <span className="rivalry-stat-label">📉 vitórias deles</span>
+                          <span className="rivalry-stat-label">📉 {t('stats.rivalTheirWins')}</span>
                         </div>
                       </div>
                     </div>

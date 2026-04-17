@@ -59,35 +59,39 @@ export const useGoogleAuth = () => {
         localStorage.removeItem(TOKEN_KEY);
       }
 
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (response) => {
-          if (response.error) {
-            setError(response.error);
-            return;
-          }
-          setError(null);
-          setAccessToken(response.access_token);
-          setIsSignedIn(true);
-          // Invalidate token 60 s before actual expiry to force re-auth
-          const ttl = ((response.expires_in || 3600) - 60) * 1000;
-          try {
-            localStorage.setItem(TOKEN_KEY, JSON.stringify({
-              token: response.access_token,
-              expiresAt: Date.now() + ttl,
-            }));
-          } catch {}
-          setTimeout(() => {
-            setAccessToken(null);
-            setIsSignedIn(false);
-            localStorage.removeItem(TOKEN_KEY);
-          }, ttl);
-        },
-      });
-
-      setTokenClient(client);
-      setIsLoading(false);
+      try {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: (response) => {
+            if (response.error) {
+              setError(response.error);
+              return;
+            }
+            setError(null);
+            setAccessToken(response.access_token);
+            setIsSignedIn(true);
+            // Invalidate token 60 s before actual expiry to force re-auth
+            const ttl = ((response.expires_in || 3600) - 60) * 1000;
+            try {
+              localStorage.setItem(TOKEN_KEY, JSON.stringify({
+                token: response.access_token,
+                expiresAt: Date.now() + ttl,
+              }));
+            } catch {}
+            setTimeout(() => {
+              setAccessToken(null);
+              setIsSignedIn(false);
+              localStorage.removeItem(TOKEN_KEY);
+            }, ttl);
+          },
+        });
+        setTokenClient(client);
+      } catch (err) {
+        setError('google-init-failed');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     if (window.google?.accounts) {

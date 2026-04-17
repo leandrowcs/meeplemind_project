@@ -117,7 +117,7 @@ export const Profile = ({ onNavigate, games, primaryPlayer, getPlayerStats, libr
           <div className="player-banner">
             <h2>{primaryPlayer}</h2>
             <p className="player-banner-stats">
-              🎮 {playerStats.totalGames} partida{playerStats.totalGames !== 1 ? 's' : ''} • 🏆 {playerStats.competitiveWins} vitória{playerStats.competitiveWins !== 1 ? 's' : ''}
+              🎮 {playerStats.totalGames} {playerStats.totalGames === 1 ? t('home.game') : t('home.games')} • 🏆 {playerStats.competitiveWins} {playerStats.competitiveWins === 1 ? t('profile.bannerCompWin') : t('profile.bannerCompWins')}
             </p>
           </div>
 
@@ -168,7 +168,7 @@ export const Profile = ({ onNavigate, games, primaryPlayer, getPlayerStats, libr
                         <span className="stat-icon">🎯</span>
                         <div className="stat-group">
                           <span className="stat-number stat-number-sm">{playerStats.bestGame}</span>
-                          <span className="stat-label">({playerStats.bestGameWins} vitória{playerStats.bestGameWins !== 1 ? 's' : ''})</span>
+                          <span className="stat-label">({playerStats.bestGameWins} {playerStats.bestGameWins === 1 ? t('stats.victory') : t('stats.victories')})</span>
                         </div>
                       </div>
                     </>
@@ -182,7 +182,7 @@ export const Profile = ({ onNavigate, games, primaryPlayer, getPlayerStats, libr
                     />
                   </div>
                   <span className="progress-label">
-                    Partidas: {playerStats.competitiveWins}/{playerStats.competitiveGames}
+                    {t('profile.gamesRecord')} {playerStats.competitiveWins}/{playerStats.competitiveGames}
                   </span>
                 </div>
               </div>
@@ -217,7 +217,7 @@ export const Profile = ({ onNavigate, games, primaryPlayer, getPlayerStats, libr
                       <div className="stat-item stat-item-team">
                         <span className="stat-icon">👥</span>
                         <div className="stat-group">
-                          <span className="stat-label stat-label-title">Time Favorito</span>
+                          <span className="stat-label stat-label-title">{t('profile.favTeam')}</span>
                           <span className="stat-team-names">
                             {playerStats.favoriteCoopTeam.join(' • ')}
                           </span>
@@ -234,7 +234,7 @@ export const Profile = ({ onNavigate, games, primaryPlayer, getPlayerStats, libr
                     />
                   </div>
                   <span className="progress-label">
-                    Partidas: {playerStats.cooperativeWins}/{playerStats.cooperativeGames}
+                    {t('profile.gamesRecord')} {playerStats.cooperativeWins}/{playerStats.cooperativeGames}
                   </span>
                 </div>
               </div>
