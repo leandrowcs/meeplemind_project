@@ -46,7 +46,7 @@ export const useLibrary = () => {
   };
 
   const addToLibrary = useCallback(
-    ({ name, category = '', minPlayers = null, maxPlayers = null } = {}) => {
+    ({ name, category = '', minPlayers = null, maxPlayers = null, description = '', coverUrl = '' } = {}) => {
       const cleanName = sanitizeText(name);
       if (!cleanName) return null;
 
@@ -63,6 +63,8 @@ export const useLibrary = () => {
           category: sanitizeText(category, 50),
           minPlayers: sanitizeNumber(minPlayers, 1, 20),
           maxPlayers: sanitizeNumber(maxPlayers, 1, 20),
+          description: sanitizeText(description, 500),
+          coverUrl: sanitizeText(coverUrl, 1000),
           owned: false,
           addedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -134,6 +136,14 @@ export const useLibrary = () => {
                 updates.maxPlayers !== undefined
                   ? sanitizeNumber(updates.maxPlayers, 1, 20)
                   : g.maxPlayers,
+              description:
+                updates.description !== undefined
+                  ? sanitizeText(updates.description, 500)
+                  : g.description ?? '',
+              coverUrl:
+                updates.coverUrl !== undefined
+                  ? sanitizeText(updates.coverUrl, 1000)
+                  : g.coverUrl ?? '',
               owned: updates.owned !== undefined ? updates.owned : g.owned,
               updatedAt: new Date().toISOString(),
             }
