@@ -11,6 +11,7 @@ import {
   Zap,
   BarChart3,
   Dice5,
+  Dices,
   X,
   Dot,
 } from 'lucide-react';
@@ -146,7 +147,7 @@ export const PlayerStatsModal = ({ player, games, onClose }) => {
 
         {mostPlayed && (
           <div className="player-section">
-            <h3><Dice5 size={16} /> Jogo Favorito</h3>
+            <h3><Dices size={16} /> Jogo Favorito</h3>
             <div className="favorite-game">
               <span className="fg-name">{mostPlayed[0]}</span>
               <span className="fg-count">{mostPlayed[1]}× jogado</span>

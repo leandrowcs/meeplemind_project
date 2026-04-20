@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Dice5 } from 'lucide-react';
+import { Dices } from 'lucide-react';
 import { useGames } from './hooks/useGames';
 import { useLibrary } from './hooks/useLibrary';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
@@ -31,8 +31,6 @@ function App() {
     updateGame,
     mergeFromDrive,
     getStats,
-    getCompetitiveStats,
-    getCooperativeStats,
     getPlayerStats,
     getUniqueGames,
     getUniquePlayers,
@@ -45,6 +43,7 @@ function App() {
   const lib = useLibrary();
   const auth = useGoogleAuth();
   const drive = useGoogleDrive(auth.accessToken);
+  const displayPlayerName = auth.isSignedIn && auth.user?.name ? auth.user.name : primaryPlayer;
 
   const stats = getStats();
 
@@ -131,7 +130,7 @@ function App() {
   if (isLoading) {
     return (
       <div className="loading-screen">
-        <span className="loading-icon"><Dice5 size={24} /></span>
+        <span className="loading-icon"><Dices size={24} /></span>
         <p>MeepleMind</p>
       </div>
     );
@@ -157,6 +156,7 @@ function App() {
           exportToJSON={handleExportToJSON}
           importFromJSON={handleImportFromJSON}
           primaryPlayer={primaryPlayer}
+          displayPlayerName={displayPlayerName}
           onChangePrimaryPlayer={(name) => {
             localStorage.setItem(PRIMARY_PLAYER_KEY, name);
             setPrimaryPlayer(name);
@@ -194,8 +194,12 @@ function App() {
           games={games}
           stats={stats}
           primaryPlayer={primaryPlayer}
-          getCompetitiveStats={getCompetitiveStats}
-          getCooperativeStats={getCooperativeStats}
+          exportToCSV={handleExportToCSV}
+          exportToJSON={handleExportToJSON}
+          importFromJSON={handleImportFromJSON}
+          clearAllData={handleClearAllData}
+          auth={auth}
+          syncStatus={syncStatus}
         />
       )}
       {currentPage === 'profile' && (
@@ -203,6 +207,8 @@ function App() {
           onNavigate={setCurrentPage}
           games={games}
           primaryPlayer={primaryPlayer}
+          displayPlayerName={displayPlayerName}
+          googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
           getPlayerStats={getPlayerStats}
           library={lib.library}
         />

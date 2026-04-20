@@ -3,7 +3,7 @@ import {
   BookOpen,
   CalendarDays,
   Check,
-  Dice5,
+  Dices,
   Gamepad2,
   LoaderCircle,
   Pencil,
@@ -631,11 +631,11 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                             }}
                           />
                           <div className="lib-item-thumb-fallback" style={{ display: 'none' }}>
-                            <Dice5 size={18} />
+                            <Dices size={18} />
                           </div>
                         </>
                       ) : (
-                        <div className="lib-item-thumb-fallback"><Dice5 size={18} /></div>
+                        <div className="lib-item-thumb-fallback"><Dices size={18} /></div>
                       )}
                     </div>
 

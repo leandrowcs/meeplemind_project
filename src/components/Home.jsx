@@ -3,9 +3,12 @@ import {
   BarChart3,
   BookOpen,
   CalendarDays,
+  CircleStar,
+  Dices,
   Flame,
   Hand,
   Handshake,
+  History,
   House,
   Swords,
   Target,
@@ -25,6 +28,7 @@ export const Home = ({
   exportToJSON,
   importFromJSON,
   primaryPlayer,
+  displayPlayerName,
   clearAllData,
   auth,
   syncStatus,
@@ -260,8 +264,7 @@ export const Home = ({
   ]);
 
   const highlights = useMemo(() => {
-    const shuffled = [...insightPool].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 3);
+    return insightPool.slice(0, 3);
   }, [insightPool]);
 
   const currentCarouselIndex = recentGames.length === 0 ? 0 : Math.min(carouselIndex, recentGames.length - 1);
@@ -302,7 +305,7 @@ export const Home = ({
           <div className="header-main-row">
             <div>
               <h2 className="welcome-message">
-                {t('home.welcome')}, <span className="username">{primaryPlayer}</span>
+                {t('home.welcome')}, <span className="username">{displayPlayerName || primaryPlayer}</span>
                 <Hand size={18} className="waving-hand" />
               </h2>
               <p className="header-subtitle"><Flame size={16} /> {gamesLast30Days} {t('home.gamesLast30Days')}</p>
@@ -323,7 +326,7 @@ export const Home = ({
         <main className="home-content">
           <section className="home-card">
             <div className="card-headline">
-              <h3 className="card-title">{t('home.lastGame')}</h3>
+              <h3 className="card-title"><Dices size={18} /> {t('home.lastGame')}</h3>
               {recentGames.length > 1 && (
                 <div className="carousel-actions" role="group" aria-label="carousel actions">
                   <button className="carousel-btn" onClick={prevSlide} aria-label="Previous game">‹</button>
@@ -371,7 +374,7 @@ export const Home = ({
 
           <section className="home-card">
             <div className="card-headline">
-              <h3 className="card-title">{t('home.highlights')}</h3>
+              <h3 className="card-title"><CircleStar size={18} /> {t('home.highlights')}</h3>
             </div>
             <div className="highlights-list">
               {highlights.map((item) => (
@@ -391,7 +394,7 @@ export const Home = ({
 
           <section className="home-card">
             <div className="card-headline">
-              <h3 className="card-title">{t('home.history')}</h3>
+              <h3 className="card-title"><History size={18} /> {t('home.history')}</h3>
             </div>
 
             <div className="history-summary-grid">
