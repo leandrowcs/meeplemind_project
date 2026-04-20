@@ -1,4 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import {
+  BookOpen,
+  Check,
+  Handshake,
+  Sword,
+  Trophy,
+  Skull,
+  X,
+} from 'lucide-react';
 import { Button, IconButton } from './Button';
 import { useLanguage } from '../hooks/useLanguage';
 import './NewGame.css';
@@ -225,7 +234,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                     >
                       {suggestions.gamesFromLib?.has(game.toLowerCase()) && (
                         <span className="suggestion-lib-badge" title={t('newgame.fromLibrary')}>
-                          📚
+                          <BookOpen size={14} />
                         </span>
                       )}
                       {game}
@@ -235,7 +244,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
               )}
             </div>
             {formData.game && (
-              <div className="selected-item">✓ {formData.game}</div>
+              <div className="selected-item"><Check size={14} /> {formData.game}</div>
             )}
           </div>
 
@@ -249,7 +258,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                   className={`game-type-btn ${formData.gameType === 'competitive' ? 'selected' : ''}`}
                   onClick={() => handleGameTypeSelect('competitive')}
                 >
-                  <span className="game-type-icon">⚔️</span>
+                  <span className="game-type-icon"><Sword size={18} /></span>
                   <span className="game-type-label">{t('newgame.typeCompetitive')}</span>
                   <span className="game-type-desc">{t('newgame.typeCompetitiveDesc')}</span>
                 </button>
@@ -258,7 +267,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                   className={`game-type-btn ${formData.gameType === 'cooperative' ? 'selected' : ''}`}
                   onClick={() => handleGameTypeSelect('cooperative')}
                 >
-                  <span className="game-type-icon">🤝</span>
+                  <span className="game-type-icon"><Handshake size={18} /></span>
                   <span className="game-type-label">{t('newgame.typeCooperative')}</span>
                   <span className="game-type-desc">{t('newgame.typeCooperativeDesc')}</span>
                 </button>
@@ -336,7 +345,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                           className="btn-remove"
                           onClick={() => handleRemovePlayer(index)}
                           title={t('newgame.removePlayer')}>
-                          ✕
+                          <X size={16} />
                         </button>
                       </div>
                     ))}
@@ -371,7 +380,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                           className={`coop-result-btn win ${formData.coopResult === 'win' ? 'selected' : ''}`}
                           onClick={() => setFormData((prev) => ({ ...prev, coopResult: 'win' }))}
                         >
-                          <span>🏆</span>
+                          <span><Trophy size={16} /></span>
                           <span>{t('history.coopWin')}</span>
                           <span className="coop-result-sub">{t('newgame.coopWinSub')}</span>
                         </button>
@@ -380,7 +389,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                           className={`coop-result-btn loss ${formData.coopResult === 'loss' ? 'selected' : ''}`}
                           onClick={() => setFormData((prev) => ({ ...prev, coopResult: 'loss' }))}
                         >
-                          <span>💀</span>
+                          <span><Skull size={16} /></span>
                           <span>{t('history.coopLoss')}</span>
                           <span className="coop-result-sub">{t('newgame.coopLossSub')}</span>
                         </button>
@@ -442,7 +451,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
             disabled={!isValid}
             className="submit-btn"
           >
-            ✓ {t('newgame.register')}
+            <Check size={16} /> {t('newgame.register')}
           </Button>
         </form>
       </div>

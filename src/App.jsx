@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Dice5 } from 'lucide-react';
 import { useGames } from './hooks/useGames';
 import { useLibrary } from './hooks/useLibrary';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
@@ -130,7 +131,7 @@ function App() {
   if (isLoading) {
     return (
       <div className="loading-screen">
-        <span className="loading-icon">🎲</span>
+        <span className="loading-icon"><Dice5 size={24} /></span>
         <p>MeepleMind</p>
       </div>
     );
@@ -164,6 +165,8 @@ function App() {
           clearAllData={handleClearAllData}
           auth={auth}
           syncStatus={syncStatus}
+          games={games}
+          library={lib.library}
         />
       )}
       {currentPage === 'newgame' && (

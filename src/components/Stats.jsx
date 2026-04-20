@@ -1,5 +1,20 @@
 import { useState, useMemo } from 'react';
 import {
+  AlertTriangle,
+  BarChart3,
+  Crown,
+  Gamepad2,
+  Medal,
+  PieChart,
+  Skull,
+  Swords,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Trophy,
+  Users,
+} from 'lucide-react';
+import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -206,12 +221,12 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
 
         {!games ? (
           <div className="empty-stats">
-            <span className="empty-icon">⚠️</span>
+            <span className="empty-icon"><AlertTriangle size={22} /></span>
             <p>{t('stats.dataError')}</p>
           </div>
         ) : games.length === 0 ? (
           <div className="empty-stats">
-            <span className="empty-icon">📊</span>
+            <span className="empty-icon"><BarChart3 size={22} /></span>
             <p>{t('stats.noData')}</p>
             <Button variant="accent" onClick={() => onNavigate('newgame')}>
               {t('home.newGame')}
@@ -222,21 +237,21 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
             {/* Summary Cards */}
             <div className="summary-cards">
               <div className="summary-card">
-                <span className="summary-icon">🎮</span>
+                <span className="summary-icon"><Gamepad2 size={18} /></span>
                 <div className="summary-content">
                   <span className="summary-value">{stats?.totalGames || 0}</span>
                   <span className="summary-label">{t('stats.totalGames')}</span>
                 </div>
               </div>
               <div className="summary-card">
-                <span className="summary-icon">🎯</span>
+                <span className="summary-icon"><Target size={18} /></span>
                 <div className="summary-content">
                   <span className="summary-value">{stats?.uniqueGames || 0}</span>
                   <span className="summary-label">{t('stats.gameStats')}</span>
                 </div>
               </div>
               <div className="summary-card">
-                <span className="summary-icon">👥</span>
+                <span className="summary-icon"><Users size={18} /></span>
                 <div className="summary-content">
                   <span className="summary-value">{stats?.totalPlayers || 0}</span>
                   <span className="summary-label">{t('stats.playerStats')}</span>
@@ -253,7 +268,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                 {t('stats.cooperative')}
               </button>
               <button className={`tab-btn ${activeTab === 'rivalry' ? 'active' : ''}`} onClick={() => setActiveTab('rivalry')}>
-                🤜💥🤛 {t('stats.rivalry')}
+                <Swords size={16} /> {t('stats.rivalry')}
               </button>
             </div>
 
@@ -262,7 +277,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
               <div className="stats-grid">
                 {/* Top Winners + Bar Chart */}
                 <div className="stats-section">
-                  <h2>🥇 {t('stats.topWinnersLabel')}</h2>
+                  <h2><Medal size={18} /> {t('stats.topWinnersLabel')}</h2>
                   <p className="stats-section-hint">{t('history.filterCompetitive')}</p>
                   {competitiveWins.length > 0 ? (
                     <>
@@ -292,7 +307,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
 
                 {/* Win Rate + Bar Chart */}
                 <div className="stats-section">
-                  <h2>📊 {t('stats.winRateLabel')}</h2>
+                  <h2><BarChart3 size={18} /> {t('stats.winRateLabel')}</h2>
                   <p className="stats-section-hint">{t('stats.winRateByPlayer')}</p>
                   {competitivePlayerStats.length > 0 ? (
                     <>
@@ -322,7 +337,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
 
                 {/* Most Played Games + Doughnut */}
                 <div className="stats-section">
-                  <h2>🥧 {t('stats.mostPlayedLabel')}</h2>
+                  <h2><PieChart size={18} /> {t('stats.mostPlayedLabel')}</h2>
                   {competitiveGameFreq.length > 0 ? (
                     <>
                       <div className="chart-wrapper chart-wrapper-doughnut">
@@ -354,7 +369,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
             {activeTab === 'cooperative' && (
               <div className="stats-grid">
                 <div className="stats-section full-width">
-                  <h2>🎯 {t('stats.successRateLabel')}</h2>
+                  <h2><Target size={18} /> {t('stats.successRateLabel')}</h2>
                   {cooperativeStats.total > 0 ? (
                     <div className="success-rate-card">
                       <div className="success-rate-content">
@@ -364,13 +379,13 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                         </div>
                         <div className="rate-stats">
                           <div className="rate-item">
-                            <span className="rate-icon">🏆</span>
+                            <span className="rate-icon"><Trophy size={16} /></span>
                             <span className="rate-number">{cooperativeStats.wins}</span>
                             <span className="rate-text">{cooperativeStats.wins === 1 ? t('stats.victory') : t('stats.victories')}</span>
                           </div>
                           <div className="rate-divider">|</div>
                           <div className="rate-item">
-                            <span className="rate-icon">💀</span>
+                            <span className="rate-icon"><Skull size={16} /></span>
                             <span className="rate-number">{cooperativeStats.losses}</span>
                             <span className="rate-text">{cooperativeStats.losses === 1 ? t('stats.defeat') : t('stats.defeats')}</span>
                           </div>
@@ -387,7 +402,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
 
                 {cooperativeGameFreq.length > 0 && (
                   <div className="stats-section">
-                    <h2>🥧 {t('stats.mostPlayedLabel')}</h2>
+                    <h2><PieChart size={18} /> {t('stats.mostPlayedLabel')}</h2>
                     <div className="chart-wrapper chart-wrapper-doughnut">
                       <Doughnut data={coopDoughnutData} options={DOUGHNUT_OPTIONS} />
                     </div>
@@ -422,7 +437,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                     {/* Maior Rival */}
                     <div className="stats-section rivalry-card">
                       <div className="rivalry-header">
-                        <span className="rivalry-crown">⚔️</span>
+                        <span className="rivalry-crown"><Swords size={18} /></span>
                         <div>
                           <h2>{t('stats.rivalMajor')}</h2>
                           <p className="stats-section-hint">{t('stats.rivalMajorHint')}</p>
@@ -432,15 +447,15 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       <div className="rivalry-stats">
                         <div className="rivalry-stat-item">
                           <span className="rivalry-stat-value">{rivalryData.rival.games}</span>
-                          <span className="rivalry-stat-label">🎮 {t('stats.rivalGamesTogther')}</span>
+                          <span className="rivalry-stat-label"><Gamepad2 size={14} /> {t('stats.rivalGamesTogther')}</span>
                         </div>
                         <div className="rivalry-stat-item win">
                           <span className="rivalry-stat-value">{rivalryData.rival.myWins}</span>
-                          <span className="rivalry-stat-label">📈 {t('stats.rivalMyWins')}</span>
+                          <span className="rivalry-stat-label"><TrendingUp size={14} /> {t('stats.rivalMyWins')}</span>
                         </div>
                         <div className="rivalry-stat-item loss">
                           <span className="rivalry-stat-value">{rivalryData.rival.theirWins}</span>
-                          <span className="rivalry-stat-label">📉 {t('stats.rivalTheirWins')}</span>
+                          <span className="rivalry-stat-label"><TrendingDown size={14} /> {t('stats.rivalTheirWins')}</span>
                         </div>
                       </div>
                       <div className="rivalry-bar-wrap">
@@ -458,7 +473,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                     {/* Maior Freguês */}
                     <div className="stats-section rivalry-card rivalry-card-win">
                       <div className="rivalry-header">
-                        <span className="rivalry-crown">👑</span>
+                        <span className="rivalry-crown"><Crown size={18} /></span>
                         <div>
                           <h2>{t('stats.rivalFreg')}</h2>
                           <p className="stats-section-hint">{t('stats.rivalFregHint')}</p>
@@ -468,15 +483,15 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       <div className="rivalry-stats">
                         <div className="rivalry-stat-item">
                           <span className="rivalry-stat-value">{rivalryData.freg.games}</span>
-                          <span className="rivalry-stat-label">🎮 {t('stats.rivalGamesTogther')}</span>
+                          <span className="rivalry-stat-label"><Gamepad2 size={14} /> {t('stats.rivalGamesTogther')}</span>
                         </div>
                         <div className="rivalry-stat-item win">
                           <span className="rivalry-stat-value">{rivalryData.freg.myWins}</span>
-                          <span className="rivalry-stat-label">📈 {t('stats.rivalMyWins')}</span>
+                          <span className="rivalry-stat-label"><TrendingUp size={14} /> {t('stats.rivalMyWins')}</span>
                         </div>
                         <div className="rivalry-stat-item loss">
                           <span className="rivalry-stat-value">{rivalryData.freg.theirWins}</span>
-                          <span className="rivalry-stat-label">📉 {t('stats.rivalTheirWins')}</span>
+                          <span className="rivalry-stat-label"><TrendingDown size={14} /> {t('stats.rivalTheirWins')}</span>
                         </div>
                       </div>
                     </div>
@@ -484,7 +499,7 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                     {/* Maior Carrasco */}
                     <div className="stats-section rivalry-card rivalry-card-loss">
                       <div className="rivalry-header">
-                        <span className="rivalry-crown">💀</span>
+                        <span className="rivalry-crown"><Skull size={18} /></span>
                         <div>
                           <h2>{t('stats.rivalCarrasco')}</h2>
                           <p className="stats-section-hint">{t('stats.rivalCarrascoHint')}</p>
@@ -494,15 +509,15 @@ export const Stats = ({ onNavigate, games, stats, primaryPlayer }) => {
                       <div className="rivalry-stats">
                         <div className="rivalry-stat-item">
                           <span className="rivalry-stat-value">{rivalryData.carrasco.games}</span>
-                          <span className="rivalry-stat-label">🎮 {t('stats.rivalGamesTogther')}</span>
+                          <span className="rivalry-stat-label"><Gamepad2 size={14} /> {t('stats.rivalGamesTogther')}</span>
                         </div>
                         <div className="rivalry-stat-item win">
                           <span className="rivalry-stat-value">{rivalryData.carrasco.myWins}</span>
-                          <span className="rivalry-stat-label">📈 {t('stats.rivalMyWins')}</span>
+                          <span className="rivalry-stat-label"><TrendingUp size={14} /> {t('stats.rivalMyWins')}</span>
                         </div>
                         <div className="rivalry-stat-item loss">
                           <span className="rivalry-stat-value">{rivalryData.carrasco.theirWins}</span>
-                          <span className="rivalry-stat-label">📉 {t('stats.rivalTheirWins')}</span>
+                          <span className="rivalry-stat-label"><TrendingDown size={14} /> {t('stats.rivalTheirWins')}</span>
                         </div>
                       </div>
                     </div>

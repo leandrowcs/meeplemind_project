@@ -1,4 +1,19 @@
 import { useState, useCallback } from 'react';
+import {
+  BookOpen,
+  CalendarDays,
+  Check,
+  Dice5,
+  Gamepad2,
+  LoaderCircle,
+  Pencil,
+  Search,
+  Star,
+  Trash2,
+  Trophy,
+  Users,
+  X,
+} from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 import { GAME_CATEGORIES } from '../hooks/useLibrary';
 import './Library.css';
@@ -113,9 +128,9 @@ const BoardgamePlaceholder = () => (
       <ellipse cx="84" cy="158" rx="9" ry="14" transform="rotate(10 84 158)" />
       <ellipse cx="116" cy="158" rx="9" ry="14" transform="rotate(-10 116 158)" />
     </g>
-    {/* Stars */}
+    {/* Accent dots */}
     {[[40, 40], [160, 40], [100, 230]].map(([cx, cy], i) => (
-      <text key={i} x={cx} y={cy} textAnchor="middle" fontSize="14" fill="#f59e0b" opacity="0.6">★</text>
+      <circle key={i} cx={cx} cy={cy} r="4" fill="#f59e0b" opacity="0.6" />
     ))}
     {/* Label */}
     <text x="100" y="255" textAnchor="middle" fontSize="9" fill="#475569" fontFamily="sans-serif">
@@ -186,7 +201,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
         onClick={(e) => e.stopPropagation()}
       >
         <button className="modal-close" onClick={onClose} aria-label={t('common.close')}>
-          ✕
+          <X size={18} />
         </button>
 
         {/* Cover */}
@@ -208,7 +223,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
           <div className="lib-details-name-row">
             <h2 className="lib-details-name">{game.name}</h2>
             {game.owned && (
-              <span className="lib-badge lib-badge-owned">⭐ {t('library.owned')}</span>
+              <span className="lib-badge lib-badge-owned"><Star size={14} /> {t('library.owned')}</span>
             )}
           </div>
 
@@ -218,7 +233,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
             )}
             {(game.minPlayers || game.maxPlayers) && (
               <span className="lib-badge">
-                👥 {game.minPlayers ?? '?'}–{game.maxPlayers ?? '?'}
+                <Users size={14} /> {game.minPlayers ?? '?'}–{game.maxPlayers ?? '?'}
               </span>
             )}
           </div>
@@ -235,7 +250,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
             ) : (
               <>
                 <div className="lib-stat-row">
-                  <span className="lib-stat-icon">🎮</span>
+                  <span className="lib-stat-icon"><Gamepad2 size={14} /></span>
                   <span className="lib-stat-value">
                     <strong>{stats.timesPlayed}</strong> {t('library.timesPlayed')}
                   </span>
@@ -243,7 +258,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
 
                 {stats.lastPlayed && (
                   <div className="lib-stat-row">
-                    <span className="lib-stat-icon">📅</span>
+                    <span className="lib-stat-icon"><CalendarDays size={14} /></span>
                     <span className="lib-stat-value">
                       <strong>{t('library.lastPlayed')}:</strong>{' '}
                       {formatLastPlayed(stats.lastPlayed)}
@@ -253,7 +268,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
 
                 {stats.players.length > 0 && (
                   <div className="lib-stat-row lib-stat-players-row">
-                    <span className="lib-stat-icon">👥</span>
+                    <span className="lib-stat-icon"><Users size={14} /></span>
                     <div className="lib-stat-players">
                       <span className="lib-stat-label">{t('library.playersLabel')}:</span>
                       <div className="lib-stat-player-chips">
@@ -267,7 +282,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
 
                 {stats.topWinner ? (
                   <div className="lib-stat-row">
-                    <span className="lib-stat-icon">🏆</span>
+                    <span className="lib-stat-icon"><Trophy size={14} /></span>
                     <span className="lib-stat-value">
                       <strong>{t('library.topWinner')}:</strong>{' '}
                       {stats.topWinner}{' '}
@@ -276,7 +291,7 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
                   </div>
                 ) : (
                   <div className="lib-stat-row">
-                    <span className="lib-stat-icon">🏆</span>
+                    <span className="lib-stat-icon"><Trophy size={14} /></span>
                     <span className="lib-stat-value lib-stat-muted">{t('library.noWinner')}</span>
                   </div>
                 )}
@@ -299,22 +314,11 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
 }
 
 const IconPencil = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-  </svg>
+  <Pencil size={16} />
 );
 
 const IconTrash = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"/>
-    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-    <path d="M10 11v6"/>
-    <path d="M14 11v6"/>
-    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-  </svg>
+  <Trash2 size={16} />
 );
 
 // ──────────────────────────────────────────────────
@@ -454,7 +458,7 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
               setFormData(EMPTY_FORM);
             }}
           >
-            {showForm ? `✕ ${t('common.cancel')}` : `+ ${t('library.addGame')}`}
+            {showForm ? <><X size={16} /> {t('common.cancel')}</> : <><BookOpen size={16} /> {t('library.addGame')}</>}
           </button>
 
           {/* Add game form */}
@@ -488,11 +492,11 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                     disabled={bggStatus === 'loading'}
                   >
                     {bggStatus === 'loading'
-                      ? `\u23f3 ${t('library.bggSearching')}`
-                      : `\ud83d\udd0d ${t('library.bggSearch')}`}
+                      ? <><LoaderCircle size={14} /> {t('library.bggSearching')}</>
+                      : <><Search size={14} /> {t('library.bggSearch')}</>}
                   </button>
                   {bggStatus === 'found' && (
-                    <span className="lib-bgg-msg lib-bgg-success">\u2713 {t('library.bggFound')}</span>
+                    <span className="lib-bgg-msg lib-bgg-success"><Check size={14} /> {t('library.bggFound')}</span>
                   )}
                   {bggStatus === 'notfound' && (
                     <span className="lib-bgg-msg lib-bgg-error">{t('library.bggNotFound')}</span>
@@ -593,7 +597,7 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
           {/* Library list */}
           {library.length === 0 ? (
             <div className="library-empty">
-              <span className="library-empty-icon">📚</span>
+              <span className="library-empty-icon"><BookOpen size={24} /></span>
               <p>{t('library.noGames')}</p>
             </div>
           ) : (
@@ -627,11 +631,11 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                             }}
                           />
                           <div className="lib-item-thumb-fallback" style={{ display: 'none' }}>
-                            🎲
+                            <Dice5 size={18} />
                           </div>
                         </>
                       ) : (
-                        <div className="lib-item-thumb-fallback">🎲</div>
+                        <div className="lib-item-thumb-fallback"><Dice5 size={18} /></div>
                       )}
                     </div>
 
@@ -640,7 +644,7 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                         <span className="library-item-name">{game.name}</span>
                         {game.owned && (
                           <span className="lib-badge lib-badge-owned" title={t('library.ownedLabel')}>
-                            ⭐ {t('library.owned')}
+                            <Star size={14} /> {t('library.owned')}
                           </span>
                         )}
                       </div>
@@ -652,12 +656,12 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                         )}
                         {(game.minPlayers || game.maxPlayers) && (
                           <span className="lib-badge">
-                            👥 {game.minPlayers ?? '?'}–{game.maxPlayers ?? '?'}
+                            <Users size={14} /> {game.minPlayers ?? '?'}–{game.maxPlayers ?? '?'}
                           </span>
                         )}
                         {count > 0 && (
                           <span className="lib-badge lib-badge-plays">
-                            🎮 {count}×
+                            <Gamepad2 size={14} /> {count}x
                           </span>
                         )}
                       </div>
@@ -729,11 +733,11 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                   disabled={bggEditStatus === 'loading'}
                 >
                   {bggEditStatus === 'loading'
-                    ? `\u23f3 ${t('library.bggSearching')}`
-                    : `\ud83d\udd0d ${t('library.bggSearch')}`}
+                    ? <><LoaderCircle size={14} /> {t('library.bggSearching')}</>
+                    : <><Search size={14} /> {t('library.bggSearch')}</>}
                 </button>
                 {bggEditStatus === 'found' && (
-                  <span className="lib-bgg-msg lib-bgg-success">\u2713 {t('library.bggFound')}</span>
+                  <span className="lib-bgg-msg lib-bgg-success"><Check size={14} /> {t('library.bggFound')}</span>
                 )}
                 {bggEditStatus === 'notfound' && (
                   <span className="lib-bgg-msg lib-bgg-error">{t('library.bggNotFound')}</span>

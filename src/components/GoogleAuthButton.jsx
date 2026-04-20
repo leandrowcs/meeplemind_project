@@ -1,4 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage';
+import { AlertTriangle, Check, LoaderCircle } from 'lucide-react';
 import './GoogleAuthButton.css';
 
 /**
@@ -38,7 +39,7 @@ export const GoogleAuthButton = ({ auth, syncStatus }) => {
               <span
                 className={`gauth-sync ${syncStatus === 'error' ? 'gauth-sync--error' : syncStatus === 'syncing' ? 'gauth-sync--syncing' : ''}`}
               >
-                {syncStatus === 'syncing' ? '⟳ ' : syncStatus === 'synced' ? '✓ ' : '⚠ '}
+                {syncStatus === 'syncing' ? <LoaderCircle size={14} /> : syncStatus === 'synced' ? <Check size={14} /> : <AlertTriangle size={14} />}
                 {syncLabel}
               </span>
             )}
