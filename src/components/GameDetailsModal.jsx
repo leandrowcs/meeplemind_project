@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Star, X } from 'lucide-react';
 import { Button } from './Button';
 import './GameDetailsModal.css';
 
@@ -14,7 +15,7 @@ export const GameDetailsModal = ({ game, onClose, onSave }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>✕</button>
+        <button className="modal-close" onClick={onClose}><X size={16} /></button>
 
         <h2>{game.game}</h2>
 
@@ -29,7 +30,7 @@ export const GameDetailsModal = ({ game, onClose, onSave }) => {
                 onClick={() => setRating(rating === star ? star - 1 : star)}
                 title={`${star} estrela${star > 1 ? 's' : ''}`}
               >
-                ⭐
+                <Star size={16} fill={rating >= star ? 'currentColor' : 'none'} />
               </button>
             ))}
           </div>
@@ -43,7 +44,7 @@ export const GameDetailsModal = ({ game, onClose, onSave }) => {
           <label htmlFor="notes">Notas sobre a Partida</label>
           <textarea
             id="notes"
-            placeholder="Ex: João tiltou no final 😂, próxima vez em outro jogo..."
+            placeholder="Ex: partida acirrada até o final, próxima vez em outro jogo..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             maxLength="500"

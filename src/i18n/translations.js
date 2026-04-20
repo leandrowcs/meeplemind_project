@@ -7,8 +7,8 @@ export const translations = {
     'home.topPlayer': 'Top Jogador',
     'home.mostPlayed': 'Mais Jogado',
     'home.newGame': 'Nova Partida',
-    'home.history': '📜 Histórico',
-    'home.stats': '📊 Estatísticas',
+    'home.history': 'Histórico',
+    'home.stats': 'Estatísticas',
     'home.manageData': 'Gerenciar Dados',
     'home.exportCSV': 'Exportar CSV',
     'home.backupJSON': 'Backup JSON',
@@ -18,7 +18,7 @@ export const translations = {
     'home.importJSONTitle': 'Restaurar dados anteriormente salvos',
 
     // NewGame
-    'newgame.title': '➕ Nova Partida',
+    'newgame.title': 'Nova Partida',
     'newgame.gameName': 'Nome do Jogo',
     'newgame.selectGame': 'Selecionar jogo',
     'newgame.players': 'Jogadores',
@@ -36,7 +36,7 @@ export const translations = {
     'newgame.success': 'Partida registrada com sucesso!',
 
     // History
-    'history.title': '📜 Histórico de Partidas',
+    'history.title': 'Histórico de Partidas',
     'history.date': 'Data',
     'history.game': 'Jogo',
     'history.winner': 'Vencedor',
@@ -47,7 +47,7 @@ export const translations = {
     'history.confirmDelete': 'Tem certeza que quer deletar esta partida?',
 
     // Stats
-    'stats.title': '📊 Estatísticas',
+    'stats.title': 'Estatísticas',
     'stats.totalGames': 'Total de Partidas',
     'stats.topWinner': 'Melhor Jogador',
     'stats.mostPlayedGame': 'Jogo Mais Jogado',
@@ -62,17 +62,17 @@ export const translations = {
     // History (extra)
     'history.filterType': 'Tipo:',
     'history.filterAll': 'Todos',
-    'history.filterCompetitive': '⚔️ Competitivo',
-    'history.filterCooperative': '🤝 Cooperativo',
+    'history.filterCompetitive': 'Competitivo',
+    'history.filterCooperative': 'Cooperativo',
     'history.result': 'Resultado',
     'history.coopWin': 'Vitória!',
     'history.coopLoss': 'Derrota',
     'history.duration': 'Duração',
-    'history.badgeCompetitive': '⚔️ Competitivo',
-    'history.badgeCooperative': '🤝 Cooperativo',
+    'history.badgeCompetitive': 'Competitivo',
+    'history.badgeCooperative': 'Cooperativo',
 
     // Onboarding
-    'onboarding.title': 'Bem-vindo ao MeepleMind! 🎲',
+    'onboarding.title': 'Bem-vindo ao MeepleMind!',
     'onboarding.description': 'Como você se chama? Seu nome será adicionado automaticamente a cada nova partida.',
     'onboarding.placeholder': 'Seu nome...',
     'onboarding.submit': 'Começar a jogar!',
@@ -89,17 +89,17 @@ export const translations = {
     // History (extra)
     'history.filterType': 'Tipo:',
     'history.filterAll': 'Todos',
-    'history.filterCompetitive': '⚔️ Competitivo',
-    'history.filterCooperative': '🤝 Cooperativo',
+    'history.filterCompetitive': 'Competitivo',
+    'history.filterCooperative': 'Cooperativo',
     'history.result': 'Resultado',
     'history.coopWin': 'Vitória!',
     'history.coopLoss': 'Derrota',
     'history.duration': 'Duração',
-    'history.badgeCompetitive': '⚔️ Competitivo',
-    'history.badgeCooperative': '🤝 Cooperativo',
+    'history.badgeCompetitive': 'Competitivo',
+    'history.badgeCooperative': 'Cooperativo',
 
     // Onboarding
-    'onboarding.title': 'Bem-vindo ao MeepleMind! 🎲',
+    'onboarding.title': 'Bem-vindo ao MeepleMind!',
     'onboarding.description': 'Como você se chama? Seu nome será adicionado automaticamente a cada nova partida.',
     'onboarding.placeholder': 'Seu nome...',
     'onboarding.submit': 'Começar a jogar!',
@@ -119,7 +119,7 @@ export const translations = {
     'menu.version': 'Versão',
     'menu.clearData': 'Limpar Dados',
     'menu.clearDataTitle': 'Limpar todos os dados e remover histórico',
-    'menu.clearDataWarning': '⚠️ Atenção! Isso irá deletar TODOS os seus dados e histórico de partidas permanentemente.',
+    'menu.clearDataWarning': 'Atenção! Isso irá deletar TODOS os seus dados e histórico de partidas permanentemente.',
     'menu.clearDataConfirm': 'Certifique-se de ter feito um backup antes de continuar. Deseja realmente limpar todos os dados?',
 
     // Common
@@ -137,8 +137,8 @@ export const translations = {
     'history.cooperativeResult': 'Resultado:',
 
     // Stats - Competitive vs Cooperative
-    'stats.competitive': '⚔️ Competitivo',
-    'stats.cooperative': '🤝 Cooperativo',
+    'stats.competitive': 'Competitivo',
+    'stats.cooperative': 'Cooperativo',
     'stats.competitiveStats': 'Ranking de Vitórias',
     'stats.cooperativeStats': 'Taxa de Sucesso',
     'stats.winRateLabel': 'Taxa de Vitória',
@@ -148,19 +148,19 @@ export const translations = {
     'stats.playerAppearancesLabel': 'Participações',
 
     // Profile
-    'profile.title': '👤 Meu Perfil',
+    'profile.title': 'Meu Perfil',
     'profile.competitiveGames': 'Jogos Competitivos',
     'profile.losses': 'Derrotas',
     'profile.cooperativeGames': 'Jogos Cooperativos',
     'profile.successRate': 'Taxa de Sucesso',
 
     // Home
-    'home.profile': '👤 Meu Perfil',
-    'home.library': '📚 Biblioteca',
+    'home.profile': 'Meu Perfil',
+    'home.library': 'Biblioteca',
 
     // New Home Header
-    'home.lastGame': '🎲 Última Partida',
-    'home.highlights': '⭐ Destaques',
+    'home.lastGame': 'Última Partida',
+    'home.highlights': 'Destaques',
     'home.gamesLast30Days': 'nos últimos 30 dias',
     'home.urgentMessage': 'Você precisa jogar algo urgente!',
     'home.victory': 'vitória',
@@ -172,7 +172,7 @@ export const translations = {
     'home.consecutiveVictories': 'vitórias consecutivas',
 
     // Library
-    'library.title': '📚 Minha Biblioteca',
+    'library.title': 'Minha Biblioteca',
     'library.addGame': 'Adicionar Jogo',
     'library.gameName': 'Nome do Jogo',
     'library.gameNamePlaceholder': 'Ex: Catan, Ticket to Ride...',
@@ -276,8 +276,8 @@ export const translations = {
     'home.topPlayer': 'Top Player',
     'home.mostPlayed': 'Most Played',
     'home.newGame': 'New Game',
-    'home.history': '📜 History',
-    'home.stats': '📊 Statistics',
+    'home.history': 'History',
+    'home.stats': 'Statistics',
     'home.manageData': 'Manage Data',
     'home.exportCSV': 'Export CSV',
     'home.backupJSON': 'Backup JSON',
@@ -287,7 +287,7 @@ export const translations = {
     'home.importJSONTitle': 'Restore previously saved data',
 
     // NewGame
-    'newgame.title': '➕ New Game',
+    'newgame.title': 'New Game',
     'newgame.gameName': 'Game Name',
     'newgame.selectGame': 'Select game',
     'newgame.players': 'Players',
@@ -305,7 +305,7 @@ export const translations = {
     'newgame.success': 'Game registered successfully!',
 
     // History
-    'history.title': '📜 Game History',
+    'history.title': 'Game History',
     'history.date': 'Date',
     'history.game': 'Game',
     'history.winner': 'Winner',
@@ -316,7 +316,7 @@ export const translations = {
     'history.confirmDelete': 'Are you sure you want to delete this game?',
 
     // Stats
-    'stats.title': '📊 Statistics',
+    'stats.title': 'Statistics',
     'stats.totalGames': 'Total Games',
     'stats.topWinner': 'Best Player',
     'stats.mostPlayedGame': 'Most Played Game',
@@ -331,17 +331,17 @@ export const translations = {
     // History (extra)
     'history.filterType': 'Type:',
     'history.filterAll': 'All',
-    'history.filterCompetitive': '⚔️ Competitive',
-    'history.filterCooperative': '🤝 Cooperative',
+    'history.filterCompetitive': 'Competitive',
+    'history.filterCooperative': 'Cooperative',
     'history.result': 'Result',
     'history.coopWin': 'Victory!',
     'history.coopLoss': 'Defeat',
     'history.duration': 'Duration',
-    'history.badgeCompetitive': '⚔️ Competitive',
-    'history.badgeCooperative': '🤝 Cooperative',
+    'history.badgeCompetitive': 'Competitive',
+    'history.badgeCooperative': 'Cooperative',
 
     // Onboarding
-    'onboarding.title': 'Welcome to MeepleMind! 🎲',
+    'onboarding.title': 'Welcome to MeepleMind!',
     'onboarding.description': "What's your name? You'll be automatically added to every new game.",
     'onboarding.placeholder': 'Your name...',
     'onboarding.submit': 'Start playing!',
@@ -358,17 +358,17 @@ export const translations = {
     // History (extra)
     'history.filterType': 'Type:',
     'history.filterAll': 'All',
-    'history.filterCompetitive': '⚔️ Competitive',
-    'history.filterCooperative': '🤝 Cooperative',
+    'history.filterCompetitive': 'Competitive',
+    'history.filterCooperative': 'Cooperative',
     'history.result': 'Result',
     'history.coopWin': 'Victory!',
     'history.coopLoss': 'Defeat',
     'history.duration': 'Duration',
-    'history.badgeCompetitive': '⚔️ Competitive',
-    'history.badgeCooperative': '🤝 Cooperative',
+    'history.badgeCompetitive': 'Competitive',
+    'history.badgeCooperative': 'Cooperative',
 
     // Onboarding
-    'onboarding.title': 'Welcome to MeepleMind! 🎲',
+    'onboarding.title': 'Welcome to MeepleMind!',
     'onboarding.description': "What's your name? You'll be automatically added to every new game.",
     'onboarding.placeholder': 'Your name...',
     'onboarding.submit': 'Start playing!',
@@ -388,7 +388,7 @@ export const translations = {
     'menu.version': 'Version',
     'menu.clearData': 'Clear Data',
     'menu.clearDataTitle': 'Clear all data and remove history',
-    'menu.clearDataWarning': '⚠️ Warning! This will permanently delete ALL your data and game history.',
+    'menu.clearDataWarning': 'Warning! This will permanently delete ALL your data and game history.',
     'menu.clearDataConfirm': 'Make sure you have made a backup before continuing. Do you really want to clear all data?',
 
     // Common
@@ -406,8 +406,8 @@ export const translations = {
     'history.cooperativeResult': 'Result:',
 
     // Stats - Competitive vs Cooperative
-    'stats.competitive': '⚔️ Competitive',
-    'stats.cooperative': '🤝 Cooperative',
+    'stats.competitive': 'Competitive',
+    'stats.cooperative': 'Cooperative',
     'stats.competitiveStats': 'Victory Ranking',
     'stats.cooperativeStats': 'Success Rate',
     'stats.winRateLabel': 'Win Rate',
@@ -417,19 +417,19 @@ export const translations = {
     'stats.playerAppearancesLabel': 'Appearances',
 
     // Profile
-    'profile.title': '👤 My Profile',
+    'profile.title': 'My Profile',
     'profile.competitiveGames': 'Competitive Games',
     'profile.losses': 'Losses',
     'profile.cooperativeGames': 'Cooperative Games',
     'profile.successRate': 'Success Rate',
 
     // Home
-    'home.profile': '👤 My Profile',
-    'home.library': '📚 Library',
+    'home.profile': 'My Profile',
+    'home.library': 'Library',
 
     // New Home Header
-    'home.lastGame': '🎲 Last Game',
-    'home.highlights': '⭐ Highlights',
+    'home.lastGame': 'Last Game',
+    'home.highlights': 'Highlights',
     'home.gamesLast30Days': 'in the last 30 days',
     'home.urgentMessage': 'You need to play something urgent!',
     'home.victory': 'victory',
@@ -441,7 +441,7 @@ export const translations = {
     'home.consecutiveVictories': 'consecutive victories',
 
     // Library
-    'library.title': '📚 My Library',
+    'library.title': 'My Library',
     'library.addGame': 'Add Game',
     'library.gameName': 'Game Name',
     'library.gameNamePlaceholder': 'e.g. Catan, Ticket to Ride...',
@@ -545,8 +545,8 @@ export const translations = {
     'home.topPlayer': 'Meilleur Joueur',
     'home.mostPlayed': 'Plus Joué',
     'home.newGame': 'Nouvelle Partie',
-    'home.history': '📜 Historique',
-    'home.stats': '📊 Statistiques',
+    'home.history': 'Historique',
+    'home.stats': 'Statistiques',
     'home.manageData': 'Gérer les Données',
     'home.exportCSV': 'Exporter CSV',
     'home.backupJSON': 'Sauvegarde JSON',
@@ -556,7 +556,7 @@ export const translations = {
     'home.importJSONTitle': 'Restaurer les données précédemment enregistrées',
 
     // NewGame
-    'newgame.title': '➕ Nouvelle Partie',
+    'newgame.title': 'Nouvelle Partie',
     'newgame.gameName': 'Nom du Jeu',
     'newgame.selectGame': 'Sélectionner le jeu',
     'newgame.players': 'Joueurs',
@@ -574,7 +574,7 @@ export const translations = {
     'newgame.success': 'Partie enregistrée avec succès!',
 
     // History
-    'history.title': '📜 Historique des Parties',
+    'history.title': 'Historique des Parties',
     'history.date': 'Date',
     'history.game': 'Jeu',
     'history.winner': 'Gagnant',
@@ -585,7 +585,7 @@ export const translations = {
     'history.confirmDelete': 'Êtes-vous sûr de vouloir supprimer cette partie?',
 
     // Stats
-    'stats.title': '📊 Statistiques',
+    'stats.title': 'Statistiques',
     'stats.totalGames': 'Nombre Total de Parties',
     'stats.topWinner': 'Meilleur Joueur',
     'stats.mostPlayedGame': 'Jeu le Plus Joué',
@@ -600,17 +600,17 @@ export const translations = {
     // History (extra)
     'history.filterType': 'Type :',
     'history.filterAll': 'Tous',
-    'history.filterCompetitive': '⚔️ Compétitif',
-    'history.filterCooperative': '🤝 Coopératif',
+    'history.filterCompetitive': 'Compétitif',
+    'history.filterCooperative': 'Coopératif',
     'history.result': 'Résultat',
     'history.coopWin': 'Victoire !',
     'history.coopLoss': 'Défaite',
     'history.duration': 'Durée',
-    'history.badgeCompetitive': '⚔️ Compétitif',
-    'history.badgeCooperative': '🤝 Coopératif',
+    'history.badgeCompetitive': 'Compétitif',
+    'history.badgeCooperative': 'Coopératif',
 
     // Onboarding
-    'onboarding.title': 'Bienvenue sur MeepleMind ! 🎲',
+    'onboarding.title': 'Bienvenue sur MeepleMind !',
     'onboarding.description': 'Quel est votre nom ? Il sera ajouté automatiquement à chaque nouvelle partie.',
     'onboarding.placeholder': 'Votre nom...',
     'onboarding.submit': 'Commencer à jouer !',
@@ -627,17 +627,17 @@ export const translations = {
     // History (extra)
     'history.filterType': 'Type :',
     'history.filterAll': 'Tous',
-    'history.filterCompetitive': '⚔️ Compétitif',
-    'history.filterCooperative': '🤝 Coopératif',
+    'history.filterCompetitive': 'Compétitif',
+    'history.filterCooperative': 'Coopératif',
     'history.result': 'Résultat',
     'history.coopWin': 'Victoire !',
     'history.coopLoss': 'Défaite',
     'history.duration': 'Durée',
-    'history.badgeCompetitive': '⚔️ Compétitif',
-    'history.badgeCooperative': '🤝 Coopératif',
+    'history.badgeCompetitive': 'Compétitif',
+    'history.badgeCooperative': 'Coopératif',
 
     // Onboarding
-    'onboarding.title': 'Bienvenue sur MeepleMind ! 🎲',
+    'onboarding.title': 'Bienvenue sur MeepleMind !',
     'onboarding.description': 'Quel est votre nom ? Il sera ajouté automatiquement à chaque nouvelle partie.',
 
     // History - Collapsed badges
@@ -645,8 +645,8 @@ export const translations = {
     'history.cooperativeResult': 'Résultat :',
 
     // Stats - Competitive vs Cooperative
-    'stats.competitive': '⚔️ Compétitif',
-    'stats.cooperative': '🤝 Coopératif',
+    'stats.competitive': 'Compétitif',
+    'stats.cooperative': 'Coopératif',
     'stats.competitiveStats': 'Classement des Victoires',
     'stats.cooperativeStats': 'Taux de Succès',
     'stats.winRateLabel': 'Taux de Victoire',
@@ -656,19 +656,19 @@ export const translations = {
     'stats.playerAppearancesLabel': 'Apparitions',
 
     // Profile
-    'profile.title': '👤 Mon Profil',
+    'profile.title': 'Mon Profil',
     'profile.competitiveGames': 'Jeux Compétitifs',
     'profile.losses': 'Défaites',
     'profile.cooperativeGames': 'Jeux Coopératifs',
     'profile.successRate': 'Taux de Succès',
 
     // Home
-    'home.profile': '👤 Mon Profil',
-    'home.library': '📚 Bibliothèque',
+    'home.profile': 'Mon Profil',
+    'home.library': 'Bibliothèque',
 
     // New Home Header
-    'home.lastGame': '🎲 Dernière Partie',
-    'home.highlights': '⭐ Points Forts',
+    'home.lastGame': 'Dernière Partie',
+    'home.highlights': 'Points Forts',
     'home.gamesLast30Days': 'au cours des 30 derniers jours',
     'home.urgentMessage': 'Vous devez jouer à quelque chose d\'urgent !',
     'home.victory': 'victoire',
@@ -680,7 +680,7 @@ export const translations = {
     'home.consecutiveVictories': 'victoires consécutives',
 
     // Library
-    'library.title': '📚 Ma Bibliothèque',
+    'library.title': 'Ma Bibliothèque',
     'library.addGame': 'Ajouter un Jeu',
     'library.gameName': 'Nom du Jeu',
     'library.gameNamePlaceholder': 'Ex : Catan, Les Aventuriers du Rail...',
@@ -753,7 +753,7 @@ export const translations = {
     'menu.version': 'Version',
     'menu.clearData': 'Effacer les Données',
     'menu.clearDataTitle': 'Effacer toutes les données et supprimer l\'historique',
-    'menu.clearDataWarning': '⚠️ Attention! Cela supprimera définitivement TOUTES vos données et votre historique de parties.',
+    'menu.clearDataWarning': 'Attention! Cela supprimera définitivement TOUTES vos données et votre historique de parties.',
     'menu.clearDataConfirm': 'Assurez-vous d\'avoir fait une sauvegarde avant de continuer. Voulez-vous vraiment effacer toutes les données?',
     // Common
     'common.back': '← Retour',

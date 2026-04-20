@@ -70,6 +70,9 @@
   font-size: 0.7rem;
   color: #86efac;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .gauth-sync--syncing {
