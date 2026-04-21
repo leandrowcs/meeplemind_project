@@ -17,6 +17,7 @@
     "test:report": "playwright show-report"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
     "chart.js": "^4.5.1",
     "lucide-react": "^1.8.0",
     "react": "^19.2.4",

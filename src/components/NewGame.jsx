@@ -24,6 +24,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
     coopResult: '', // 'win' | 'loss' (for cooperative games)
     duration: '',
     date: '',
+    ownGame: false,
   });
 
   useEffect(() => {
@@ -188,6 +189,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
       coopResult: formData.gameType === 'cooperative' ? formData.coopResult : null,
       duration: formData.duration ? parseInt(formData.duration) : null,
       date: formData.date,
+      ownGame: formData.ownGame,
     });
 
     onNavigate('home');
@@ -247,6 +249,22 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
               <div className="selected-item"><Check size={14} /> {formData.game}</div>
             )}
           </div>
+
+          {/* Own game checkbox */}
+          {formData.game && (
+            <div className="form-group own-game-group">
+              <label className="own-game-label">
+                <input
+                  type="checkbox"
+                  checked={formData.ownGame}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, ownGame: e.target.checked }))}
+                  className="own-game-checkbox"
+                />
+                <BookOpen size={15} />
+                {t('newgame.ownGame')}
+              </label>
+            </div>
+          )}
 
           {/* Game Type Selection */}
           {formData.game && (

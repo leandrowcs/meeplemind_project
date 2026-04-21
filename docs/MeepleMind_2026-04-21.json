@@ -1,0 +1,433 @@
+{
+  "version": "2.0",
+  "games": [
+    {
+      "id": "2f87f4af-4b1a-49ac-992c-4abc9ec68335",
+      "game": "Ticket to Ride",
+      "gameType": "competitive",
+      "players": [
+        "Leandro",
+        "Edu",
+        "Ori",
+        "Jonathas",
+        "Fabio"
+      ],
+      "points": [
+        119,
+        89,
+        84,
+        79,
+        55
+      ],
+      "winner": "Leandro",
+      "coopResult": null,
+      "duration": 90,
+      "date": "2026-04-12T00:00:00.000Z",
+      "rating": 0,
+      "notes": ""
+    },
+    {
+      "id": "0d750144-5d2d-4a75-b344-58306ba256b1",
+      "game": "Whistle Montain",
+      "gameType": "competitive",
+      "players": [
+        "Leandro",
+        "Danilo",
+        "Fabio",
+        "Jonathas"
+      ],
+      "points": [
+        197,
+        102,
+        142,
+        95
+      ],
+      "winner": "Leandro",
+      "coopResult": null,
+      "duration": 180,
+      "date": "2026-03-14T00:00:00.000Z",
+      "rating": 0,
+      "notes": ""
+    },
+    {
+      "id": "3be0097a-d70d-4e3e-b4a4-e5565e80637d",
+      "game": "Zombicide: Army of the Dead",
+      "gameType": "cooperative",
+      "players": [
+        "Leandro",
+        "Ketlin",
+        "Bruno Abia",
+        "Bruno Rebanda",
+        "Raul"
+      ],
+      "points": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "winner": null,
+      "coopResult": "win",
+      "duration": 180,
+      "date": "2025-12-27T00:00:00.000Z",
+      "rating": 0,
+      "notes": ""
+    },
+    {
+      "id": "54263c76-4b11-4b5a-a873-94072f996056",
+      "game": "Zombicide: Army of the Dead",
+      "gameType": "cooperative",
+      "players": [
+        "Leandro",
+        "Ketlin",
+        "Bruno Abia",
+        "Bruno Rebanda"
+      ],
+      "points": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "winner": null,
+      "coopResult": "win",
+      "duration": 180,
+      "date": "2025-12-22T05:00:00.000Z",
+      "rating": 0,
+      "notes": "",
+      "updatedAt": "2026-04-17T15:53:58.140Z"
+    }
+  ],
+  "library": [
+    {
+      "id": "782c61fa-571f-45c9-a98c-21adab1d2005",
+      "name": "Au Feu!",
+      "category": "cooperative",
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-16T00:10:09.856Z",
+      "owned": true
+    },
+    {
+      "id": "057339b5-faf8-47bd-a2a1-c7690c50298d",
+      "name": "Avalon",
+      "category": "party",
+      "minPlayers": 5,
+      "maxPlayers": 10,
+      "addedAt": "2026-04-16T00:15:59.417Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "updatedAt": "2026-04-17T19:58:01.071Z"
+    },
+    {
+      "id": "13cdabd6-27e5-4269-a612-8bdd7487c5b7",
+      "name": "Betrayal at House on the Hill",
+      "category": "cooperative",
+      "minPlayers": 3,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-16T00:08:14.745Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T15:50:10.132Z"
+    },
+    {
+      "id": "0243016b-3e5e-4210-a41a-c898a85e65ee",
+      "name": "Brass Birmingham",
+      "category": "strategy",
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "addedAt": "2026-04-16T00:10:39.337Z",
+      "description": "",
+      "coverUrl": "https://cf.geekdo-images.com/x3zxjr-Vw5iU4yDPg70Jgw__imagepagezoom/img/7a0LOL48K-7JNIOSGtcsNsIxkN0=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic3490053.jpg",
+      "owned": true,
+      "updatedAt": "2026-04-21T18:55:26.660Z",
+      "nameLocal": {},
+      "descriptionLocal": {}
+    },
+    {
+      "id": "51da065f-a13a-4317-b51d-b47ce0456b22",
+      "name": "Breaking Bad",
+      "category": "strategy",
+      "minPlayers": 3,
+      "maxPlayers": 8,
+      "addedAt": "2026-04-16T00:16:54.131Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T15:50:17.637Z"
+    },
+    {
+      "id": "c3c03fb1-13c5-4944-b7f3-66237dff4218",
+      "name": "Dune: Imperium",
+      "category": "strategy",
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "addedAt": "2026-04-16T00:06:41.930Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "updatedAt": "2026-04-17T20:20:25.739Z"
+    },
+    {
+      "id": "80bb9aed-463a-4e10-a18f-7a3d369b8059",
+      "name": "Fallout",
+      "category": "strategy",
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "addedAt": "2026-04-16T00:09:43.771Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T15:50:21.669Z"
+    },
+    {
+      "id": "a261c783-14df-4eb6-b76e-cda0227ed9b7",
+      "name": "Good Cop Bad Cop",
+      "category": "party",
+      "minPlayers": 4,
+      "maxPlayers": 8,
+      "addedAt": "2026-04-16T00:17:23.782Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "updatedAt": "2026-04-17T20:00:07.752Z"
+    },
+    {
+      "id": "787b3e1c-b6be-496d-bd9e-a79b540e5fc8",
+      "name": "Lords of Ragnarok",
+      "category": "strategy",
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "addedAt": "2026-04-16T00:21:28.761Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T15:50:26.230Z"
+    },
+    {
+      "id": "fa8a2cea-df9e-4e73-ad8e-0ab52afcc59a",
+      "name": "Mansions of Madness",
+      "category": "cooperative",
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "addedAt": "2026-04-16T00:20:00.040Z",
+      "description": "",
+      "coverUrl": "https://boardgamegeek.com/boardgame/205059/mansions-of-madness-second-edition",
+      "owned": true,
+      "updatedAt": "2026-04-17T20:27:19.432Z"
+    },
+    {
+      "id": "b33e870a-1f15-4af6-bbe3-d8b1500b62f0",
+      "name": "Northgard",
+      "category": "strategy",
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "addedAt": "2026-04-16T00:05:51.977Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T15:50:32.863Z"
+    },
+    {
+      "id": "d52cdbab-11ff-4768-8fb0-1c66be5fd11d",
+      "name": "Pandemic",
+      "category": "cooperative",
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "owned": true,
+      "addedAt": "2026-04-17T12:43:53.307Z"
+    },
+    {
+      "id": "8c9c1e70-e6de-4381-b773-3995e198e96f",
+      "name": "River Dragons",
+      "category": "family",
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-16T00:12:27.964Z",
+      "owned": true
+    },
+    {
+      "id": "5882c34c-928e-4033-b61b-7444499d0f63",
+      "name": "Saboteur+",
+      "category": "party",
+      "minPlayers": 2,
+      "maxPlayers": 12,
+      "addedAt": "2026-04-16T00:13:27.226Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T15:50:37.114Z"
+    },
+    {
+      "id": "2865d48a-847c-4cf6-8dc3-3c5a3ce62967",
+      "name": "Scooby-Doo: Betrayal at Mystery Mansion",
+      "category": "cooperative",
+      "minPlayers": 3,
+      "maxPlayers": 5,
+      "addedAt": "2026-04-16T00:08:53.506Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T15:50:50.116Z"
+    },
+    {
+      "id": "2dbac414-7b75-4480-9d61-1ecfcb553b7a",
+      "name": "Scythe",
+      "category": "worker-placement",
+      "minPlayers": 1,
+      "maxPlayers": 7,
+      "addedAt": "2026-04-16T00:11:34.134Z",
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "updatedAt": "2026-04-17T19:59:50.088Z"
+    },
+    {
+      "id": "d59f6007-41c1-44ca-9c73-e35ee1d0ffdd",
+      "name": "Scythe: Expeditions",
+      "category": "strategy",
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "addedAt": "2026-04-16T00:07:03.652Z"
+    },
+    {
+      "id": "c91b5cd2-72b9-4760-9004-74da7ef34519",
+      "name": "Sky Team",
+      "category": "family",
+      "minPlayers": 1,
+      "maxPlayers": 2,
+      "addedAt": "2026-04-16T00:12:50.326Z"
+    },
+    {
+      "id": "1ba635a7-a4f5-4390-bb68-d63560efe1bb",
+      "name": "Spartacus: Sangue e Traição",
+      "category": "strategy",
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-16T00:11:14.299Z"
+    },
+    {
+      "id": "2048e93c-7026-4b11-812b-4e58afbacc0a",
+      "name": "Suburbia",
+      "category": "strategy",
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "addedAt": "2026-04-16T00:18:26.029Z"
+    },
+    {
+      "id": "646e2ce2-0801-4e62-9a52-67f064957bfe",
+      "name": "Super Cats",
+      "category": "party",
+      "minPlayers": 3,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-16T00:15:42.557Z"
+    },
+    {
+      "id": "d7665eba-5e5f-48ac-a72a-d77071f5bad0",
+      "name": "Taco Chapeau Gâteau Cadeau Pizza",
+      "category": "party",
+      "minPlayers": 2,
+      "maxPlayers": 8,
+      "addedAt": "2026-04-16T00:15:23.586Z"
+    },
+    {
+      "id": "baaeeb32-ff1c-4f40-970d-dd048d23b695",
+      "name": "Terraforming Mars",
+      "category": "strategy",
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "addedAt": "2026-04-16T00:12:11.038Z"
+    },
+    {
+      "id": "d01ce642-0f06-414b-af0a-279daec9f1ac",
+      "name": "Ticket to Ride",
+      "category": "euro",
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "addedAt": "2026-04-15T19:54:31.037Z",
+      "description": "",
+      "coverUrl": "https://cf.geekdo-images.com/ZWJg0dCdrWHxVnc0eFXK8w__imagepagezoom/img/Kel4VmZWFylwtTHgl-11A05Q6mk=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic38668.jpg",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T19:05:31.904Z"
+    },
+    {
+      "id": "3dfda2f0-092a-4cfd-95f6-c0b99cefa937",
+      "name": "Wacky Races",
+      "category": "strategy",
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-16T00:19:29.679Z"
+    },
+    {
+      "id": "5180082f-15f3-4724-a49d-b564d17ea8cf",
+      "name": "Werewolves",
+      "category": "party",
+      "minPlayers": 8,
+      "maxPlayers": 20,
+      "addedAt": "2026-04-16T00:14:14.967Z"
+    },
+    {
+      "id": "e51058f1-18bb-46fe-af0f-c4f607db8d61",
+      "name": "Western Legends",
+      "category": "strategy",
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-16T00:05:33.661Z"
+    },
+    {
+      "id": "da718748-57b5-4c7f-9d42-f1e231a2d39c",
+      "name": "Whistle Montain",
+      "category": "euro",
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "addedAt": "2026-04-15T19:58:27.955Z",
+      "description": "",
+      "coverUrl": "https://cf.geekdo-images.com/BkPVVNEJxnF2ouque0ov8A__imagepage/img/RXSXuHdbB4IHg2P-m28FdKivcGY=/fit-in/900x600/filters:no_upscale():strip_icc()/pic5275651.jpg",
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "updatedAt": "2026-04-21T19:09:01.414Z"
+    },
+    {
+      "id": "3aa0f6ca-05cd-4a2f-8cf2-2f097febebf4",
+      "name": "Zombicide: Army of the Dead",
+      "category": "cooperative",
+      "minPlayers": 1,
+      "maxPlayers": 6,
+      "addedAt": "2026-04-15T20:22:57.081Z",
+      "owned": true,
+      "updatedAt": "2026-04-21T19:09:17.509Z",
+      "description": "",
+      "coverUrl": "https://cf.geekdo-images.com/nlFXnk7PDRZBxxaS2oGmMQ__imagepage/img/sJJojjXTkARl29g9b9D_jCUbrx8=/fit-in/900x600/filters:no_upscale():strip_icc()/pic8349117.png",
+      "nameLocal": {},
+      "descriptionLocal": {}
+    },
+    {
+      "id": "560d81ca-4436-43b1-9c21-f4b067d2a0d4",
+      "name": "Zombicide: Black Plague",
+      "category": "cooperative",
+      "minPlayers": 1,
+      "maxPlayers": 10,
+      "addedAt": "2026-04-16T00:21:11.260Z"
+    }
+  ],
+  "exportedAt": "2026-04-21T19:56:42.478Z"
+}
