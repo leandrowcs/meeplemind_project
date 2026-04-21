@@ -323,7 +323,7 @@ export const useGames = () => {
         g.players.join(' | '),
         g.winner,
         g.duration || '-',
-        '⭐'.repeat(g.rating),
+        g.rating ? `${g.rating}/5` : '-',
         g.notes,
       ]);
       const gamesData = [gamesHeaders, ...gamesRows];
@@ -354,7 +354,7 @@ export const useGames = () => {
       XLSX.writeFile(workbook, `MeepleMind_${new Date().toISOString().split('T')[0]}.xlsx`);
     } catch (error) {
       console.error('Erro ao exportar:', error);
-      alert('❌ Erro ao exportar para Excel');
+      alert('Erro ao exportar para Excel');
     }
   };
 
@@ -397,12 +397,12 @@ export const useGames = () => {
           // Formato v1 - array de jogos
           gamesToImport = data;
         } else {
-          alert('❌ Formato de arquivo inválido ou corrompido');
+          alert('Formato de arquivo inválido ou corrompido');
           return;
         }
 
         if (!validateGameBackup(gamesToImport)) {
-          alert('❌ Formato de arquivo inválido ou corrompido');
+          alert('Formato de arquivo inválido ou corrompido');
           return;
         }
 
@@ -420,9 +420,9 @@ export const useGames = () => {
           onLibraryImported(libraryToImport);
         }
 
-        alert('✅ Dados importados com sucesso!');
+        alert('Dados importados com sucesso!');
       } catch (error) {
-        alert('❌ Erro ao importar: arquivo inválido');
+        alert('Erro ao importar: arquivo inválido');
         console.error(error);
       }
     };
@@ -432,7 +432,7 @@ export const useGames = () => {
   const clearAllData = useCallback(() => {
     setGames([]);
     persistGames([]);
-    alert('🗑️ Todos os dados foram removidos!');
+    alert('Todos os dados foram removidos!');
   }, []);
 
   const getCompetitiveStats = () => {

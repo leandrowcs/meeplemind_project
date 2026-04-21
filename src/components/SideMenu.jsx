@@ -1,4 +1,13 @@
 import { useState } from 'react';
+import {
+  Download,
+  FileSpreadsheet,
+  Languages,
+  Settings,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
 import { Button } from './Button';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { useLanguage } from '../hooks/useLanguage';
@@ -7,12 +16,21 @@ import './SideMenu.css';
 const APP_VERSION = '1.0.0';
 
 const LANGUAGES = [
-  { code: 'pt-BR', label: '🇧🇷 Português' },
-  { code: 'en-US', label: '🇺🇸 English' },
-  { code: 'fr-CA', label: '🇨🇦 Français' },
+  { code: 'pt-BR', label: 'Português (Brasil)' },
+  { code: 'en-US', label: 'English (US)' },
+  { code: 'fr-CA', label: 'Français (Canada)' },
 ];
 
-export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData, auth, syncStatus }) => {
+export const SideMenu = ({
+  onExportCSV,
+  onExportJSON,
+  onImportJSON,
+  onClearData,
+  auth,
+  syncStatus,
+  compact = false,
+  openFrom = 'right',
+}) => {
   const { t, language, changeLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -44,37 +62,35 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData,
 
   return (
     <>
-      {/* Hamburger Button */}
+      {/* Menu trigger */}
       <button
-        className="hamburger-btn"
+        className={`hamburger-btn ${compact ? 'compact' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Menu"
+        aria-label={t('menu.settings')}
       >
-        <span></span>
-        <span></span>
-        <span></span>
+        <Settings size={20} className="menu-gear-icon" />
       </button>
 
       {/* Overlay */}
       {isOpen && <div className="menu-overlay" onClick={() => setIsOpen(false)} />}
 
       {/* Side Menu */}
-      <div className={`side-menu ${isOpen ? 'open' : ''}`}>
+      <div className={`side-menu ${openFrom === 'right' ? 'from-right' : 'from-left'} ${isOpen ? 'open' : ''}`}>
         <div className="menu-header">
-          <h3>⚙️ {t('menu.settings', 'Configurações')}</h3>
+          <h3><Settings size={16} /> {t('menu.settings', 'Configurações')}</h3>
           <button
             className="close-btn"
             onClick={() => setIsOpen(false)}
             aria-label="Close menu"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
         <div className="menu-content">
           {/* Dados & Backup Section */}
           <div className="menu-section">
-            <h4 className="section-title">💾 {t('menu.dataBackup', 'Dados & Backup')}</h4>
+            <h4 className="section-title"><Download size={14} /> {t('menu.dataBackup', 'Dados & Backup')}</h4>
             <div className="section-items">
               <button
                 className="menu-item"
@@ -84,7 +100,7 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData,
                 }}
                 title={t('home.exportCSVTitle')}
               >
-                <span className="menu-icon">📊</span>
+                <FileSpreadsheet size={18} className="menu-icon" />
                 <span>{t('home.exportCSV')}</span>
               </button>
 
@@ -96,7 +112,7 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData,
                 }}
                 title={t('home.backupJSONTitle')}
               >
-                <span className="menu-icon">💾</span>
+                <Download size={18} className="menu-icon" />
                 <span>{t('home.backupJSON')}</span>
               </button>
 
@@ -105,7 +121,7 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData,
                 onClick={() => document.getElementById('import-input-menu').click()}
                 title={t('home.importJSONTitle')}
               >
-                <span className="menu-icon">📂</span>
+                <Upload size={18} className="menu-icon" />
                 <span>{t('home.importJSON')}</span>
               </button>
 
@@ -122,7 +138,7 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData,
                 onClick={handleClearData}
                 title={t('menu.clearDataTitle')}
               >
-                <span className="menu-icon">🗑️</span>
+                <Trash2 size={18} className="menu-icon" />
                 <span>{t('menu.clearData')}</span>
               </button>
             </div>
@@ -130,7 +146,7 @@ export const SideMenu = ({ onExportCSV, onExportJSON, onImportJSON, onClearData,
 
           {/* Language Section */}
           <div className="menu-section">
-            <h4 className="section-title">🌐 {t('common.language')}</h4>
+            <h4 className="section-title"><Languages size={14} /> {t('common.language')}</h4>
             <div className="section-items">
               <select 
                 value={language}

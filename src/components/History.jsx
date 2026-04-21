@@ -1,4 +1,21 @@
 import { useState, useEffect } from 'react';
+import {
+  ChevronDown,
+  ChevronRight,
+  CalendarDays,
+  Crown,
+  Pencil,
+  Skull,
+  Star,
+  Sword,
+  Timer,
+  Trash2,
+  Trophy,
+  Users,
+  ArchiveX,
+  Dot,
+  Medal,
+} from 'lucide-react';
 import { Button, IconButton } from './Button';
 import { GameDetailsModal } from './GameDetailsModal';
 import { useLanguage } from '../hooks/useLanguage';
@@ -70,7 +87,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
         <div className="content">
           {games.length === 0 ? (
             <div className="empty-state">
-              <span className="empty-icon">📭</span>
+              <span className="empty-icon"><ArchiveX size={22} /></span>
               <p>{t('history.noGames')}</p>
               <Button variant="accent" onClick={() => onNavigate('newgame')}>
                 {t('home.newGame')}
@@ -158,7 +175,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                           style={{ cursor: 'pointer' }}
                         >
                           <div className="card-header-title">
-                            <span className="expand-icon">{isExpanded ? '▼' : '▶'}</span>
+                            <span className="expand-icon">{isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
                             <h3>{game.game}</h3>
                             <span className={`game-type-badge ${isCoop ? 'coop' : 'competitive'}`}>
                               {isCoop ? t('history.badgeCooperative') : t('history.badgeCompetitive')}
@@ -167,16 +184,16 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                             {!isExpanded && (
                               <>
                                 <span className="collapsed-badge date-badge">
-                                  📅 {formatDate(game.date, language)}
+                                  <CalendarDays size={14} /> {formatDate(game.date, language)}
                                 </span>
                                 <span className={`collapsed-badge result-badge ${isCoop ? 'coop-result' : 'competitive-result'}`}>
                                   {isCoop ? (
                                     <>
-                                      {game.coopResult === 'win' ? '🏆' : '💀'} {game.coopResult === 'win' ? t('history.coopWin') : t('history.coopLoss')}
+                                      {game.coopResult === 'win' ? <Trophy size={14} /> : <Skull size={14} />} {game.coopResult === 'win' ? t('history.coopWin') : t('history.coopLoss')}
                                     </>
                                   ) : (
                                     <>
-                                      👑 {t('history.competitiveWinner')} {game.winner}
+                                      <Crown size={14} /> {t('history.competitiveWinner')} {game.winner}
                                     </>
                                   )}
                                 </span>
@@ -189,7 +206,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                               onClick={() => setModalGame(game)}
                               title={t('common.edit')}
                             >
-                              ✏️
+                              <Pencil size={16} />
                             </button>
                             <button
                               className="btn-delete"
@@ -198,7 +215,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                               }}
                               title={t('history.delete')}
                             >
-                              🗑️
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </div>
@@ -211,7 +228,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                               <div className="card-details">
                                 {game.rating > 0 && (
                                   <div className="rating-display">
-                                    <span>{'⭐'.repeat(game.rating)}</span>
+                                    <span>{Array.from({ length: game.rating }).map((_, i) => <Star key={i} size={14} />)}</span>
                                     <span className="rating-text">{game.rating}/5</span>
                                   </div>
                                 )}
@@ -226,7 +243,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                             <div className="card-content">
                               {isCoop ? (
                                 <div className="card-stat">
-                                  <span className="icon">{game.coopResult === 'win' ? '🏆' : '💀'}</span>
+                                  <span className="icon">{game.coopResult === 'win' ? <Trophy size={16} /> : <Skull size={16} />}</span>
                                   <div>
                                     <span className="label">{t('history.result')}</span>
                                     <span className={`value coop-result ${game.coopResult === 'win' ? 'win' : 'loss'}`}>
@@ -236,7 +253,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                                 </div>
                               ) : (
                                 <div className="card-stat">
-                                  <span className="icon">👑</span>
+                                  <span className="icon"><Crown size={16} /></span>
                                   <div>
                                     <span className="label">{t('history.winner')}</span>
                                     <span className="value">{game.winner}</span>
@@ -245,7 +262,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                               )}
 
                               <div className="card-stat">
-                                <span className="icon">👥</span>
+                                <span className="icon"><Users size={16} /></span>
                                 <div>
                                   <span className="label">{t('newgame.players')}</span>
                                   <span className="value">{game.players.length}</span>
@@ -254,7 +271,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
 
                               {game.duration && (
                                 <div className="card-stat">
-                                  <span className="icon">⏱️</span>
+                                  <span className="icon"><Timer size={16} /></span>
                                   <div>
                                     <span className="label">{t('history.duration')}</span>
                                     <span className="value">{formatDuration(game.duration)}</span>
@@ -263,7 +280,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                               )}
 
                               <div className="card-stat">
-                                <span className="icon">📅</span>
+                                <span className="icon"><CalendarDays size={16} /></span>
                                 <div>
                                   <span className="label">{t('history.date')}</span>
                                   <span className="value">{formatDate(game.date, language)}</span>
@@ -288,7 +305,7 @@ export const History = ({ onNavigate, games, onDelete, onUpdate, uniqueGames }) 
                                     return (
                                       <div key={index} className={`ranking-item ${isWinner ? 'winner' : ''}`}>
                                         <span className="rank-icon">
-                                          {isWinner ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '•'}
+                                          {isWinner ? <Trophy size={14} /> : index === 1 ? <Medal size={14} /> : index === 2 ? <Medal size={14} /> : <Dot size={14} />}
                                         </span>
                                         <span className="player-name">{player}</span>
                                         <span className="points">{points} pts</span>
