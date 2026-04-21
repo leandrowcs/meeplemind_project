@@ -41,14 +41,8 @@ function normalizeImageUrl(url) {
   const normalized = (url || '').trim();
   if (!normalized) return '';
   if (normalized.startsWith('//')) return `https:${normalized}`;
+  if (normalized.startsWith('http://')) return normalized.replace('http://', 'https://');
   return normalized;
-}
-
-function getBackgroundImageStyle(url) {
-  const normalized = normalizeImageUrl(url);
-  if (!normalized) return undefined;
-  const escaped = normalized.replace(/"/g, '\\"');
-  return { backgroundImage: `url("${escaped}")` };
 }
 
 function decodeHtmlEntities(str) {
@@ -722,13 +716,22 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games,
                   <li key={game.id}>
                     <article
                       className={`library-game-card library-game-card--shelf${shelfCoverUrl ? '' : ' no-cover'}`}
-                      style={getBackgroundImageStyle(shelfCoverUrl)}
                       onClick={() => openDetails(game)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => e.key === 'Enter' && openDetails(game)}
                       aria-label={game.name}
                     >
+                      {shelfCoverUrl && (
+                        <img
+                          src={shelfCoverUrl}
+                          alt=""
+                          className="library-card-bg-img"
+                          loading="lazy"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+
                       <div className="library-card-top-left">
                         <span className="library-card-chip"><Users size={12} /> {playersLabel}</span>
                       </div>
@@ -858,13 +861,22 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games,
                     <li key={game.id}>
                       <article
                         className={`library-game-card library-game-card--catalog${preferredCoverUrl ? '' : ' no-cover'}`}
-                        style={getBackgroundImageStyle(preferredCoverUrl)}
                         onClick={() => handleCatalogOpenDetails(game)}
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => e.key === 'Enter' && handleCatalogOpenDetails(game)}
                         aria-label={game.name}
                       >
+                        {preferredCoverUrl && (
+                          <img
+                            src={preferredCoverUrl}
+                            alt=""
+                            className="library-card-bg-img"
+                            loading="lazy"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        )}
+
                         <div className="library-card-top-left">
                           <span className="library-card-chip">#{game.rank}</span>
                           <span className="library-card-chip"><Users size={12} /> {playersLabel}</span>

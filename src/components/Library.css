@@ -1114,12 +1114,22 @@
   isolation: isolate;
 }
 
+.library-card-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .library-game-card::before {
   content: '';
   position: absolute;
   inset: 0;
   background: rgba(2, 6, 23, 0.24);
-  z-index: 0;
+  z-index: 1;
 }
 
 .library-game-card::after {
@@ -1130,7 +1140,7 @@
   bottom: 0;
   height: 75%;
   background: linear-gradient(to top, rgba(2, 6, 23, 0.94) 15%, rgba(2, 6, 23, 0.62) 56%, rgba(2, 6, 23, 0) 100%);
-  z-index: 1;
+  z-index: 2;
 }
 
 .library-game-card.no-cover {
@@ -1142,7 +1152,7 @@
 .library-card-content,
 .library-card-actions {
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .library-card-top-left {
