@@ -1,16 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
+  BadgeCheck,
+  BarChart3,
   BookOpen,
   CalendarDays,
   Check,
+  CircleStar,
   Dices,
   Gamepad2,
+  House,
+  Info,
   LoaderCircle,
   Pencil,
   Search,
-  Star,
   Trash2,
   Trophy,
+  UserRound,
   Users,
   X,
 } from 'lucide-react';
@@ -32,6 +37,20 @@ function bggUrl(path) {
   return BGG_PROXY_BASE + path;
 }
 
+function normalizeImageUrl(url) {
+  const normalized = (url || '').trim();
+  if (!normalized) return '';
+  if (normalized.startsWith('//')) return `https:${normalized}`;
+  return normalized;
+}
+
+function getBackgroundImageStyle(url) {
+  const normalized = normalizeImageUrl(url);
+  if (!normalized) return undefined;
+  const escaped = normalized.replace(/"/g, '\\"');
+  return { backgroundImage: `url("${escaped}")` };
+}
+
 function decodeHtmlEntities(str) {
   const div = document.createElement('div');
   div.innerHTML = str;
@@ -48,9 +67,9 @@ function cleanBGGDescription(raw, maxLen = 500) {
 
 async function fetchBGGXml(url, maxRetries = 4) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const res = await fetch(url);
-    // corsproxy repassa status 202 da BGG (cache miss — tentar novamente)
-    if (res.status === 202) {
+    const res = await fetch(url, { credentials: 'omit' });
+    // BGG/CDN pode retornar 202 (cache miss) ou 401 (Cloudflare transient) — tentar novamente
+    if (res.status === 202 || res.status === 401) {
       await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       continue;
     }
@@ -82,21 +101,12 @@ async function fetchBGGData(gameName) {
   const item = doc.querySelector('item');
   if (!item) return null;
   return {
-    thumbnail: (item.querySelector('thumbnail')?.textContent || '').trim(),
+    thumbnail: normalizeImageUrl(item.querySelector('thumbnail')?.textContent || ''),
     description: cleanBGGDescription(item.querySelector('description')?.textContent || ''),
     minPlayers: item.querySelector('minplayers')?.getAttribute('value') || '',
     maxPlayers: item.querySelector('maxplayers')?.getAttribute('value') || '',
   };
 }
-
-const EMPTY_FORM = {
-  name: '',
-  category: '',
-  minPlayers: '',
-  maxPlayers: '',
-  description: '',
-  coverUrl: '',
-};
 
 // ──────────────────────────────────────────────────
 // SVG placeholder shown when a game has no cover
@@ -142,7 +152,7 @@ const BoardgamePlaceholder = () => (
 // ──────────────────────────────────────────────────
 // Stats derived from session history
 // ──────────────────────────────────────────────────
-function computeGameStats(gameName, games) {
+function computeGameStats(gameName, games, primaryPlayer) {
   const sessions = games.filter(
     (g) => g.game?.toLowerCase() === gameName.toLowerCase()
   );
@@ -162,21 +172,53 @@ function computeGameStats(gameName, games) {
   const dates = sessions.map((s) => s.date).filter(Boolean).sort();
   const lastPlayed = dates[dates.length - 1] || null;
 
+  let userWins = 0;
+  let userDefeats = 0;
+  let coopWins = 0;
+  let coopDefeats = 0;
+
+  if (primaryPlayer) {
+    sessions.forEach((session) => {
+      const playedByUser = (session.players || []).includes(primaryPlayer);
+      if (!playedByUser) return;
+
+      if (session.gameType === 'cooperative') {
+        if (session.coopResult === 'win') coopWins += 1;
+        if (session.coopResult === 'loss') coopDefeats += 1;
+        return;
+      }
+
+      if (!session.winner) return;
+      if (session.winner === primaryPlayer) {
+        userWins += 1;
+      } else {
+        userDefeats += 1;
+      }
+    });
+  }
+
   return {
     timesPlayed,
     players: [...allPlayers],
     topWinner,
     topWinnerCount: topWinner ? winnerCounts[topWinner] : 0,
     lastPlayed,
+    userWins,
+    userDefeats,
+    coopWins,
+    coopDefeats,
   };
 }
 
 // ──────────────────────────────────────────────────
 // Game Details Modal
 // ──────────────────────────────────────────────────
-function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
+function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG, canEdit, onClose, onEdit }) {
   const [imgError, setImgError] = useState(false);
   const catMeta = GAME_CATEGORIES.find((c) => c.value === game.category);
+  const displayName = game.nameLocal?.[language] || game.name;
+  const displayDescription = game.descriptionLocal?.[language] || game.description;
+  const displayCoverUrl = normalizeImageUrl(game.coverUrl);
 
   const formatLastPlayed = (dateStr) => {
     if (!dateStr) return null;
@@ -206,10 +248,10 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
 
         {/* Cover */}
         <div className="lib-details-cover">
-          {game.coverUrl && !imgError ? (
+          {displayCoverUrl && !imgError ? (
             <img
-              src={game.coverUrl}
-              alt={game.name}
+              src={displayCoverUrl}
+              alt={displayName}
               className="lib-cover-img"
               onError={() => setImgError(true)}
             />
@@ -221,9 +263,9 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
         {/* Info */}
         <div className="lib-details-body">
           <div className="lib-details-name-row">
-            <h2 className="lib-details-name">{game.name}</h2>
+            <h2 className="lib-details-name">{displayName}</h2>
             {game.owned && (
-              <span className="lib-badge lib-badge-owned"><Star size={14} /> {t('library.owned')}</span>
+              <span className="lib-badge lib-badge-owned"><CircleStar size={14} /> {t('library.owned')}</span>
             )}
           </div>
 
@@ -238,8 +280,16 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
             )}
           </div>
 
-          {game.description && (
-            <p className="lib-details-description">{game.description}</p>
+          {displayDescription && (
+            <p className="lib-details-description">
+              {displayDescription}
+            </p>
+          )}
+
+          {loadingBGG && !displayDescription && (
+            <p className="lib-details-description lib-details-muted">
+              <LoaderCircle size={14} className="catalog-spinner" /> {t('library.bggSearching')}
+            </p>
           )}
 
           {/* Play stats */}
@@ -255,6 +305,23 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
                     <strong>{stats.timesPlayed}</strong> {t('library.timesPlayed')}
                   </span>
                 </div>
+
+                {primaryPlayer && (
+                  <>
+                    <div className="lib-stat-row">
+                      <span className="lib-stat-icon"><Trophy size={14} /></span>
+                      <span className="lib-stat-value">
+                        <strong>{t('stats.victories')}:</strong> {stats.userWins + stats.coopWins}
+                      </span>
+                    </div>
+                    <div className="lib-stat-row">
+                      <span className="lib-stat-icon"><X size={14} /></span>
+                      <span className="lib-stat-value">
+                        <strong>{t('stats.defeats')}:</strong> {stats.userDefeats + stats.coopDefeats}
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {stats.lastPlayed && (
                   <div className="lib-stat-row">
@@ -300,9 +367,11 @@ function GameDetailsModal({ game, stats, t, language, onClose, onEdit }) {
           </div>
 
           <div className="lib-details-actions">
-            <button className="btn-edit-details" onClick={onEdit}>
-              <IconPencil /> {t('library.editGame')}
-            </button>
+            {canEdit && (
+              <button className="btn-edit-details" onClick={onEdit}>
+                <IconPencil /> {t('library.editGame')}
+              </button>
+            )}
             <button className="btn-close-details" onClick={onClose}>
               {t('common.close')}
             </button>
@@ -324,47 +393,82 @@ const IconTrash = () => (
 // ──────────────────────────────────────────────────
 // Main Library component
 // ──────────────────────────────────────────────────
-export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games }) => {
+export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games, primaryPlayer }) => {
   const { language, t } = useLanguage();
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState(EMPTY_FORM);
   const [editingGame, setEditingGame] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
-  // BGG search status: 'idle' | 'loading' | 'found' | 'notfound' | 'error'
-  const [bggStatus, setBggStatus] = useState('idle');
   const [bggEditStatus, setBggEditStatus] = useState('idle');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  // Tab state: 'shelf' | 'catalog'
+  const [activeTab, setActiveTab] = useState('shelf');
+  // BGG catalog state
+  const [hotGames, setHotGames] = useState([]);
+  const [hotLoading, setHotLoading] = useState(false);
+  const [hotError, setHotError] = useState(false);
+  const [hotLoaded, setHotLoaded] = useState(false);
+  const [sortAlpha, setSortAlpha] = useState(false);
+  const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogDetailsLoadingName, setCatalogDetailsLoadingName] = useState('');
+  const [bggCardDetails, setBggCardDetails] = useState({});
+  const catalogSearchInputRef = useRef(null);
+  const bggDetailsCacheRef = useRef({});
 
   // Build a play-count map from game session history
-  const playCount = {};
-  games.forEach((g) => {
-    if (g.game) playCount[g.game] = (playCount[g.game] || 0) + 1;
-  });
+  const playCount = useMemo(() => {
+    const counts = {};
+    games.forEach((g) => {
+      const normalized = g.game?.toLowerCase();
+      if (normalized) counts[normalized] = (counts[normalized] || 0) + 1;
+    });
+    return counts;
+  }, [games]);
 
-  const handleField = (key) => (e) =>
-    setFormData((prev) => ({ ...prev, [key]: e.target.value }));
+  const libraryByNameLower = useMemo(() => {
+    const entries = new Map();
+    library.forEach((game) => {
+      if (game?.name) entries.set(game.name.toLowerCase(), game);
+    });
+    return entries;
+  }, [library]);
+
+  const libraryNamesLower = useMemo(
+    () => new Set(Array.from(libraryByNameLower.keys())),
+    [libraryByNameLower]
+  );
+
+  const availableCategoryFilters = useMemo(() => {
+    const usedCategories = new Set(
+      library
+        .map((game) => game.category)
+        .filter(Boolean)
+    );
+    return GAME_CATEGORIES.filter((cat) => usedCategories.has(cat.value));
+  }, [library]);
+
+  const filteredLibrary = useMemo(() => {
+    if (categoryFilter === 'all') return library;
+    return library.filter((game) => game.category === categoryFilter);
+  }, [library, categoryFilter]);
+
+  const resolveBggDetails = useCallback(async (gameName) => {
+    const key = gameName.toLowerCase();
+    if (bggDetailsCacheRef.current[key]) return bggDetailsCacheRef.current[key];
+
+    try {
+      const data = await fetchBGGData(gameName);
+      if (data) {
+        bggDetailsCacheRef.current[key] = data;
+        setBggCardDetails((prev) => ({ ...prev, [key]: data }));
+      }
+      return data;
+    } catch {
+      return null;
+    }
+  }, []);
 
   const handleEditField = (key) => (e) =>
     setEditingGame((prev) => ({ ...prev, [key]: e.target.value }));
-
-  const handleBGGSearch = async () => {
-    const name = formData.name.trim();
-    if (!name) return;
-    setBggStatus('loading');
-    try {
-      const data = await fetchBGGData(name);
-      if (!data) { setBggStatus('notfound'); return; }
-      setFormData((prev) => ({
-        ...prev,
-        description: data.description || prev.description,
-        coverUrl: data.thumbnail || prev.coverUrl,
-        minPlayers: data.minPlayers || prev.minPlayers,
-        maxPlayers: data.maxPlayers || prev.maxPlayers,
-      }));
-      setBggStatus('found');
-    } catch {
-      setBggStatus('error');
-    }
-  };
 
   const handleBGGEditSearch = async () => {
     const name = editingGame?.name?.trim();
@@ -386,22 +490,6 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const name = formData.name.trim();
-    if (!name) return;
-    onAdd({
-      name,
-      category: formData.category,
-      minPlayers: formData.minPlayers ? parseInt(formData.minPlayers, 10) : null,
-      maxPlayers: formData.maxPlayers ? parseInt(formData.maxPlayers, 10) : null,
-      description: formData.description,
-      coverUrl: formData.coverUrl,
-    });
-    setFormData(EMPTY_FORM);
-    setShowForm(false);
-  };
-
   const handleEditSubmit = (e) => {
     e.preventDefault();
     onUpdate(editingGame.id, {
@@ -411,6 +499,8 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
       owned: editingGame.owned,
       description: editingGame.description,
       coverUrl: editingGame.coverUrl,
+      nameLocal: editingGame.nameLocal ?? {},
+      descriptionLocal: editingGame.descriptionLocal ?? {},
     });
     if (selectedGame?.id === editingGame.id) setSelectedGame({ ...editingGame });
     setEditingGame(null);
@@ -425,280 +515,445 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
       maxPlayers: game.maxPlayers ?? '',
       description: game.description ?? '',
       coverUrl: game.coverUrl ?? '',
+      nameLocal: game.nameLocal ?? {},
+      descriptionLocal: game.descriptionLocal ?? {},
     });
   }, []);
 
   const openDetails = useCallback((game) => {
-    setSelectedGame(game);
+    setCatalogDetailsLoadingName('');
+    setSelectedGame({ ...game, inLibrary: true });
   }, []);
 
-  const handleRemove = useCallback((gameId, e) => {
+  const handleRemove = useCallback((game, e) => {
+    e?.preventDefault();
     e?.stopPropagation();
-    onRemove(gameId);
-    if (selectedGame?.id === gameId) setSelectedGame(null);
+
+    const removeKey = game?.id || game?.name;
+    if (!removeKey) return;
+
+    onRemove(removeKey);
+
+    if (selectedGame?.id && game?.id && selectedGame.id === game.id) {
+      setSelectedGame(null);
+      return;
+    }
+
+    if (!game?.id && selectedGame?.name?.toLowerCase() === game?.name?.toLowerCase()) {
+      setSelectedGame(null);
+    }
   }, [onRemove, selectedGame]);
+
+  const fetchHotGames = useCallback(async () => {
+    if (hotLoaded) return;
+    setHotLoading(true);
+    setHotError(false);
+    try {
+      const xml = await fetchBGGXml(bggUrl('/hot?type=boardgame'));
+      const doc = new DOMParser().parseFromString(xml, 'text/xml');
+      const items = Array.from(doc.querySelectorAll('item'));
+      const parsed = items.map((item) => ({
+        id: item.getAttribute('id'),
+        rank: parseInt(item.getAttribute('rank'), 10),
+        name: item.querySelector('name')?.getAttribute('value') || '',
+        thumbnail: item.querySelector('thumbnail')?.getAttribute('value') || '',
+        yearPublished: item.querySelector('yearpublished')?.getAttribute('value') || '',
+      }));
+      setHotGames(parsed);
+      setHotLoaded(true);
+    } catch {
+      setHotError(true);
+    } finally {
+      setHotLoading(false);
+    }
+  }, [hotLoaded]);
+
+  const handleCatalogTab = useCallback(() => {
+    setActiveTab('catalog');
+    fetchHotGames();
+  }, [fetchHotGames]);
+
+  const handleGoToCatalogSearch = useCallback(() => {
+    handleCatalogTab();
+    setTimeout(() => {
+      catalogSearchInputRef.current?.focus();
+      catalogSearchInputRef.current?.select();
+    }, 0);
+  }, [handleCatalogTab]);
+
+  const handleAddFromCatalog = useCallback((bggGame) => {
+    const cachedDetails = bggDetailsCacheRef.current[bggGame.name.toLowerCase()];
+    const coverUrl = normalizeImageUrl(bggGame.thumbnail);
+    onAdd({
+      name: bggGame.name,
+      coverUrl,
+      owned: true,
+      minPlayers: cachedDetails?.minPlayers ? parseInt(cachedDetails.minPlayers, 10) : null,
+      maxPlayers: cachedDetails?.maxPlayers ? parseInt(cachedDetails.maxPlayers, 10) : null,
+      description: cachedDetails?.description || '',
+    });
+  }, [onAdd]);
+
+  const handleCatalogOpenDetails = useCallback(async (bggGame) => {
+    const normalizedName = bggGame.name.toLowerCase();
+    const existing = libraryByNameLower.get(normalizedName);
+
+    if (existing) {
+      setCatalogDetailsLoadingName('');
+      setSelectedGame({ ...existing, inLibrary: true });
+      return;
+    }
+
+    const coverUrl = normalizeImageUrl(bggGame.thumbnail);
+
+    setSelectedGame({
+      id: null,
+      name: bggGame.name,
+      category: '',
+      minPlayers: null,
+      maxPlayers: null,
+      description: '',
+      coverUrl,
+      owned: false,
+      nameLocal: {},
+      descriptionLocal: {},
+      inLibrary: false,
+    });
+
+    setCatalogDetailsLoadingName(normalizedName);
+    const details = await resolveBggDetails(bggGame.name);
+    setCatalogDetailsLoadingName('');
+
+    if (!details) return;
+    setSelectedGame((previous) => {
+      if (!previous || previous.name.toLowerCase() !== normalizedName) return previous;
+      return {
+        ...previous,
+        minPlayers: details.minPlayers || previous.minPlayers,
+        maxPlayers: details.maxPlayers || previous.maxPlayers,
+        description: details.description || previous.description,
+      };
+    });
+  }, [libraryByNameLower, resolveBggDetails]);
+
+  const filteredHot = hotGames
+    .filter((g) => !catalogSearch || g.name.toLowerCase().includes(catalogSearch.toLowerCase()))
+    .sort(sortAlpha ? (a, b) => a.name.localeCompare(b.name) : (a, b) => a.rank - b.rank);
 
   return (
     <>
       <div className="library-container fade-in">
         <header className="library-header">
-          <button className="back-btn" onClick={() => onNavigate('home')}>
-            {t('common.back')}
-          </button>
-          <h1>{t('library.title')}</h1>
-          <span className="library-count">{library.length}</span>
+          <div className="library-title-wrap">
+            <span className="library-title-icon"><BookOpen size={18} /></span>
+            <h1>{t('library.title')}</h1>
+          </div>
+          <span className="library-count" aria-label={String(library.length)}>{library.length}</span>
         </header>
 
-        <div className="library-content">
-          {/* Add game button / form toggle */}
+        {/* Tab bar */}
+        <div className="library-tabs">
           <button
-            className={`btn btn-accent btn-md ${showForm ? 'active' : ''}`}
-            onClick={() => {
-              setShowForm((v) => !v);
-              setFormData(EMPTY_FORM);
-            }}
+            className={`library-tab-btn ${activeTab === 'shelf' ? 'active' : ''}`}
+            onClick={() => setActiveTab('shelf')}
           >
-            {showForm ? <><X size={16} /> {t('common.cancel')}</> : <><BookOpen size={16} /> {t('library.addGame')}</>}
+            <BookOpen size={15} /> {t('library.tabShelf')}
+          </button>
+          <button
+            className={`library-tab-btn ${activeTab === 'catalog' ? 'active' : ''}`}
+            onClick={handleCatalogTab}
+          >
+            <Dices size={15} /> {t('library.tabBGG')}
+          </button>
+        </div>
+
+        <div className="library-content">
+          {/* ── Minha Estante tab ── */}
+          {activeTab === 'shelf' && (
+          <>
+          <button
+            className="btn btn-accent btn-md"
+            onClick={handleGoToCatalogSearch}
+          >
+            <Search size={16} /> {t('library.bggSearch')}
           </button>
 
-          {/* Add game form */}
-          {showForm && (
-            <form className="library-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="lib-name">{t('library.gameName')}</label>
-                <input
-                  id="lib-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => {
-                    handleField('name')(e);
-                    setBggStatus('idle');
-                  }}
-                  placeholder={t('library.gameNamePlaceholder')}
-                  maxLength={100}
-                  required
-                  autoFocus
-                  autoComplete="off"
-                />
-              </div>
-
-              {/* BGG Auto-fill */}
-              {formData.name.trim().length >= 2 && (
-                <div className="lib-bgg-row">
-                  <button
-                    type="button"
-                    className={`btn-bgg-search${bggStatus === 'loading' ? ' loading' : ''}`}
-                    onClick={handleBGGSearch}
-                    disabled={bggStatus === 'loading'}
-                  >
-                    {bggStatus === 'loading'
-                      ? <><LoaderCircle size={14} /> {t('library.bggSearching')}</>
-                      : <><Search size={14} /> {t('library.bggSearch')}</>}
-                  </button>
-                  {bggStatus === 'found' && (
-                    <span className="lib-bgg-msg lib-bgg-success"><Check size={14} /> {t('library.bggFound')}</span>
-                  )}
-                  {bggStatus === 'notfound' && (
-                    <span className="lib-bgg-msg lib-bgg-error">{t('library.bggNotFound')}</span>
-                  )}
-                  {bggStatus === 'error' && (
-                    <span className="lib-bgg-msg lib-bgg-error">{t('library.bggError')}</span>
-                  )}
-                </div>
-              )}
-
-              <div className="form-group">
-                <label htmlFor="lib-category">{t('library.category')}</label>
-                <select
-                  id="lib-category"
-                  value={formData.category}
-                  onChange={handleField('category')}
+          {availableCategoryFilters.length > 0 && (
+            <div className="library-quick-filters" role="group" aria-label={t('library.category')}>
+              <button
+                type="button"
+                className={`library-filter-btn ${categoryFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setCategoryFilter('all')}
+              >
+                {t('history.filterAll')}
+              </button>
+              {availableCategoryFilters.map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  className={`library-filter-btn ${categoryFilter === cat.value ? 'active' : ''}`}
+                  onClick={() => setCategoryFilter(cat.value)}
                 >
-                  <option value="">{t('library.categoryNone')}</option>
-                  {GAME_CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {t(cat.label)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="lib-min">{t('library.minPlayers')}</label>
-                  <input
-                    id="lib-min"
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={formData.minPlayers}
-                    onChange={handleField('minPlayers')}
-                    placeholder="1"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="lib-max">{t('library.maxPlayers')}</label>
-                  <input
-                    id="lib-max"
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={formData.maxPlayers}
-                    onChange={handleField('maxPlayers')}
-                    placeholder="8"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="lib-description">{t('library.description')}</label>
-                <textarea
-                  id="lib-description"
-                  value={formData.description}
-                  onChange={handleField('description')}
-                  placeholder={t('library.descriptionPlaceholder')}
-                  maxLength={500}
-                  rows={3}
-                  className="lib-textarea"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="lib-cover">{t('library.coverUrl')}</label>
-                <input
-                  id="lib-cover"
-                  type="url"
-                  value={formData.coverUrl}
-                  onChange={handleField('coverUrl')}
-                  placeholder={t('library.coverUrlPlaceholder')}
-                  maxLength={1000}
-                />
-                <span className="lib-field-hint">{t('library.coverUrlHint')}</span>
-                {formData.coverUrl && (
-                  <div className="lib-cover-preview-wrap">
-                    <img
-                      src={formData.coverUrl}
-                      alt="preview"
-                      className="lib-cover-preview"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="form-actions">
-                <button type="submit" className="btn-save-lib">
-                  {t('common.save')}
+                  {t(cat.label)}
                 </button>
-              </div>
-            </form>
+              ))}
+            </div>
           )}
 
           {/* Library list */}
-          {library.length === 0 ? (
+          {filteredLibrary.length === 0 ? (
             <div className="library-empty">
               <span className="library-empty-icon"><BookOpen size={24} /></span>
               <p>{t('library.noGames')}</p>
             </div>
           ) : (
-            <ul className="library-list">
-              {library.map((game) => {
-                const count = playCount[game.name] || 0;
+            <ul className="library-card-grid">
+              {filteredLibrary.map((game) => {
+                const count = playCount[game.name.toLowerCase()] || 0;
                 const catMeta = GAME_CATEGORIES.find(
                   (c) => c.value === game.category
                 );
+                const shelfCoverUrl = normalizeImageUrl(game.coverUrl);
+                const playersLabel =
+                  (game.minPlayers || game.maxPlayers)
+                    ? `${game.minPlayers ?? '?'}-${game.maxPlayers ?? '?'}`
+                    : '?';
                 return (
-                  <li
-                    key={game.id}
-                    className="library-item library-item-clickable"
-                    onClick={() => openDetails(game)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && openDetails(game)}
-                    aria-label={game.name}
-                  >
-                    {/* Thumbnail */}
-                    <div className="lib-item-thumb">
-                      {game.coverUrl ? (
-                        <>
-                          <img
-                            src={game.coverUrl}
-                            alt=""
-                            className="lib-item-thumb-img"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                          <div className="lib-item-thumb-fallback" style={{ display: 'none' }}>
-                            <Dices size={18} />
-                          </div>
-                        </>
-                      ) : (
-                        <div className="lib-item-thumb-fallback"><Dices size={18} /></div>
-                      )}
-                    </div>
+                  <li key={game.id}>
+                    <article
+                      className={`library-game-card library-game-card--shelf${shelfCoverUrl ? '' : ' no-cover'}`}
+                      style={getBackgroundImageStyle(shelfCoverUrl)}
+                      onClick={() => openDetails(game)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && openDetails(game)}
+                      aria-label={game.name}
+                    >
+                      <div className="library-card-top-left">
+                        <span className="library-card-chip"><Users size={12} /> {playersLabel}</span>
+                      </div>
 
-                    <div className="library-item-info">
-                      <div className="library-item-name-row">
-                        <span className="library-item-name">{game.name}</span>
-                        {game.owned && (
-                          <span className="lib-badge lib-badge-owned" title={t('library.ownedLabel')}>
-                            <Star size={14} /> {t('library.owned')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="library-item-badges">
-                        {catMeta && (
-                          <span className="lib-badge lib-badge-cat">
-                            {t(catMeta.label)}
-                          </span>
-                        )}
-                        {(game.minPlayers || game.maxPlayers) && (
-                          <span className="lib-badge">
-                            <Users size={14} /> {game.minPlayers ?? '?'}–{game.maxPlayers ?? '?'}
-                          </span>
-                        )}
+                      <div className="library-card-top-right">
                         {count > 0 && (
-                          <span className="lib-badge lib-badge-plays">
-                            <Gamepad2 size={14} /> {count}x
+                          <span className="library-card-badge played" title={t('library.timesPlayed')}>
+                            <BadgeCheck size={14} />
+                          </span>
+                        )}
+                        {game.owned && (
+                          <span className="library-card-badge owned" title={t('library.ownedLabel')}>
+                            <CircleStar size={14} />
                           </span>
                         )}
                       </div>
-                    </div>
-                    <div className="library-item-actions">
-                      <button
-                        className="btn-icon-lib btn-edit-lib"
-                        onClick={(e) => openEdit(game, e)}
-                        title={t('common.edit')}
-                        aria-label={t('common.edit')}
-                      >
-                        <IconPencil />
-                      </button>
-                      <button
-                        className="btn-icon-lib btn-remove-lib"
-                        onClick={(e) => handleRemove(game.id, e)}
-                        title={t('library.remove')}
-                        aria-label={t('library.remove')}
-                      >
-                        <IconTrash />
-                      </button>
-                    </div>
+
+                      <div className="library-card-content">
+                        <h3>{game.nameLocal?.[language] || game.name}</h3>
+                        <div className="library-card-meta">
+                          <span className="library-card-chip">
+                            {catMeta ? t(catMeta.label) : t('library.categoryNone')}
+                          </span>
+                          {count > 0 && <span className="library-card-chip subtle">{count}x</span>}
+                        </div>
+                      </div>
+
+                      <div className="library-card-actions" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="btn-icon-lib btn-edit-lib"
+                          onClick={(e) => openEdit(game, e)}
+                          title={t('common.edit')}
+                          aria-label={t('common.edit')}
+                        >
+                          <IconPencil />
+                        </button>
+                        <button
+                          className="btn-icon-lib btn-remove-lib"
+                          onClick={(e) => handleRemove(game, e)}
+                          title={t('library.remove')}
+                          aria-label={t('library.remove')}
+                        >
+                          <IconTrash />
+                        </button>
+                      </div>
+                    </article>
                   </li>
                 );
               })}
             </ul>
           )}
+          </>
+          )}
+
+          {/* ── Catálogo BGG tab ── */}
+          {activeTab === 'catalog' && (
+          <>
+            {language !== 'en-US' && (
+              <div className="bgg-lang-notice">
+                <Info size={14} />
+                {t('library.bggEnglishNotice')}
+              </div>
+            )}
+            <div className="catalog-controls">
+              <div className="catalog-sort-btns">
+                <button
+                  className={`catalog-sort-btn ${!sortAlpha ? 'active' : ''}`}
+                  onClick={() => setSortAlpha(false)}
+                >
+                  {t('library.bggSortRanking')}
+                </button>
+                <button
+                  className={`catalog-sort-btn ${sortAlpha ? 'active' : ''}`}
+                  onClick={() => setSortAlpha(true)}
+                >
+                  {t('library.bggSortAlpha')}
+                </button>
+              </div>
+              <div className="catalog-search-wrap">
+                <Search size={14} className="catalog-search-icon" />
+                <input
+                  ref={catalogSearchInputRef}
+                  type="text"
+                  className="catalog-search-input"
+                  placeholder={t('library.bggSearch')}
+                  value={catalogSearch}
+                  onChange={(e) => setCatalogSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {hotLoading && (
+              <div className="catalog-status">
+                <LoaderCircle size={20} className="catalog-spinner" />
+                <span>{t('library.bggLoadingHot')}</span>
+              </div>
+            )}
+
+            {hotError && (
+              <p className="catalog-error">{t('library.bggHotError')}</p>
+            )}
+
+            {!hotLoading && !hotError && filteredHot.length > 0 && (
+              <ul className="library-card-grid catalog-grid">
+                {filteredHot.map((game) => {
+                  const normalizedName = game.name.toLowerCase();
+                  const inShelf = libraryNamesLower.has(normalizedName);
+                  const inLibraryEntry = libraryByNameLower.get(normalizedName);
+                  const cachedDetails = bggCardDetails[normalizedName];
+                  const count = playCount[normalizedName] || 0;
+                  const thumb = game.thumbnail;
+                  const thumbSrc = thumb
+                    ? (thumb.startsWith('//') ? `https:${thumb}` : thumb)
+                    : '';
+                  const preferredCoverUrl =
+                    normalizeImageUrl(inLibraryEntry?.coverUrl) || normalizeImageUrl(thumbSrc);
+                  const playersLabel =
+                    (inLibraryEntry?.minPlayers || inLibraryEntry?.maxPlayers)
+                      ? `${inLibraryEntry?.minPlayers ?? '?'}-${inLibraryEntry?.maxPlayers ?? '?'}`
+                      : (cachedDetails?.minPlayers || cachedDetails?.maxPlayers)
+                        ? `${cachedDetails?.minPlayers ?? '?'}-${cachedDetails?.maxPlayers ?? '?'}`
+                      : '?';
+                  const catMeta = inLibraryEntry
+                    ? GAME_CATEGORIES.find((c) => c.value === inLibraryEntry.category)
+                    : null;
+                  return (
+                    <li key={game.id}>
+                      <article
+                        className={`library-game-card library-game-card--catalog${preferredCoverUrl ? '' : ' no-cover'}`}
+                        style={getBackgroundImageStyle(preferredCoverUrl)}
+                        onClick={() => handleCatalogOpenDetails(game)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === 'Enter' && handleCatalogOpenDetails(game)}
+                        aria-label={game.name}
+                      >
+                        <div className="library-card-top-left">
+                          <span className="library-card-chip">#{game.rank}</span>
+                          <span className="library-card-chip"><Users size={12} /> {playersLabel}</span>
+                        </div>
+
+                        <div className="library-card-top-right">
+                          {count > 0 && (
+                            <span className="library-card-badge played" title={t('library.timesPlayed')}>
+                              <BadgeCheck size={14} />
+                            </span>
+                          )}
+                          {inLibraryEntry?.owned && (
+                            <span className="library-card-badge owned" title={t('library.ownedLabel')}>
+                              <CircleStar size={14} />
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="library-card-content">
+                          <h3>{game.name}</h3>
+                          <div className="library-card-meta">
+                            <span className="library-card-chip">
+                              {catMeta ? t(catMeta.label) : 'BGG'}
+                            </span>
+                            {game.yearPublished && (
+                              <span className="library-card-chip subtle">{game.yearPublished}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="library-card-actions" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            className={`library-card-add-btn${inShelf ? ' in-shelf' : ''}`}
+                            onClick={() => !inShelf && handleAddFromCatalog(game)}
+                            disabled={inShelf}
+                            title={inShelf ? t('library.alreadyOnShelf') : t('library.addToShelf')}
+                            aria-label={inShelf ? t('library.alreadyOnShelf') : t('library.addToShelf')}
+                          >
+                            {inShelf ? <Check size={14} /> : <BookOpen size={14} />}
+                            <span>{inShelf ? t('library.alreadyOnShelf') : t('library.addToShelf')}</span>
+                          </button>
+                        </div>
+                      </article>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            {!hotLoading && !hotError && filteredHot.length === 0 && (
+              <div className="library-empty">
+                <span className="library-empty-icon"><Dices size={24} /></span>
+                <p>{t('library.noGames')}</p>
+              </div>
+            )}
+          </>
+          )}
         </div>
+
+        <nav className="bottom-nav" aria-label="Main navigation">
+          <button className="bottom-nav-item" onClick={() => onNavigate('home')}>
+            <span><House size={18} /></span>
+            <small>Home</small>
+          </button>
+          <button className="bottom-nav-item" onClick={() => onNavigate('stats')}>
+            <span><BarChart3 size={18} /></span>
+            <small>{t('stats.title')}</small>
+          </button>
+          <button className="bottom-nav-item active" onClick={() => onNavigate('library')}>
+            <span><BookOpen size={18} /></span>
+            <small>{t('home.library')}</small>
+          </button>
+          <button className="bottom-nav-item" onClick={() => onNavigate('profile')}>
+            <span><UserRound size={18} /></span>
+            <small>{t('home.profile')}</small>
+          </button>
+        </nav>
       </div>
 
       {/* Game Details Modal */}
       {selectedGame && (
         <GameDetailsModal
           game={selectedGame}
-          stats={computeGameStats(selectedGame.name, games)}
+          stats={computeGameStats(selectedGame.name, games, primaryPlayer)}
           t={t}
           language={language}
+          primaryPlayer={primaryPlayer}
+          loadingBGG={catalogDetailsLoadingName === selectedGame.name.toLowerCase()}
+          canEdit={Boolean(selectedGame.inLibrary)}
           onClose={() => setSelectedGame(null)}
           onEdit={() => {
             openEdit(selectedGame);
@@ -802,6 +1057,44 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games 
                   className="lib-textarea"
                 />
               </div>
+
+              {language !== 'en-US' && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="edit-name-local">{t('library.nameLocalLabel')}</label>
+                    <input
+                      id="edit-name-local"
+                      type="text"
+                      value={editingGame.nameLocal?.[language] ?? ''}
+                      onChange={(e) =>
+                        setEditingGame((prev) => ({
+                          ...prev,
+                          nameLocal: { ...(prev.nameLocal ?? {}), [language]: e.target.value },
+                        }))
+                      }
+                      placeholder={t('library.nameLocalPlaceholder')}
+                      maxLength={200}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-desc-local">{t('library.descriptionLocalLabel')}</label>
+                    <textarea
+                      id="edit-desc-local"
+                      value={editingGame.descriptionLocal?.[language] ?? ''}
+                      onChange={(e) =>
+                        setEditingGame((prev) => ({
+                          ...prev,
+                          descriptionLocal: { ...(prev.descriptionLocal ?? {}), [language]: e.target.value },
+                        }))
+                      }
+                      placeholder={t('library.descriptionLocalPlaceholder')}
+                      maxLength={500}
+                      rows={3}
+                      className="lib-textarea"
+                    />
+                  </div>
+                </>
+              )}
 
               <div className="form-group">
                 <label htmlFor="edit-cover">{t('library.coverUrl')}</label>

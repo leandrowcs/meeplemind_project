@@ -502,3 +502,25 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Own game checkbox ── */
+.own-game-group {
+  margin-top: -0.5rem;
+}
+
+.own-game-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--color-text, #e2e8f0);
+  user-select: none;
+}
+
+.own-game-checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-accent, #ea580c);
+  cursor: pointer;
+}
