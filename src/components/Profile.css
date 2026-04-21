@@ -286,11 +286,14 @@
   margin: 0 auto;
   background: rgba(10, 16, 34, 0.9);
   border-top: 1px solid rgba(148, 163, 184, 0.25);
+  border-left: 1px solid rgba(148, 163, 184, 0.25);
+  border-right: 1px solid rgba(148, 163, 184, 0.25);
   backdrop-filter: blur(10px);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 0.4rem;
   z-index: 980;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .bottom-nav-item {
@@ -301,7 +304,7 @@
   justify-items: center;
   gap: 0.15rem;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 0.25rem;
 }
 

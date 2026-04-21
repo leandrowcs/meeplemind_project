@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BarChart3,
   BookOpen,
@@ -38,6 +38,14 @@ export const Home = ({
   const { t, isInitialized, language } = useLanguage();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [selectedInsight, setSelectedInsight] = useState(null);
+
+  const formatTemplate = useCallback((key, replacements = {}) => {
+    let text = t(key);
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+      text = text.replaceAll(`{${placeholder}}`, String(value));
+    });
+    return text;
+  }, [t]);
 
   const sortedGames = useMemo(
     () => [...games].sort((a, b) => new Date(b.date) - new Date(a.date)),
@@ -140,111 +148,79 @@ export const Home = ({
       {
         id: 'streak',
         icon: Flame,
-        title: language === 'pt-BR' ? `Você está invicto há ${competitiveStreak} partida${competitiveStreak === 1 ? '' : 's'}` : `You are unbeaten for ${competitiveStreak} game${competitiveStreak === 1 ? '' : 's'}`,
-        detail:
-          language === 'pt-BR'
-            ? `A sequência foi calculada olhando as partidas competitivas mais recentes em ordem cronológica. Ela para na primeira partida em que você participou e não venceu.`
-            : `The streak was computed from your most recent competitive games in chronological order and stops at the first one where you played but did not win.`,
+        title: formatTemplate('home.insight.streak.title', {
+          count: competitiveStreak,
+          gamesLabel: t(competitiveStreak === 1 ? 'home.game' : 'home.games'),
+        }),
+        detail: t('home.insight.streak.detail'),
       },
       {
         id: 'most-played',
         icon: Target,
         title:
           mostPlayedGameData
-            ? language === 'pt-BR'
-              ? `${mostPlayedGameData[0]} é seu jogo mais jogado`
-              : `${mostPlayedGameData[0]} is your most played game`
-            : language === 'pt-BR'
-              ? 'Registre mais partidas para descobrir seu jogo favorito'
-              : 'Register more matches to discover your favorite game',
+            ? formatTemplate('home.insight.mostPlayed.titleWithGame', { game: mostPlayedGameData[0] })
+            : t('home.insight.mostPlayed.titleEmpty'),
         detail:
           mostPlayedGameData
-            ? language === 'pt-BR'
-              ? `Esse jogo apareceu em ${mostPlayedGameData[1]} partida${mostPlayedGameData[1] === 1 ? '' : 's'}, o maior volume do seu histórico até agora.`
-              : `This game appears in ${mostPlayedGameData[1]} match${mostPlayedGameData[1] === 1 ? '' : 'es'}, currently the highest volume in your history.`
-            : language === 'pt-BR'
-              ? 'Ainda não há dados suficientes para comparar frequência entre jogos.'
-              : 'There is not enough data yet to compare game frequency.',
+            ? formatTemplate('home.insight.mostPlayed.detailWithCount', {
+              count: mostPlayedGameData[1],
+              matchesLabel: t(mostPlayedGameData[1] === 1 ? 'home.game' : 'home.games'),
+            })
+            : t('home.insight.mostPlayed.detailEmpty'),
       },
       {
         id: 'coop-rate',
         icon: Handshake,
-        title:
-          language === 'pt-BR'
-            ? `${coopSuccessRate}% de sucesso em cooperativos`
-            : `${coopSuccessRate}% co-op success rate`,
+        title: formatTemplate('home.insight.coopRate.title', { rate: coopSuccessRate }),
         detail:
-          language === 'pt-BR'
-            ? `Taxa obtida com ${cooperativeGames.length} partida${cooperativeGames.length === 1 ? '' : 's'} cooperativa${cooperativeGames.length === 1 ? '' : 's'} registradas.`
-            : `Rate calculated from ${cooperativeGames.length} cooperative match${cooperativeGames.length === 1 ? '' : 'es'} in your records.`,
+          cooperativeGames.length === 1
+            ? formatTemplate('home.insight.coopRate.detailSingular', { count: cooperativeGames.length })
+            : formatTemplate('home.insight.coopRate.detailPlural', { count: cooperativeGames.length }),
       },
       {
         id: 'wins-total',
         icon: Trophy,
-        title:
-          language === 'pt-BR'
-            ? `${userCompetitiveWins + userCoopWins} vitórias totais no histórico`
-            : `${userCompetitiveWins + userCoopWins} total wins recorded`,
-        detail:
-          language === 'pt-BR'
-            ? `Somamos vitórias competitivas suas (${userCompetitiveWins}) e vitórias cooperativas das partidas em que você participou (${userCoopWins}).`
-            : `This combines your competitive wins (${userCompetitiveWins}) and cooperative wins in games where you participated (${userCoopWins}).`,
+        title: formatTemplate('home.insight.winsTotal.title', { count: userCompetitiveWins + userCoopWins }),
+        detail: formatTemplate('home.insight.winsTotal.detail', {
+          competitiveWins: userCompetitiveWins,
+          coopWins: userCoopWins,
+        }),
       },
       {
         id: 'activity',
         icon: CalendarDays,
-        title:
-          language === 'pt-BR'
-            ? `${gamesLast30Days} partidas nos últimos 30 dias`
-            : `${gamesLast30Days} games in the last 30 days`,
-        detail:
-          language === 'pt-BR'
-            ? 'Esse recorte mostra seu ritmo recente de partidas e ajuda a comparar atividade ao longo dos meses.'
-            : 'This slice shows your recent playing pace and helps compare activity month over month.',
+        title: formatTemplate('home.insight.activity.title', {
+          count: gamesLast30Days,
+          gamesLabel: t(gamesLast30Days === 1 ? 'home.game' : 'home.games'),
+        }),
+        detail: t('home.insight.activity.detail'),
       },
       {
         id: 'opponent',
         icon: Swords,
         title:
           topOpponentData
-            ? language === 'pt-BR'
-              ? `${topOpponentData[0]} é seu rival mais frequente`
-              : `${topOpponentData[0]} is your most frequent rival`
-            : language === 'pt-BR'
-              ? 'Sem rivalidades definidas ainda'
-              : 'No rivalry pattern yet',
+            ? formatTemplate('home.insight.opponent.titleWithName', { name: topOpponentData[0] })
+            : t('home.insight.opponent.titleEmpty'),
         detail:
           topOpponentData
-            ? language === 'pt-BR'
-              ? `Vocês se enfrentaram em ${topOpponentData[1]} partida${topOpponentData[1] === 1 ? '' : 's'} competitiva${topOpponentData[1] === 1 ? '' : 's'}.`
-              : `You faced each other in ${topOpponentData[1]} competitive match${topOpponentData[1] === 1 ? '' : 'es'}.`
-            : language === 'pt-BR'
-              ? 'Registre partidas com mais jogadores para destravar esse insight.'
-              : 'Register matches with more players to unlock this insight.',
+            ? topOpponentData[1] === 1
+              ? formatTemplate('home.insight.opponent.detailSingular', { count: topOpponentData[1] })
+              : formatTemplate('home.insight.opponent.detailPlural', { count: topOpponentData[1] })
+            : t('home.insight.opponent.detailEmpty'),
       },
       {
         id: 'avg-players',
         icon: Users,
-        title:
-          language === 'pt-BR'
-            ? `Média de ${totalPlayersAvg} jogadores por partida`
-            : `Average of ${totalPlayersAvg} players per game`,
-        detail:
-          language === 'pt-BR'
-            ? 'Esse indicador mostra o tamanho médio da sua mesa e ajuda a escolher jogos para seu perfil de grupo.'
-            : 'This metric reflects your average table size and helps choose games for your usual group profile.',
+        title: formatTemplate('home.insight.avgPlayers.title', { value: totalPlayersAvg }),
+        detail: t('home.insight.avgPlayers.detail'),
       },
       {
         id: 'comp-winrate',
         icon: BarChart3,
-        title:
-          language === 'pt-BR'
-            ? `${userCompetitiveWinRate}% de aproveitamento competitivo`
-            : `${userCompetitiveWinRate}% competitive win rate`,
-        detail:
-          language === 'pt-BR'
-            ? 'Aproveitamento considera apenas partidas competitivas em que você participou e quantas delas você venceu.'
-            : 'Win rate considers only competitive games you played and how many of those you won.',
+        title: formatTemplate('home.insight.compWinrate.title', { rate: userCompetitiveWinRate }),
+        detail: t('home.insight.compWinrate.detail'),
       },
     ];
 
@@ -253,9 +229,10 @@ export const Home = ({
     competitiveStreak,
     cooperativeGames.length,
     coopSuccessRate,
+    formatTemplate,
     gamesLast30Days,
-    language,
     mostPlayedGameData,
+    t,
     topOpponentData,
     totalPlayersAvg,
     userCompetitiveWinRate,
@@ -280,16 +257,28 @@ export const Home = ({
     setCarouselIndex((prev) => (prev - 1 + recentGames.length) % recentGames.length);
   };
 
+  useEffect(() => {
+    if (recentGames.length <= 1) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % recentGames.length);
+    }, 7000);
+
+    return () => window.clearInterval(intervalId);
+  }, [recentGames.length]);
+
   const getGameResultLabel = (game) => {
     const isCoop = game.gameType === 'cooperative';
     if (isCoop) {
       if (game.coopResult === 'win') {
-        return language === 'pt-BR' ? 'Vitória da equipe' : 'Team victory';
+        return t('home.teamVictory');
       }
-      return language === 'pt-BR' ? 'Derrota da equipe' : 'Team defeat';
+      return t('home.teamDefeat');
     }
     const winner = game.winner || '—';
-    return language === 'pt-BR' ? `${winner} venceu` : `${winner} won`;
+    return formatTemplate('home.winnerWon', { winner });
   };
 
   const getGameCover = (gameName) => coverMap.get((gameName || '').toLowerCase()) || '/meeplemind_background_no_logo_small_icons_faded.png';
@@ -336,7 +325,7 @@ export const Home = ({
             </div>
 
             {!currentGame ? (
-              <div className="empty-block">{language === 'pt-BR' ? 'Registre sua primeira partida para ver o carrossel.' : 'Register your first game to see the carousel.'}</div>
+              <div className="empty-block">{t('home.carousel.empty')}</div>
             ) : (
               <div className="last-game-carousel-card">
                 <div className="last-game-cover-wrap">
@@ -401,17 +390,22 @@ export const Home = ({
               <article className="summary-tile blue">
                 <span className="summary-icon"><Trophy size={18} /></span>
                 <strong>{userCompetitiveWins + userCoopWins}</strong>
-                <small>{language === 'pt-BR' ? 'Vitórias totais' : 'Total wins'}</small>
+                <small>{t('home.totalWins')}</small>
               </article>
               <article className="summary-tile purple">
                 <span className="summary-icon"><Target size={18} /></span>
                 <strong>{mostPlayedGameData?.[0] || '—'}</strong>
-                <small>{language === 'pt-BR' ? `${mostPlayedGameData?.[1] || 0} partidas` : `${mostPlayedGameData?.[1] || 0} games`}</small>
+                <small>
+                  {formatTemplate('home.gamesCount', {
+                    count: mostPlayedGameData?.[1] || 0,
+                    gamesLabel: t((mostPlayedGameData?.[1] || 0) === 1 ? 'home.game' : 'home.games'),
+                  })}
+                </small>
               </article>
               <article className="summary-tile orange">
                 <span className="summary-icon"><Flame size={18} /></span>
                 <strong>{competitiveStreak}</strong>
-                <small>{language === 'pt-BR' ? 'Vitórias seguidas' : 'Consecutive wins'}</small>
+                <small>{t('home.consecutiveWins')}</small>
               </article>
             </div>
 
@@ -427,8 +421,8 @@ export const Home = ({
                       <p className="timeline-result">
                         {isCoop
                           ? game.coopResult === 'win'
-                            ? language === 'pt-BR' ? 'Vitória do grupo' : 'Group victory'
-                            : language === 'pt-BR' ? 'Derrota do grupo' : 'Group defeat'
+                            ? t('home.groupVictory')
+                            : t('home.groupDefeat')
                           : `${game.winner || '—'}`}
                       </p>
                     </div>
@@ -437,23 +431,14 @@ export const Home = ({
               })}
 
               {recentGames.length === 0 && (
-                <div className="empty-block">{language === 'pt-BR' ? 'Sem partidas no histórico ainda.' : 'No games in history yet.'}</div>
+                <div className="empty-block">{t('home.history.empty')}</div>
               )}
-
-              <button className="go-history-btn" onClick={() => onNavigate('history')}>
-                {language === 'pt-BR' ? 'Ver histórico completo' : 'View full history'}
-              </button>
             </div>
+            <button className="go-history-btn" onClick={() => onNavigate('history')}>
+              {t('home.history.viewAll')}
+            </button>
           </section>
         </main>
-
-        <button
-          className="fab-new-game"
-          onClick={() => onNavigate('newgame')}
-          aria-label={t('home.newGame')}
-        >
-          +
-        </button>
 
         <nav className="bottom-nav" aria-label="Main navigation">
           <button className="bottom-nav-item active" onClick={() => onNavigate('home')}>
@@ -462,15 +447,22 @@ export const Home = ({
           </button>
           <button className="bottom-nav-item" onClick={() => onNavigate('stats')}>
             <span><BarChart3 size={18} /></span>
-            <small>{language === 'pt-BR' ? 'Estatísticas' : 'Stats'}</small>
+            <small>{t('home.stats')}</small>
           </button>
           <button className="bottom-nav-item" onClick={() => onNavigate('library')}>
             <span><BookOpen size={18} /></span>
-            <small>{language === 'pt-BR' ? 'Biblioteca' : 'Library'}</small>
+            <small>{t('home.library')}</small>
           </button>
-          <button className="bottom-nav-item" onClick={() => onNavigate('profile')}>
+          <button className="bottom-nav-item bottom-nav-item--profile" onClick={() => onNavigate('profile')}>
             <span><UserRound size={18} /></span>
-            <small>{language === 'pt-BR' ? 'Perfil' : 'Profile'}</small>
+            <small>{t('home.profile')}</small>
+          </button>
+          <button
+            className="fab-new-game"
+            onClick={() => onNavigate('newgame')}
+            aria-label={t('home.newGame')}
+          >
+            +
           </button>
         </nav>
 
