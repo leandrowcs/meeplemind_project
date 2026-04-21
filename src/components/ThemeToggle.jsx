@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import './ThemeToggle.css';
 
 export const ThemeToggle = () => {
@@ -18,7 +19,7 @@ export const ThemeToggle = () => {
 
   return (
     <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
-      {isDark ? '☀️' : '🌙'}
+      {isDark ? <Sun size={16} /> : <Moon size={16} />}
     </button>
   );
 };

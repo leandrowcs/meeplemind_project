@@ -1,9 +1,9 @@
 import './LanguageToggle.css';
 
 const LANGUAGES = [
-  { code: 'pt-BR', label: '🇧🇷 Português' },
-  { code: 'en-US', label: '🇺🇸 English' },
-  { code: 'fr-CA', label: '🇨🇦 Français' },
+  { code: 'pt-BR', label: 'Português (Brasil)' },
+  { code: 'en-US', label: 'English (US)' },
+  { code: 'fr-CA', label: 'Français (Canada)' },
 ];
 
 export const LanguageToggle = ({ currentLanguage, onLanguageChange }) => {

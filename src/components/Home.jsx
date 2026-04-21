@@ -1,9 +1,25 @@
-import { Button } from './Button';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  BarChart3,
+  BookOpen,
+  CalendarDays,
+  CircleStar,
+  Dices,
+  Flame,
+  Hand,
+  Handshake,
+  History,
+  House,
+  Swords,
+  Target,
+  Trophy,
+  UserRound,
+  Users,
+  X,
+} from 'lucide-react';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
-import { useGames } from '../hooks/useGames';
-import { formatDateObj } from '../utils/dateFormat';
-import logoImage from '../assets/meeplemind_logo.png';
+import { formatDate } from '../utils/dateFormat';
 import './Home.css';
 
 export const Home = ({
@@ -12,138 +28,462 @@ export const Home = ({
   exportToJSON,
   importFromJSON,
   primaryPlayer,
+  displayPlayerName,
   clearAllData,
   auth,
   syncStatus,
+  games = [],
+  library = [],
 }) => {
   const { t, isInitialized, language } = useLanguage();
-  const { getGamesLast30Days, getLastGame, getHighlights } = useGames();
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [selectedInsight, setSelectedInsight] = useState(null);
+
+  const formatTemplate = useCallback((key, replacements = {}) => {
+    let text = t(key);
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+      text = text.replaceAll(`{${placeholder}}`, String(value));
+    });
+    return text;
+  }, [t]);
+
+  const sortedGames = useMemo(
+    () => [...games].sort((a, b) => new Date(b.date) - new Date(a.date)),
+    [games]
+  );
+
+  const recentGames = sortedGames.slice(0, 3);
+
+  const coverMap = useMemo(() => {
+    const map = new Map();
+    library.forEach((entry) => {
+      if (entry?.name) {
+        map.set(entry.name.toLowerCase(), entry.coverUrl || '');
+      }
+    });
+    return map;
+  }, [library]);
+
+  const gamesLast30Days = useMemo(() => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    return sortedGames.filter((game) => {
+      const date = new Date(game.date);
+      return date >= thirtyDaysAgo && date <= now;
+    }).length;
+  }, [sortedGames]);
+
+  const totalPlayersAvg = useMemo(() => {
+    if (games.length === 0) return 0;
+    const sum = games.reduce((acc, game) => acc + (game.players?.length || 0), 0);
+    return Math.round((sum / games.length) * 10) / 10;
+  }, [games]);
+
+  const mostPlayedGameData = useMemo(() => {
+    const count = {};
+    sortedGames.forEach((game) => {
+      count[game.game] = (count[game.game] || 0) + 1;
+    });
+    return Object.entries(count).sort(([, a], [, b]) => b - a)[0] || null;
+  }, [sortedGames]);
+
+  const competitiveGames = useMemo(
+    () => sortedGames.filter((g) => (g.gameType || 'competitive') === 'competitive'),
+    [sortedGames]
+  );
+
+  const cooperativeGames = useMemo(
+    () => sortedGames.filter((g) => g.gameType === 'cooperative'),
+    [sortedGames]
+  );
+
+  const competitiveStreak = useMemo(() => {
+    let streak = 0;
+    for (const game of competitiveGames) {
+      if (game.winner === primaryPlayer) {
+        streak += 1;
+      } else if ((game.players || []).includes(primaryPlayer)) {
+        break;
+      }
+    }
+    return streak;
+  }, [competitiveGames, primaryPlayer]);
+
+  const userCompetitiveWins = useMemo(
+    () => competitiveGames.filter((g) => g.winner === primaryPlayer).length,
+    [competitiveGames, primaryPlayer]
+  );
+
+  const userCoopWins = useMemo(
+    () => cooperativeGames.filter((g) => g.coopResult === 'win' && (g.players || []).includes(primaryPlayer)).length,
+    [cooperativeGames, primaryPlayer]
+  );
+
+  const coopSuccessRate = useMemo(() => {
+    if (cooperativeGames.length === 0) return 0;
+    const wins = cooperativeGames.filter((g) => g.coopResult === 'win').length;
+    return Math.round((wins / cooperativeGames.length) * 100);
+  }, [cooperativeGames]);
+
+  const topOpponentData = useMemo(() => {
+    const count = {};
+    competitiveGames.forEach((game) => {
+      (game.players || []).forEach((player) => {
+        if (player !== primaryPlayer) {
+          count[player] = (count[player] || 0) + 1;
+        }
+      });
+    });
+    return Object.entries(count).sort(([, a], [, b]) => b - a)[0] || null;
+  }, [competitiveGames, primaryPlayer]);
+
+  const userCompetitiveWinRate = useMemo(() => {
+    const userCompetitiveGames = competitiveGames.filter((g) => (g.players || []).includes(primaryPlayer));
+    if (userCompetitiveGames.length === 0) return 0;
+    return Math.round((userCompetitiveWins / userCompetitiveGames.length) * 100);
+  }, [competitiveGames, primaryPlayer, userCompetitiveWins]);
+
+  const insightPool = useMemo(() => {
+    const pool = [
+      {
+        id: 'streak',
+        icon: Flame,
+        title: formatTemplate('home.insight.streak.title', {
+          count: competitiveStreak,
+          gamesLabel: t(competitiveStreak === 1 ? 'home.game' : 'home.games'),
+        }),
+        detail: t('home.insight.streak.detail'),
+      },
+      {
+        id: 'most-played',
+        icon: Target,
+        title:
+          mostPlayedGameData
+            ? formatTemplate('home.insight.mostPlayed.titleWithGame', { game: mostPlayedGameData[0] })
+            : t('home.insight.mostPlayed.titleEmpty'),
+        detail:
+          mostPlayedGameData
+            ? formatTemplate('home.insight.mostPlayed.detailWithCount', {
+              count: mostPlayedGameData[1],
+              matchesLabel: t(mostPlayedGameData[1] === 1 ? 'home.game' : 'home.games'),
+            })
+            : t('home.insight.mostPlayed.detailEmpty'),
+      },
+      {
+        id: 'coop-rate',
+        icon: Handshake,
+        title: formatTemplate('home.insight.coopRate.title', { rate: coopSuccessRate }),
+        detail:
+          cooperativeGames.length === 1
+            ? formatTemplate('home.insight.coopRate.detailSingular', { count: cooperativeGames.length })
+            : formatTemplate('home.insight.coopRate.detailPlural', { count: cooperativeGames.length }),
+      },
+      {
+        id: 'wins-total',
+        icon: Trophy,
+        title: formatTemplate('home.insight.winsTotal.title', { count: userCompetitiveWins + userCoopWins }),
+        detail: formatTemplate('home.insight.winsTotal.detail', {
+          competitiveWins: userCompetitiveWins,
+          coopWins: userCoopWins,
+        }),
+      },
+      {
+        id: 'activity',
+        icon: CalendarDays,
+        title: formatTemplate('home.insight.activity.title', {
+          count: gamesLast30Days,
+          gamesLabel: t(gamesLast30Days === 1 ? 'home.game' : 'home.games'),
+        }),
+        detail: t('home.insight.activity.detail'),
+      },
+      {
+        id: 'opponent',
+        icon: Swords,
+        title:
+          topOpponentData
+            ? formatTemplate('home.insight.opponent.titleWithName', { name: topOpponentData[0] })
+            : t('home.insight.opponent.titleEmpty'),
+        detail:
+          topOpponentData
+            ? topOpponentData[1] === 1
+              ? formatTemplate('home.insight.opponent.detailSingular', { count: topOpponentData[1] })
+              : formatTemplate('home.insight.opponent.detailPlural', { count: topOpponentData[1] })
+            : t('home.insight.opponent.detailEmpty'),
+      },
+      {
+        id: 'avg-players',
+        icon: Users,
+        title: formatTemplate('home.insight.avgPlayers.title', { value: totalPlayersAvg }),
+        detail: t('home.insight.avgPlayers.detail'),
+      },
+      {
+        id: 'comp-winrate',
+        icon: BarChart3,
+        title: formatTemplate('home.insight.compWinrate.title', { rate: userCompetitiveWinRate }),
+        detail: t('home.insight.compWinrate.detail'),
+      },
+    ];
+
+    return pool;
+  }, [
+    competitiveStreak,
+    cooperativeGames.length,
+    coopSuccessRate,
+    formatTemplate,
+    gamesLast30Days,
+    mostPlayedGameData,
+    t,
+    topOpponentData,
+    totalPlayersAvg,
+    userCompetitiveWinRate,
+    userCompetitiveWins,
+    userCoopWins,
+  ]);
+
+  const highlights = useMemo(() => {
+    return insightPool.slice(0, 3);
+  }, [insightPool]);
+
+  const currentCarouselIndex = recentGames.length === 0 ? 0 : Math.min(carouselIndex, recentGames.length - 1);
+  const currentGame = recentGames[currentCarouselIndex] || null;
+
+  const nextSlide = () => {
+    if (recentGames.length <= 1) return;
+    setCarouselIndex((prev) => (prev + 1) % recentGames.length);
+  };
+
+  const prevSlide = () => {
+    if (recentGames.length <= 1) return;
+    setCarouselIndex((prev) => (prev - 1 + recentGames.length) % recentGames.length);
+  };
+
+  useEffect(() => {
+    if (recentGames.length <= 1) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % recentGames.length);
+    }, 7000);
+
+    return () => window.clearInterval(intervalId);
+  }, [recentGames.length]);
+
+  const getGameResultLabel = (game) => {
+    const isCoop = game.gameType === 'cooperative';
+    if (isCoop) {
+      if (game.coopResult === 'win') {
+        return t('home.teamVictory');
+      }
+      return t('home.teamDefeat');
+    }
+    const winner = game.winner || '—';
+    return formatTemplate('home.winnerWon', { winner });
+  };
+
+  const getGameCover = (gameName) => coverMap.get((gameName || '').toLowerCase()) || '/meeplemind_background_no_logo_small_icons_faded.png';
 
   if (!isInitialized) {
     return null;
   }
 
-  const gamesLast30Days = getGamesLast30Days();
-  const lastGame = getLastGame();
-  const highlights = getHighlights();
-  const showUrgentMessage = gamesLast30Days === 0;
-
   return (
     <>
-      <SideMenu
-        onExportCSV={exportToCSV}
-        onExportJSON={exportToJSON}
-        onImportJSON={importFromJSON}
-        onClearData={clearAllData}
-        auth={auth}
-        syncStatus={syncStatus}
-      />
       <div className="home-container fade-in">
         <header className="home-header">
-          <div className="header-top">
-            <div className="logo">
-              <img src={logoImage} alt="MeepleMind Logo" className="logo-image" />
+          <div className="header-main-row">
+            <div>
+              <h2 className="welcome-message">
+                {t('home.welcome')}, <span className="username">{displayPlayerName || primaryPlayer}</span>
+                <Hand size={18} className="waving-hand" />
+              </h2>
+              <p className="header-subtitle"><Flame size={16} /> {gamesLast30Days} {t('home.gamesLast30Days')}</p>
             </div>
-            <div className="header-info">
-              <div className="welcome-section">
-                <h2 className="welcome-message">
-                  {t('home.welcome')}, <span className="username">{primaryPlayer}</span>
-                  <span className="waving-hand">👋</span>
-                </h2>
-                <div className="stats-badge">
-                  <span className="fire-icon">🔥</span>
-                  <span className="stats-text">
-                    <strong>{gamesLast30Days}</strong> {t('home.gamesLast30Days')}
-                  </span>
-                </div>
-              </div>
-              {showUrgentMessage && (
-                <p className="urgent-message">{t('home.urgentMessage')}</p>
-              )}
-            </div>
+            <SideMenu
+              onExportCSV={exportToCSV}
+              onExportJSON={exportToJSON}
+              onImportJSON={importFromJSON}
+              onClearData={clearAllData}
+              auth={auth}
+              syncStatus={syncStatus}
+              compact
+              openFrom="right"
+            />
           </div>
         </header>
 
         <main className="home-content">
-          {lastGame && (
-            <div className="last-game-card">
-              <h3 className="card-title">{t('home.lastGame')}</h3>
-              <div className="card-content-home">
-                <p className="game-name">{lastGame.game}</p>
-                <p className="game-info-home">
-                  🏆 {lastGame.winner} &nbsp;•&nbsp; 👥 {lastGame.numPlayers} • 📅 {formatDateObj(lastGame.date, language)}
-                </p>
-              </div>
+          <section className="home-card">
+            <div className="card-headline">
+              <h3 className="card-title"><Dices size={18} /> {t('home.lastGame')}</h3>
+              {recentGames.length > 1 && (
+                <div className="carousel-actions" role="group" aria-label="carousel actions">
+                  <button className="carousel-btn" onClick={prevSlide} aria-label="Previous game">‹</button>
+                  <button className="carousel-btn" onClick={nextSlide} aria-label="Next game">›</button>
+                </div>
+              )}
             </div>
-          )}
 
-          {highlights.topPlayer && (
-            <div className="highlights-card">
-              <h3 className="card-title">{t('home.highlights')}</h3>
-              <div className="card-content-home">
-                <div className="highlight-row">
-                  <span>🏆</span>
-                  <span className="highlight-row-label">{t('home.topPlayer')}:</span>
-                  <span className="highlight-row-value">{highlights.topPlayer}</span>
-                  <span className="highlight-row-meta">({highlights.topPlayerWins} {highlights.topPlayerWins === 1 ? t('home.victory') : t('home.victories')})</span>
+            {!currentGame ? (
+              <div className="empty-block">{t('home.carousel.empty')}</div>
+            ) : (
+              <div className="last-game-carousel-card">
+                <div className="last-game-cover-wrap">
+                  <img
+                    src={getGameCover(currentGame.game)}
+                    alt={currentGame.game}
+                    className="last-game-cover"
+                    loading="lazy"
+                  />
+                  <div className="last-game-overlay">
+                    <h4>{currentGame.game}</h4>
+                    <p>{getGameResultLabel(currentGame)}</p>
+                  </div>
                 </div>
-                <div className="highlight-row">
-                  <span>🎯</span>
-                  <span className="highlight-row-label">{t('home.mostPlayed')}:</span>
-                  <span className="highlight-row-value">{highlights.mostPlayedGame}</span>
-                  <span className="highlight-row-meta">({highlights.mostPlayedCount} {highlights.mostPlayedCount === 1 ? t('home.game') : t('home.games')})</span>
-                </div>
-                <div className="highlight-row">
-                  <span>🔥</span>
-                  <span className="highlight-row-label">{t('home.streak')}:</span>
-                  <span className="highlight-row-value">{highlights.winStreak}</span>
-                  <span className="highlight-row-meta">{highlights.winStreak === 1 ? t('home.consecutiveVictory') : t('home.consecutiveVictories')}</span>
+                <div className="last-game-meta">
+                  <span><Users size={14} /> {currentGame.players?.length || 0}</span>
+                  <span><CalendarDays size={14} /> {formatDate(currentGame.date, language)}</span>
                 </div>
               </div>
+            )}
+
+            {recentGames.length > 1 && (
+              <div className="carousel-dots">
+                {recentGames.map((game, index) => (
+                  <button
+                    key={game.id}
+                    className={`dot ${currentCarouselIndex === index ? 'active' : ''}`}
+                    onClick={() => setCarouselIndex(index)}
+                    aria-label={`Go to game ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="home-card">
+            <div className="card-headline">
+              <h3 className="card-title"><CircleStar size={18} /> {t('home.highlights')}</h3>
             </div>
-          )}
+            <div className="highlights-list">
+              {highlights.map((item) => (
+                <button
+                  key={item.id}
+                  className="highlight-row"
+                  onClick={() => setSelectedInsight(item)}
+                  type="button"
+                >
+                  <span className="highlight-icon"><item.icon size={18} /></span>
+                  <span className="highlight-title">{item.title}</span>
+                  <span className="highlight-chevron">›</span>
+                </button>
+              ))}
+            </div>
+          </section>
 
-          <button
-            className="btn-new-game"
-            onClick={() => onNavigate('newgame')}
-          >
-            <span className="btn-icon">➕</span>
-            <span>{t('home.newGame')}</span>
-          </button>
+          <section className="home-card">
+            <div className="card-headline">
+              <h3 className="card-title"><History size={18} /> {t('home.history')}</h3>
+            </div>
 
-          <div className="navigation-buttons">
-            <Button
-              variant="primary"
-              onClick={() => onNavigate('profile')}
-              className="nav-btn"
-            >
-              {t('home.profile')}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => onNavigate('history')}
-              className="nav-btn"
-            >
-              {t('home.history')}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => onNavigate('stats')}
-              className="nav-btn"
-            >
-              {t('home.stats')}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => onNavigate('library')}
-              className="nav-btn"
-            >
-              {t('home.library')}
-            </Button>
-          </div>
+            <div className="history-summary-grid">
+              <article className="summary-tile blue">
+                <span className="summary-icon"><Trophy size={18} /></span>
+                <strong>{userCompetitiveWins + userCoopWins}</strong>
+                <small>{t('home.totalWins')}</small>
+              </article>
+              <article className="summary-tile purple">
+                <span className="summary-icon"><Target size={18} /></span>
+                <strong>{mostPlayedGameData?.[0] || '—'}</strong>
+                <small>
+                  {formatTemplate('home.gamesCount', {
+                    count: mostPlayedGameData?.[1] || 0,
+                    gamesLabel: t((mostPlayedGameData?.[1] || 0) === 1 ? 'home.game' : 'home.games'),
+                  })}
+                </small>
+              </article>
+              <article className="summary-tile orange">
+                <span className="summary-icon"><Flame size={18} /></span>
+                <strong>{competitiveStreak}</strong>
+                <small>{t('home.consecutiveWins')}</small>
+              </article>
+            </div>
 
-          {/* Export/Import Section - REMOVED, now in SideMenu */}
+            <div className="timeline">
+              {recentGames.map((game) => {
+                const isCoop = game.gameType === 'cooperative';
+                return (
+                  <div className="timeline-item" key={`timeline-${game.id}`}>
+                    <span className="timeline-dot" />
+                    <div className="timeline-body">
+                      <p className="timeline-date">{formatDate(game.date, language)}</p>
+                      <p className="timeline-game">{game.game}</p>
+                      <p className="timeline-result">
+                        {isCoop
+                          ? game.coopResult === 'win'
+                            ? t('home.groupVictory')
+                            : t('home.groupDefeat')
+                          : `${game.winner || '—'}`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {recentGames.length === 0 && (
+                <div className="empty-block">{t('home.history.empty')}</div>
+              )}
+            </div>
+            <button className="go-history-btn" onClick={() => onNavigate('history')}>
+              {t('home.history.viewAll')}
+            </button>
+          </section>
         </main>
+
+        <nav className="bottom-nav" aria-label="Main navigation">
+          <button className="bottom-nav-item active" onClick={() => onNavigate('home')}>
+            <span><House size={18} /></span>
+            <small>Home</small>
+          </button>
+          <button className="bottom-nav-item" onClick={() => onNavigate('stats')}>
+            <span><BarChart3 size={18} /></span>
+            <small>{t('home.stats')}</small>
+          </button>
+          <button className="bottom-nav-item" onClick={() => onNavigate('library')}>
+            <span><BookOpen size={18} /></span>
+            <small>{t('home.library')}</small>
+          </button>
+          <button className="bottom-nav-item bottom-nav-item--profile" onClick={() => onNavigate('profile')}>
+            <span><UserRound size={18} /></span>
+            <small>{t('home.profile')}</small>
+          </button>
+          <button
+            className="fab-new-game"
+            onClick={() => onNavigate('newgame')}
+            aria-label={t('home.newGame')}
+          >
+            +
+          </button>
+        </nav>
+
+        {selectedInsight && (
+          <div className="insight-modal-overlay" onClick={() => setSelectedInsight(null)}>
+            <div className="insight-modal" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="insight-modal-close"
+                onClick={() => setSelectedInsight(null)}
+                aria-label={t('common.close')}
+              >
+                <X size={18} />
+              </button>
+              <p className="insight-modal-title">
+                <selectedInsight.icon size={18} /> {selectedInsight.title}
+              </p>
+              <p className="insight-modal-detail">{selectedInsight.detail}</p>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

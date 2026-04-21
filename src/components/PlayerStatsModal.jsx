@@ -1,3 +1,20 @@
+import {
+  CalendarDays,
+  Crown,
+  Gamepad2,
+  Handshake,
+  Medal,
+  Skull,
+  Timer,
+  Trophy,
+  Users,
+  Zap,
+  BarChart3,
+  Dice5,
+  Dices,
+  X,
+  Dot,
+} from 'lucide-react';
 import './PlayerStatsModal.css';
 
 export const PlayerStatsModal = ({ player, games, onClose }) => {
@@ -75,7 +92,7 @@ export const PlayerStatsModal = ({ player, games, onClose }) => {
   return (
     <div className="player-modal-overlay" onClick={onClose}>
       <div className="player-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="player-modal-close" onClick={onClose}>✕</button>
+        <button className="player-modal-close" onClick={onClose}><X size={16} /></button>
 
         <div className="player-modal-header">
           <div className="player-avatar">{player.charAt(0).toUpperCase()}</div>
@@ -87,22 +104,22 @@ export const PlayerStatsModal = ({ player, games, onClose }) => {
 
         <div className="player-stats-grid">
           <div className="player-stat-card highlight">
-            <span className="psc-icon">🏆</span>
+            <span className="psc-icon"><Trophy size={16} /></span>
             <span className="psc-value">{wins}</span>
             <span className="psc-label">Vitórias</span>
           </div>
           <div className="player-stat-card">
-            <span className="psc-icon">📊</span>
+            <span className="psc-icon"><BarChart3 size={16} /></span>
             <span className="psc-value">{winRate}%</span>
             <span className="psc-label">Taxa de vitória</span>
           </div>
           <div className="player-stat-card">
-            <span className="psc-icon">⚡</span>
+            <span className="psc-icon"><Zap size={16} /></span>
             <span className="psc-value">{maxStreak}</span>
             <span className="psc-label">Maior sequência</span>
           </div>
           <div className="player-stat-card">
-            <span className="psc-icon">⏱️</span>
+            <span className="psc-icon"><Timer size={16} /></span>
             <span className="psc-value">{formatDuration(avgDuration)}</span>
             <span className="psc-label">Duração média</span>
           </div>
@@ -110,7 +127,7 @@ export const PlayerStatsModal = ({ player, games, onClose }) => {
 
         {coopGames.length > 0 && (
           <div className="player-section">
-            <h3>🤝 Jogos Cooperativos</h3>
+            <h3><Handshake size={16} /> Jogos Cooperativos</h3>
             <div className="coop-summary">
               <div className="coop-stat">
                 <span className="coop-num">{coopGames.length}</span>
@@ -130,7 +147,7 @@ export const PlayerStatsModal = ({ player, games, onClose }) => {
 
         {mostPlayed && (
           <div className="player-section">
-            <h3>🎲 Jogo Favorito</h3>
+            <h3><Dices size={16} /> Jogo Favorito</h3>
             <div className="favorite-game">
               <span className="fg-name">{mostPlayed[0]}</span>
               <span className="fg-count">{mostPlayed[1]}× jogado</span>
@@ -140,13 +157,13 @@ export const PlayerStatsModal = ({ player, games, onClose }) => {
 
         {recentCompetitive.length > 0 && (
           <div className="player-section">
-            <h3>📅 Últimas Partidas Competitivas</h3>
+            <h3><CalendarDays size={16} /> Últimas Partidas Competitivas</h3>
             <div className="recent-games">
               {recentCompetitive.map((g) => {
                 const isWin = g.winner === player;
                 return (
                   <div key={g.id} className={`recent-game-item ${isWin ? 'win' : 'loss'}`}>
-                    <span className="rg-result">{isWin ? '🥇' : '●'}</span>
+                    <span className="rg-result">{isWin ? <Medal size={14} /> : <Dot size={14} />}</span>
                     <span className="rg-name">{g.game}</span>
                     <span className={`rg-badge ${isWin ? 'win' : 'loss'}`}>
                       {isWin ? 'V' : 'D'}
@@ -160,7 +177,7 @@ export const PlayerStatsModal = ({ player, games, onClose }) => {
 
         {topRivals.length > 0 && (
           <div className="player-section">
-            <h3>👥 Companheiros Frequentes</h3>
+            <h3><Users size={16} /> Companheiros Frequentes</h3>
             <div className="rivals-list">
               {topRivals.map(([rival, count]) => (
                 <div key={rival} className="rival-item">
