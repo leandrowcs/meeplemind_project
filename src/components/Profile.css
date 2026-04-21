@@ -293,7 +293,6 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 0.4rem;
   z-index: 980;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .bottom-nav-item {
