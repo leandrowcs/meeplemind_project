@@ -46,7 +46,15 @@ export const useLibrary = () => {
   };
 
   const addToLibrary = useCallback(
-    ({ name, category = '', minPlayers = null, maxPlayers = null, description = '', coverUrl = '' } = {}) => {
+    ({
+      name,
+      category = '',
+      minPlayers = null,
+      maxPlayers = null,
+      description = '',
+      coverUrl = '',
+      owned = false,
+    } = {}) => {
       const cleanName = sanitizeText(name);
       if (!cleanName) return null;
 
@@ -65,7 +73,9 @@ export const useLibrary = () => {
           maxPlayers: sanitizeNumber(maxPlayers, 1, 20),
           description: sanitizeText(description, 500),
           coverUrl: sanitizeText(coverUrl, 1000),
-          owned: false,
+          owned: Boolean(owned),
+          nameLocal: {},
+          descriptionLocal: {},
           addedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -99,6 +109,8 @@ export const useLibrary = () => {
         category: '',
         minPlayers: null,
         maxPlayers: null,
+        nameLocal: {},
+        descriptionLocal: {},
         addedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -108,9 +120,14 @@ export const useLibrary = () => {
     });
   }, []);
 
-  const removeFromLibrary = useCallback((gameId) => {
+  const removeFromLibrary = useCallback((gameRef) => {
+    const normalizedRef = typeof gameRef === 'string' ? gameRef.trim().toLowerCase() : '';
     setLibrary((prev) => {
-      const updated = prev.filter((g) => g.id !== gameId);
+      const updated = prev.filter((g) => {
+        if (g.id && g.id === gameRef) return false;
+        if (normalizedRef && g.name?.toLowerCase() === normalizedRef) return false;
+        return true;
+      });
       persistLibrary(updated);
       return updated;
     });
@@ -145,6 +162,14 @@ export const useLibrary = () => {
                   ? sanitizeText(updates.coverUrl, 1000)
                   : g.coverUrl ?? '',
               owned: updates.owned !== undefined ? updates.owned : g.owned,
+              nameLocal:
+                updates.nameLocal !== undefined
+                  ? updates.nameLocal
+                  : g.nameLocal ?? {},
+              descriptionLocal:
+                updates.descriptionLocal !== undefined
+                  ? updates.descriptionLocal
+                  : g.descriptionLocal ?? {},
               updatedAt: new Date().toISOString(),
             }
       );

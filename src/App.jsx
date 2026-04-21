@@ -13,10 +13,17 @@ import { Library } from './components/Library';
 import { OnboardingModal } from './components/OnboardingModal';
 import './App.css';
 
+const VALID_PAGES = new Set(['home', 'newgame', 'history', 'stats', 'profile', 'library']);
+
+function getPageFromHash() {
+  const hash = window.location.hash.replace(/^#/, '');
+  return VALID_PAGES.has(hash) ? hash : 'home';
+}
+
 const PRIMARY_PLAYER_KEY = 'meeplemind-primary-player';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(getPageFromHash);
   const [primaryPlayer, setPrimaryPlayer] = useState(
     () => localStorage.getItem(PRIMARY_PLAYER_KEY) || null
   );
@@ -44,6 +51,18 @@ function App() {
   const auth = useGoogleAuth();
   const drive = useGoogleDrive(auth.accessToken);
   const displayPlayerName = auth.isSignedIn && auth.user?.name ? auth.user.name : primaryPlayer;
+
+  const navigateTo = useCallback((page) => {
+    const target = VALID_PAGES.has(page) ? page : 'home';
+    window.location.hash = target;
+    setCurrentPage(target);
+  }, []);
+
+  useEffect(() => {
+    const onHashChange = () => setCurrentPage(getPageFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   const stats = getStats();
 
@@ -95,7 +114,9 @@ function App() {
   const handleAddGame = useCallback(
     (gameData) => {
       const saved = addGame(gameData);
-      lib.ensureInLibrary(gameData.game);
+      if (gameData.ownGame) {
+        lib.ensureInLibrary(gameData.game);
+      }
       return saved;
     },
     [addGame, lib]
@@ -124,6 +145,7 @@ function App() {
     lib.clearLibrary();
     localStorage.removeItem(PRIMARY_PLAYER_KEY);
     setPrimaryPlayer(null);
+    window.location.hash = 'home';
   }, [clearAllData, lib]);
 
   // ── Render guards ─────────────────────────────────────────────────────────
@@ -151,7 +173,7 @@ function App() {
     <div className="app">
       {currentPage === 'home' && (
         <Home
-          onNavigate={setCurrentPage}
+          onNavigate={navigateTo}
           exportToCSV={handleExportToCSV}
           exportToJSON={handleExportToJSON}
           importFromJSON={handleImportFromJSON}
@@ -171,7 +193,7 @@ function App() {
       )}
       {currentPage === 'newgame' && (
         <NewGame
-          onNavigate={setCurrentPage}
+          onNavigate={navigateTo}
           onSave={handleAddGame}
           uniqueGames={getUniqueGames()}
           uniquePlayers={getUniquePlayers()}
@@ -181,7 +203,7 @@ function App() {
       )}
       {currentPage === 'history' && (
         <History
-          onNavigate={setCurrentPage}
+          onNavigate={navigateTo}
           games={games}
           onDelete={deleteGame}
           onUpdate={updateGame}
@@ -190,7 +212,7 @@ function App() {
       )}
       {currentPage === 'stats' && (
         <Stats
-          onNavigate={setCurrentPage}
+          onNavigate={navigateTo}
           games={games}
           stats={stats}
           primaryPlayer={primaryPlayer}
@@ -204,7 +226,7 @@ function App() {
       )}
       {currentPage === 'profile' && (
         <Profile
-          onNavigate={setCurrentPage}
+          onNavigate={navigateTo}
           games={games}
           primaryPlayer={primaryPlayer}
           displayPlayerName={displayPlayerName}
@@ -215,12 +237,13 @@ function App() {
       )}
       {currentPage === 'library' && (
         <Library
-          onNavigate={setCurrentPage}
+          onNavigate={navigateTo}
           library={lib.library}
           onAdd={lib.addToLibrary}
           onRemove={lib.removeFromLibrary}
           onUpdate={lib.updateInLibrary}
           games={games}
+          primaryPlayer={primaryPlayer}
         />
       )}
     </div>

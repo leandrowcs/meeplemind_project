@@ -197,6 +197,22 @@ export const translations = {
     'library.topWinner': 'Maior Vencedor',
     'library.win': 'vitória',
     'library.wins': 'vitórias',
+    'library.tabShelf': 'Minha Estante',
+    'library.tabBGG': 'Catálogo BGG',
+    'library.bggHotTitle': 'Jogos em Alta (BGG)',
+    'library.bggSortRanking': 'Por Ranking',
+    'library.bggSortAlpha': 'A-Z',
+    'library.addToShelf': 'Adicionar à estante',
+    'library.alreadyOnShelf': 'Na estante',
+    'library.bggYear': 'Ano',
+    'library.bggRank': 'Rank',
+    'library.bggLoadingHot': 'Carregando ranking...',
+    'library.bggHotError': 'Erro ao carregar o ranking BGG',
+    'library.bggEnglishNotice': 'A base de dados da BGG é em inglês. Títulos e buscas são exibidos em en-US por padrão.',
+    'library.nameLocalLabel': 'Nome em português (opcional)',
+    'library.nameLocalPlaceholder': 'Ex: Colonizadores de Catan',
+    'library.descriptionLocalLabel': 'Descrição em português (opcional)',
+    'library.descriptionLocalPlaceholder': 'Descrição traduzida do jogo...',
 
     // Google Auth / Drive sync
     'auth.loginGoogle': 'Entrar com Google',
@@ -235,6 +251,7 @@ export const translations = {
     'newgame.typeCooperative': 'Cooperativo',
     'newgame.typeCooperativeDesc': 'Todos jogam juntos',
     'newgame.you': 'você',
+    'newgame.ownGame': 'Este jogo é meu',
 
     // Onboarding
     'onboarding.changeName': 'Alterar nome',
@@ -465,6 +482,17 @@ export const translations = {
     'library.topWinner': 'Top Winner',
     'library.win': 'win',
     'library.wins': 'wins',
+    'library.tabShelf': 'My Shelf',
+    'library.tabBGG': 'BGG Catalog',
+    'library.bggHotTitle': 'Trending Games (BGG)',
+    'library.bggSortRanking': 'By Ranking',
+    'library.bggSortAlpha': 'A-Z',
+    'library.addToShelf': 'Add to shelf',
+    'library.alreadyOnShelf': 'On shelf',
+    'library.bggYear': 'Year',
+    'library.bggRank': 'Rank',
+    'library.bggLoadingHot': 'Loading ranking...',
+    'library.bggHotError': 'Error loading BGG ranking',
 
     // Google Auth / Drive sync
     'auth.loginGoogle': 'Sign in with Google',
@@ -503,6 +531,7 @@ export const translations = {
     'newgame.typeCooperative': 'Cooperative',
     'newgame.typeCooperativeDesc': 'Everyone plays together',
     'newgame.you': 'you',
+    'newgame.ownGame': 'I own this game',
 
     // Onboarding
     'onboarding.changeName': 'Change name',
@@ -733,6 +762,22 @@ export const translations = {
     'library.topWinner': 'Meilleur Gagnant',
     'library.win': 'victoire',
     'library.wins': 'victoires',
+    'library.tabShelf': 'Ma Bibliothèque',
+    'library.tabBGG': 'Catalogue BGG',
+    'library.bggHotTitle': 'Jeux Populaires (BGG)',
+    'library.bggSortRanking': 'Par Classement',
+    'library.bggSortAlpha': 'A-Z',
+    'library.addToShelf': "Ajouter à l'étagère",
+    'library.alreadyOnShelf': 'Déjà ajouté',
+    'library.bggYear': 'Année',
+    'library.bggRank': 'Rang',
+    'library.bggLoadingHot': 'Chargement du classement...',
+    'library.bggHotError': 'Erreur lors du chargement du classement BGG',
+    'library.bggEnglishNotice': 'La base de données BGG est en anglais. Les titres et recherches sont affichés en en-US par défaut.',
+    'library.nameLocalLabel': 'Nom en français (optionnel)',
+    'library.nameLocalPlaceholder': 'Ex: Colons de Catane',
+    'library.descriptionLocalLabel': 'Description en français (optionnelle)',
+    'library.descriptionLocalPlaceholder': 'Description traduite du jeu...',
 
     // Google Auth / Drive sync
     'auth.loginGoogle': 'Se connecter avec Google',
@@ -771,6 +816,7 @@ export const translations = {
     'newgame.typeCooperative': 'Coopératif',
     'newgame.typeCooperativeDesc': 'Tout le monde joue ensemble',
     'newgame.you': 'vous',
+    'newgame.ownGame': 'Ce jeu m\'appartient',
 
     // Onboarding
     'onboarding.changeName': 'Changer de nom',
