@@ -333,7 +333,6 @@
   overflow: visible;
   isolation: isolate;
   z-index: 980;
-  border-radius: var(--radius-md) 0 0 0;
 }
 
 .home-container .bottom-nav::before {
