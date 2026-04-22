@@ -78,7 +78,7 @@
 
 .profile-top-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--spacing-sm);
 }
 
@@ -171,6 +171,126 @@
   border-radius: inherit;
   background: linear-gradient(90deg, #14532d 0%, #4ade80 100%);
   transition: width 0.3s ease;
+}
+
+.profile-time-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #1d4ed8 0%, #60a5fa 100%);
+  transition: width 0.3s ease;
+}
+
+.profile-level-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f97316 0%, #facc15 100%);
+  transition: width 0.3s ease;
+}
+
+.profile-time-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.profile-time-summary span {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.58);
+  padding: 0.18rem 0.55rem;
+}
+
+.profile-level-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.profile-level-label {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+}
+
+.profile-level-value {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+
+.profile-level-score-wrap {
+  text-align: right;
+}
+
+.profile-level-score {
+  margin: 0;
+  color: #fef3c7;
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
+.profile-medal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.profile-medal-card {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.56);
+  padding: 0.55rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.profile-medal-card.unlocked {
+  border-color: rgba(245, 158, 11, 0.62);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.profile-medal-icon {
+  color: #fcd34d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.profile-medal-content {
+  display: grid;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.profile-medal-title {
+  color: #e2e8f0;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.profile-medal-subtitle {
+  color: #b9c6ee;
+  font-size: 0.76rem;
+}
+
+.profile-medal-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(51, 65, 105, 0.45);
+  overflow: hidden;
+}
+
+.profile-medal-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #60a5fa, #facc15);
 }
 
 .profile-subtle-text {
@@ -270,6 +390,9 @@
 }
 
 .profile-library-item {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: rgba(15, 23, 42, 0.45);
   border-radius: 10px;
@@ -278,6 +401,34 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+}
+
+.profile-library-item > * {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-library-item.with-cover {
+  border-color: rgba(148, 163, 184, 0.34);
+}
+
+.profile-library-item.with-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--profile-cover-url);
+  background-size: cover;
+  background-position: center;
+  opacity: 0.32;
+  z-index: 0;
+}
+
+.profile-library-item.with-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.86), rgba(15, 23, 42, 0.56));
+  z-index: 0;
 }
 
 .profile-actions {
@@ -383,6 +534,14 @@
 }
 
 @media (max-width: 460px) {
+  .profile-top-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-medal-grid {
+    grid-template-columns: 1fr;
+  }
+
   .profile-player-name {
     font-size: 1.75rem;
   }

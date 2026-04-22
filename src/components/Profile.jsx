@@ -3,6 +3,7 @@ import {
   BarChart3,
   Brain,
   BookOpen,
+  Clock3,
   ChevronRight,
   Dices,
   Flame,
@@ -19,22 +20,34 @@ import {
   Upload,
   UserRound,
   X,
+  Medal,
+  Star,
 } from 'lucide-react';
 import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
+import { normalizeCoverUrl } from '../utils/gameCover';
 import './Profile.css';
 
 const CATEGORY_LABELS = {
-  strategy: 'Estratégia',
-  cooperative: 'Cooperativo',
-  family: 'Família',
-  party: 'Party',
-  rpg: 'RPG',
-  'deck-building': 'Deck Building',
-  'worker-placement': 'Worker Placement',
-  abstract: 'Abstrato',
-  euro: 'Euro',
+  strategy: 'library.categoryStrategy',
+  cooperative: 'library.categoryCooperative',
+  family: 'library.categoryFamily',
+  party: 'library.categoryParty',
+  rpg: 'library.categoryRPG',
+  'deck-building': 'library.categoryDeckBuilding',
+  'worker-placement': 'library.categoryWorkerPlacement',
+  abstract: 'library.categoryAbstract',
+  euro: 'library.categoryEuro',
+  adventure: 'library.categoryAdventure',
+  war: 'library.categoryWar',
+  economy: 'library.categoryEconomy',
+  fantasy: 'library.categoryFantasy',
+  'science-fiction': 'library.categoryScienceFiction',
+  historical: 'library.categoryHistorical',
+  negotiation: 'library.categoryNegotiation',
+  trivia: 'library.categoryTrivia',
+  cards: 'library.categoryCards',
 };
 
 const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024;
@@ -45,15 +58,26 @@ const ALLOWED_AVATAR_TYPES = new Set([
   'image/gif',
 ]);
 
-const pickRandomItems = (items, limit = 3) => {
-  const randomized = Array.isArray(items) ? [...items] : [];
+const hashWithSeed = (value, seed) => {
+  const text = String(value || '');
+  let hash = seed;
 
-  for (let i = randomized.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [randomized[i], randomized[j]] = [randomized[j], randomized[i]];
+  for (let i = 0; i < text.length; i += 1) {
+    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
   }
 
-  return randomized.slice(0, limit);
+  return Math.abs(hash);
+};
+
+const pickStableRandomItems = (items, limit, seed) => {
+  return [...items]
+    .sort((a, b) => {
+      const hashA = hashWithSeed(a.id, seed);
+      const hashB = hashWithSeed(b.id, seed);
+      if (hashA !== hashB) return hashA - hashB;
+      return String(a.id).localeCompare(String(b.id));
+    })
+    .slice(0, limit);
 };
 
 export const Profile = ({
@@ -77,6 +101,7 @@ export const Profile = ({
     if (language === 'en-US') return en;
     return pt;
   }, [language]);
+  const [insightSeed] = useState(() => Math.floor(Math.random() * 1_000_000));
   const [selectedInsight, setSelectedInsight] = useState(null);
   const [avatarState, setAvatarState] = useState(() => {
     try {
@@ -111,6 +136,37 @@ export const Profile = ({
     [games, primaryPlayer]
   );
 
+  const uniquePlayedGamesCount = useMemo(() => {
+    const names = new Set(
+      allPlayerGames
+        .map((game) => game.game)
+        .filter(Boolean)
+    );
+    return names.size;
+  }, [allPlayerGames]);
+
+  const totalMinutesPlayed = useMemo(() => (
+    allPlayerGames.reduce((total, game) => total + (Number.isFinite(game.duration) ? game.duration : 0), 0)
+  ), [allPlayerGames]);
+
+  const totalHoursPlayed = Math.floor(totalMinutesPlayed / 60);
+  const totalDaysPlayed = Math.floor(totalHoursPlayed / 24);
+  const totalMonthsPlayed = Math.floor(totalDaysPlayed / 30);
+
+  const playTimeProgress = useMemo(() => {
+    const milestones = [10, 25, 50, 100, 200, 350, 500, 750, 1000, 1500, 2000];
+    const previous = milestones.filter((value) => value <= totalHoursPlayed).pop() || 0;
+    const next = milestones.find((value) => value > totalHoursPlayed) || (Math.floor(totalHoursPlayed / 500) + 1) * 500;
+    const delta = Math.max(next - previous, 1);
+    const progress = Math.min(100, Math.round(((totalHoursPlayed - previous) / delta) * 100));
+
+    return {
+      previous,
+      next,
+      progress,
+    };
+  }, [totalHoursPlayed]);
+
   const competitiveGames = useMemo(
     () => allPlayerGames.filter((g) => (g.gameType || 'competitive') === 'competitive'),
     [allPlayerGames]
@@ -121,6 +177,118 @@ export const Profile = ({
     const cooperativeWins = allPlayerGames.filter((g) => g.gameType === 'cooperative' && g.coopResult === 'win').length;
     return competitiveWins + cooperativeWins;
   }, [allPlayerGames, competitiveGames, primaryPlayer]);
+
+  const streakSummary = useMemo(() => {
+    const orderedCompetitiveGames = competitiveGames
+      .filter((g) => (g.players || []).includes(primaryPlayer))
+      .slice()
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    let longestStreak = 0;
+    let currentStreak = 0;
+
+    orderedCompetitiveGames.forEach((game) => {
+      if (game.winner === primaryPlayer) {
+        currentStreak += 1;
+        longestStreak = Math.max(longestStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    });
+
+    let recentStreak = 0;
+    for (let i = orderedCompetitiveGames.length - 1; i >= 0; i -= 1) {
+      if (orderedCompetitiveGames[i].winner === primaryPlayer) {
+        recentStreak += 1;
+      } else {
+        break;
+      }
+    }
+
+    return {
+      longestStreak,
+      recentStreak,
+    };
+  }, [competitiveGames, primaryPlayer]);
+
+  const gamificationSummary = useMemo(() => {
+    const score =
+      (library.length * 25)
+      + (playerStats.totalGames * 20)
+      + (totalWins * 35)
+      + (uniquePlayedGamesCount * 18)
+      + (streakSummary.longestStreak * 45)
+      + (totalHoursPlayed * 2);
+
+    const levelStep = 500;
+    const level = Math.max(1, Math.floor(score / levelStep) + 1);
+    const floor = (level - 1) * levelStep;
+    const nextLevelScore = level * levelStep;
+    const levelProgress = Math.min(100, Math.round(((score - floor) / levelStep) * 100));
+
+    return {
+      score,
+      level,
+      nextLevelScore,
+      levelProgress,
+    };
+  }, [library.length, playerStats.totalGames, totalWins, uniquePlayedGamesCount, streakSummary.longestStreak, totalHoursPlayed]);
+
+  const medals = useMemo(() => {
+    const medalGroups = [
+      {
+        id: 'collection',
+        title: t('profile.medalCollection'),
+        icon: ShelvingUnit,
+        value: library.length,
+        tiers: [10, 25, 50],
+      },
+      {
+        id: 'matches',
+        title: t('profile.medalMatches'),
+        icon: Dices,
+        value: playerStats.totalGames,
+        tiers: [25, 100, 250],
+      },
+      {
+        id: 'wins',
+        title: t('profile.medalWins'),
+        icon: Trophy,
+        value: totalWins,
+        tiers: [10, 50, 150],
+      },
+      {
+        id: 'streak',
+        title: t('profile.medalStreak'),
+        icon: Flame,
+        value: streakSummary.longestStreak,
+        tiers: [3, 5, 8],
+      },
+    ];
+
+    const tierLabels = [
+      t('profile.tierBronze'),
+      t('profile.tierSilver'),
+      t('profile.tierGold'),
+    ];
+
+    return medalGroups.flatMap((group) => (
+      group.tiers.map((threshold, index) => {
+        const unlocked = group.value >= threshold;
+        const progress = Math.min(100, Math.round((group.value / threshold) * 100));
+
+        return {
+          id: `${group.id}-${threshold}`,
+          title: `${group.title} ${tierLabels[index]}`,
+          icon: group.icon,
+          unlocked,
+          current: group.value,
+          threshold,
+          progress,
+        };
+      })
+    ));
+  }, [library.length, playerStats.totalGames, totalWins, streakSummary.longestStreak, t]);
 
   const competitiveSummary = useMemo(() => {
     const wins = competitiveGames.filter((g) => g.winner === primaryPlayer).length;
@@ -195,7 +363,11 @@ export const Profile = ({
   const librarySummary = useMemo(() => {
     const recent = [...library]
       .sort((a, b) => new Date(b.addedAt || b.updatedAt || 0) - new Date(a.addedAt || a.updatedAt || 0))
-      .slice(0, 3);
+      .slice(0, 3)
+      .map((entry) => ({
+        ...entry,
+        coverUrl: normalizeCoverUrl(entry?.coverUrl || ''),
+      }));
 
     return {
       total: library.length,
@@ -246,8 +418,8 @@ export const Profile = ({
   };
 
   const displayedInsights = useMemo(() => {
-    const pg = games.filter((g) => g.players?.includes(primaryPlayer));
-    const stats = getPlayerStats(primaryPlayer);
+    const pg = allPlayerGames;
+    const stats = playerStats;
     const pool = [];
 
     // --- Insight 1: Competitive vs Cooperative performance ---
@@ -379,7 +551,7 @@ export const Profile = ({
     });
     const favCat = Object.entries(catCount).sort(([, a], [, b]) => b - a)[0];
     if (favCat) {
-      const label = CATEGORY_LABELS[favCat[0]];
+      const label = t(CATEGORY_LABELS[favCat[0]] || 'library.categoryOther');
       pool.push({
         id: 'favorite-category',
         icon: Target,
@@ -493,8 +665,8 @@ export const Profile = ({
       }
     }
 
-    return pickRandomItems(pool, 3);
-  }, [games, getPlayerStats, library, primaryPlayer, tr]);
+    return pickStableRandomItems(pool, 3, insightSeed);
+  }, [allPlayerGames, competitiveGames, insightSeed, library, playerStats, primaryPlayer, t, tr]);
 
   return (
     <>
@@ -539,7 +711,7 @@ export const Profile = ({
         </header>
 
         <div className="profile-content">
-          <section className="profile-top-stats" aria-label="Resumo geral">
+          <section className="profile-top-stats" aria-label={t('profile.summaryAria')}>
             <article className="profile-small-stat-card">
               <span className="profile-small-stat-icon"><Dices size={18} /></span>
               <span className="profile-small-stat-number">{playerStats.totalGames}</span>
@@ -550,6 +722,82 @@ export const Profile = ({
               <span className="profile-small-stat-number">{totalWins}</span>
               <span className="profile-small-stat-label">{t('stats.victories')}</span>
             </article>
+            <article className="profile-small-stat-card">
+              <span className="profile-small-stat-icon"><Star size={18} /></span>
+              <span className="profile-small-stat-number">{uniquePlayedGamesCount}</span>
+              <span className="profile-small-stat-label">{t('profile.uniqueGames')}</span>
+            </article>
+          </section>
+
+          <section className="profile-main-card">
+            <div className="profile-card-header">
+              <h3 className="profile-card-title-with-icon"><Clock3 size={18} /> {t('profile.totalPlayTime')}</h3>
+            </div>
+
+            <div className="profile-competitive-row">
+              <span className="profile-competitive-left">{totalHoursPlayed} {t('profile.hoursShort')}</span>
+              <span className="profile-competitive-right">{playTimeProgress.progress}%</span>
+            </div>
+
+            <div className="profile-progress-track" aria-hidden>
+              <span className="profile-time-progress-fill" style={{ width: `${playTimeProgress.progress}%` }} />
+            </div>
+
+            <p className="profile-subtle-text profile-time-summary">
+              <span>{totalHoursPlayed} {t('profile.hoursShort')}</span>
+              <span>{totalDaysPlayed} {t('profile.daysShort')}</span>
+              <span>{totalMonthsPlayed} {t('profile.monthsShort')}</span>
+            </p>
+            <p className="profile-subtle-text">
+              {t('profile.nextTimeMilestone').replace('{hours}', playTimeProgress.next)}
+            </p>
+          </section>
+
+          <section className="profile-main-card">
+            <div className="profile-card-header">
+              <h3 className="profile-card-title-with-icon"><Medal size={18} /> {t('profile.gamificationTitle')}</h3>
+            </div>
+
+            <div className="profile-level-head">
+              <div>
+                <p className="profile-level-label">{t('profile.level')}</p>
+                <p className="profile-level-value">{gamificationSummary.level}</p>
+              </div>
+              <div className="profile-level-score-wrap">
+                <p className="profile-level-label">{t('profile.scoreLabel')}</p>
+                <p className="profile-level-score">{gamificationSummary.score} XP</p>
+              </div>
+            </div>
+
+            <div className="profile-progress-track" aria-hidden>
+              <span className="profile-level-progress-fill" style={{ width: `${gamificationSummary.levelProgress}%` }} />
+            </div>
+
+            <p className="profile-subtle-text">
+              {t('profile.nextLevelAt').replace('{score}', gamificationSummary.nextLevelScore)}
+            </p>
+            <p className="profile-subtle-text">
+              {t('profile.longestStreak').replace('{count}', streakSummary.longestStreak)} • {t('profile.currentStreak').replace('{count}', streakSummary.recentStreak)}
+            </p>
+
+            <div className="profile-medal-grid">
+              {medals.map((medal) => (
+                <article key={medal.id} className={`profile-medal-card${medal.unlocked ? ' unlocked' : ''}`}>
+                  <span className="profile-medal-icon"><medal.icon size={15} /></span>
+                  <div className="profile-medal-content">
+                    <span className="profile-medal-title">{medal.title}</span>
+                    <span className="profile-medal-subtitle">
+                      {medal.unlocked
+                        ? t('profile.medalUnlocked')
+                        : t('profile.medalProgress').replace('{current}', medal.current).replace('{target}', medal.threshold)}
+                    </span>
+                    <span className="profile-medal-progress-track" aria-hidden>
+                      <span className="profile-medal-progress-fill" style={{ width: `${medal.progress}%` }} />
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
           </section>
 
           <section className="profile-main-card">
@@ -644,7 +892,11 @@ export const Profile = ({
             <div className="profile-library-list">
               {librarySummary.recent.length > 0 ? (
                 librarySummary.recent.map((entry) => (
-                  <div className="profile-library-item" key={entry.id || entry.name}>
+                  <div
+                    className={`profile-library-item${entry.coverUrl ? ' with-cover' : ''}`}
+                    key={entry.id || entry.name}
+                    style={entry.coverUrl ? { '--profile-cover-url': `url("${entry.coverUrl}")` } : undefined}
+                  >
                     <Gamepad2 size={14} />
                     <span>{entry.name}</span>
                   </div>

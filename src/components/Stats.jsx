@@ -38,6 +38,7 @@ import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
 import { formatDate } from '../utils/dateFormat';
+import { buildLibraryCoverMap, getCoverByGameName } from '../utils/gameCover';
 import './Stats.css';
 
 ChartJS.register(CategoryScale, LinearScale, RadialLinearScale, BarElement, ArcElement, LineElement, PointElement, Filler, Tooltip, Legend);
@@ -54,6 +55,15 @@ const CATEGORY_LABEL_KEYS = {
   'worker-placement': 'library.categoryWorkerPlacement',
   abstract: 'library.categoryAbstract',
   euro: 'library.categoryEuro',
+  adventure: 'library.categoryAdventure',
+  war: 'library.categoryWar',
+  economy: 'library.categoryEconomy',
+  fantasy: 'library.categoryFantasy',
+  'science-fiction': 'library.categoryScienceFiction',
+  historical: 'library.categoryHistorical',
+  negotiation: 'library.categoryNegotiation',
+  trivia: 'library.categoryTrivia',
+  cards: 'library.categoryCards',
   other: 'library.categoryOther',
   none: 'library.categoryNone',
 };
@@ -323,6 +333,16 @@ const ModalShell = ({ title, onClose, children }) => {  return (
   );
 };
 
+const GameCoverBadge = ({ coverUrl, gameName }) => (
+  <span className={`game-cover-badge${coverUrl ? ' has-cover' : ''}`} aria-hidden="true">
+    {coverUrl ? (
+      <img src={coverUrl} alt="" loading="lazy" />
+    ) : (
+      <Gamepad2 size={13} />
+    )}
+  </span>
+);
+
 export const Stats = ({
   onNavigate,
   games,
@@ -348,6 +368,7 @@ export const Stats = ({
 
   const safeGames = Array.isArray(games) ? games : [];
   const safeLibrary = Array.isArray(library) ? library : [];
+  const coverByGame = useMemo(() => buildLibraryCoverMap(safeLibrary), [safeLibrary]);
 
   const sortedGames = useMemo(
     () => [...safeGames].sort((a, b) => new Date(b.date) - new Date(a.date)),
@@ -625,8 +646,12 @@ export const Stats = ({
       const normalizedName = (entry?.name || '').trim().toLowerCase();
       if (!normalizedName) return;
 
-      const rawCategory = typeof entry?.category === 'string'
-        ? entry.category.trim().toLowerCase()
+      const firstCategory = Array.isArray(entry?.categories) && entry.categories.length > 0
+        ? entry.categories[0]
+        : entry?.category;
+
+      const rawCategory = typeof firstCategory === 'string'
+        ? firstCategory.trim().toLowerCase()
         : '';
       const normalizedCategory = CATEGORY_LABEL_KEYS[rawCategory]
         ? rawCategory
@@ -873,8 +898,12 @@ export const Stats = ({
                 topGamesByCount.length > 0 ? (
                   <div className="top-games-list">
                     {topGamesByCount.map((item, i) => (
-                      <div key={item.name} className="top-game-row">
+                      <div key={item.name} className="top-game-row with-cover">
                         <span className="rank-badge">{i + 1}</span>
+                        <GameCoverBadge
+                          coverUrl={getCoverByGameName(item.name, coverByGame)}
+                          gameName={item.name}
+                        />
                         <div className="leaderboard-info">
                           <span className="player-name">{item.name}</span>
                           <span className="player-stat">{t('stats.matchesCount').replace('{count}', item.count)}</span>
@@ -896,8 +925,12 @@ export const Stats = ({
                       const mins = item.totalTime % 60;
                       const label = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
                       return (
-                        <div key={item.name} className="top-game-row">
+                        <div key={item.name} className="top-game-row with-cover">
                           <span className="rank-badge">{i + 1}</span>
+                          <GameCoverBadge
+                            coverUrl={getCoverByGameName(item.name, coverByGame)}
+                            gameName={item.name}
+                          />
                           <div className="leaderboard-info">
                             <span className="player-name">{item.name}</span>
                             <span className="player-stat">{label}</span>
@@ -1042,8 +1075,12 @@ export const Stats = ({
                       </div>
                       <div className="leaderboard">
                         {competitiveGameFreq.map(([game, count], rank) => (
-                          <div key={game} className="leaderboard-item">
+                          <div key={game} className="leaderboard-item with-cover">
                             <span className="rank-badge">{rank + 1}</span>
+                            <GameCoverBadge
+                              coverUrl={getCoverByGameName(game, coverByGame)}
+                              gameName={game}
+                            />
                             <div className="leaderboard-info">
                               <span className="player-name">{game}</span>
                               <span className="player-stat">{t('stats.matchesCount').replace('{count}', count)}</span>
@@ -1072,8 +1109,12 @@ export const Stats = ({
                       </div>
                       <div className="leaderboard">
                         {userWinRateByGame.map((entry, rank) => (
-                          <div key={entry.game} className="leaderboard-item">
+                          <div key={entry.game} className="leaderboard-item with-cover">
                             <span className="rank-badge">{rank + 1}</span>
+                            <GameCoverBadge
+                              coverUrl={getCoverByGameName(entry.game, coverByGame)}
+                              gameName={entry.game}
+                            />
                             <div className="leaderboard-info">
                               <span className="player-name">{entry.game}</span>
                               <span className="player-stat">{entry.wins}/{entry.played} {t('stats.victories').toLowerCase()}</span>
@@ -1137,8 +1178,12 @@ export const Stats = ({
                       </div>
                       <div className="leaderboard">
                         {cooperativeGameFreq.map(([game, count], rank) => (
-                          <div key={game} className="leaderboard-item">
+                          <div key={game} className="leaderboard-item with-cover">
                             <span className="rank-badge">{rank + 1}</span>
+                            <GameCoverBadge
+                              coverUrl={getCoverByGameName(game, coverByGame)}
+                              gameName={game}
+                            />
                             <div className="leaderboard-info">
                               <span className="player-name">{game}</span>
                               <span className="player-stat">{t('stats.matchesCount').replace('{count}', count)}</span>
