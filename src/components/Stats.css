@@ -272,6 +272,10 @@
   height: 240px;
 }
 
+.chart-wrapper-radar {
+  height: 280px;
+}
+
 .leaderboard {
   margin-top: 0.5rem;
   display: grid;
@@ -802,5 +806,9 @@
   .coop-success-grid,
   .stats-modal-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .chart-wrapper-radar {
+    height: 250px;
   }
 }

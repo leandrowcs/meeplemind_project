@@ -87,6 +87,7 @@
 .last-game-carousel-card {
   display: grid;
   gap: var(--spacing-sm);
+  touch-action: pan-y;
 }
 
 .last-game-cover-wrap {

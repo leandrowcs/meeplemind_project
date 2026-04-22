@@ -216,6 +216,7 @@ function App() {
         <Stats
           onNavigate={navigateTo}
           games={games}
+          library={lib.library}
           stats={stats}
           primaryPlayer={primaryPlayer}
           exportToCSV={handleExportToCSV}

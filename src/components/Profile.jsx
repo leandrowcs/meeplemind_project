@@ -45,6 +45,17 @@ const ALLOWED_AVATAR_TYPES = new Set([
   'image/gif',
 ]);
 
+const pickRandomItems = (items, limit = 3) => {
+  const randomized = Array.isArray(items) ? [...items] : [];
+
+  for (let i = randomized.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [randomized[i], randomized[j]] = [randomized[j], randomized[i]];
+  }
+
+  return randomized.slice(0, limit);
+};
+
 export const Profile = ({
   onNavigate,
   games,
@@ -482,7 +493,7 @@ export const Profile = ({
       }
     }
 
-    return pool.slice(0, 3);
+    return pickRandomItems(pool, 3);
   }, [games, getPlayerStats, library, primaryPlayer, tr]);
 
   return (
@@ -490,7 +501,7 @@ export const Profile = ({
       <div className="profile-container fade-in">
         <header className="profile-header-modern">
           <div className="profile-header-top-row">
-            <h2 className="profile-header-page-title">{t('profile.title')}</h2>
+            <h2 className="profile-header-page-title"></h2>
             <SideMenu
               onExportCSV={exportToCSV}
               onExportJSON={exportToJSON}

@@ -25,20 +25,38 @@ import {
   ArcElement,
   BarElement,
   CategoryScale,
+  Filler,
   Legend,
+  LineElement,
   LinearScale,
+  PointElement,
+  RadialLinearScale,
   Tooltip,
 } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut, Radar } from 'react-chartjs-2';
 import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
 import { formatDate } from '../utils/dateFormat';
 import './Stats.css';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, RadialLinearScale, BarElement, ArcElement, LineElement, PointElement, Filler, Tooltip, Legend);
 
 const CHART_COLORS = ['#4f7dff', '#f08a2f', '#8f7cff', '#2fbf8f', '#f4bf34', '#f97373', '#2dd4bf', '#60a5fa', '#c084fc', '#fb7185'];
+
+const CATEGORY_LABEL_KEYS = {
+  strategy: 'library.categoryStrategy',
+  cooperative: 'library.categoryCooperative',
+  family: 'library.categoryFamily',
+  party: 'library.categoryParty',
+  rpg: 'library.categoryRPG',
+  'deck-building': 'library.categoryDeckBuilding',
+  'worker-placement': 'library.categoryWorkerPlacement',
+  abstract: 'library.categoryAbstract',
+  euro: 'library.categoryEuro',
+  other: 'library.categoryOther',
+  none: 'library.categoryNone',
+};
 
 const VERTICAL_BAR_OPTIONS = {
   responsive: true,
@@ -113,6 +131,36 @@ const makeDoughnutOptions = (topN = 10) => ({
 });
 
 const DOUGHNUT_OPTIONS = makeDoughnutOptions(10);
+
+const makeRadarOptions = (matchesLabel) => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => ` ${matchesLabel}: ${ctx.parsed.r}`,
+      },
+    },
+  },
+  scales: {
+    r: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
+        stepSize: 1,
+        color: '#dbe3ff',
+        backdropColor: 'transparent',
+      },
+      grid: { color: 'rgba(148,163,184,0.2)' },
+      angleLines: { color: 'rgba(148,163,184,0.2)' },
+      pointLabels: {
+        color: '#dbe3ff',
+        font: { size: 11 },
+      },
+    },
+  },
+});
 
 const sortByCountAndName = (a, b) => {
   if (b[1] !== a[1]) return b[1] - a[1];
@@ -278,6 +326,7 @@ const ModalShell = ({ title, onClose, children }) => {  return (
 export const Stats = ({
   onNavigate,
   games,
+  library = [],
   stats,
   primaryPlayer,
   exportToCSV,
@@ -298,6 +347,7 @@ export const Stats = ({
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const safeGames = Array.isArray(games) ? games : [];
+  const safeLibrary = Array.isArray(library) ? library : [];
 
   const sortedGames = useMemo(
     () => [...safeGames].sort((a, b) => new Date(b.date) - new Date(a.date)),
@@ -568,6 +618,46 @@ export const Stats = ({
     };
   }, [selectedGameName, selectedGameRecords, primaryPlayer]);
 
+  const categoryFrequency = useMemo(() => {
+    const categoryByGame = new Map();
+
+    safeLibrary.forEach((entry) => {
+      const normalizedName = (entry?.name || '').trim().toLowerCase();
+      if (!normalizedName) return;
+
+      const rawCategory = typeof entry?.category === 'string'
+        ? entry.category.trim().toLowerCase()
+        : '';
+      const normalizedCategory = CATEGORY_LABEL_KEYS[rawCategory]
+        ? rawCategory
+        : rawCategory
+          ? 'other'
+          : 'none';
+
+      categoryByGame.set(normalizedName, normalizedCategory);
+    });
+
+    const counts = {};
+    sortedGames.forEach((game) => {
+      const normalizedGameName = (game?.game || '').trim().toLowerCase();
+      if (!normalizedGameName) return;
+
+      const category = categoryByGame.get(normalizedGameName) || 'none';
+      counts[category] = (counts[category] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([category, count]) => ({
+        category,
+        count,
+        label: t(CATEGORY_LABEL_KEYS[category] || 'library.categoryNone'),
+      }))
+      .sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label, language);
+      });
+  }, [safeLibrary, sortedGames, t, language]);
+
   const winnerBarData = useMemo(() => ({
     labels: winnerCounts.map(([name]) => name),
     datasets: [
@@ -626,6 +716,25 @@ export const Stats = ({
     ],
   }), [teamPlayers]);
 
+  const categoryRadarData = useMemo(() => ({
+    labels: categoryFrequency.map((entry) => entry.label),
+    datasets: [
+      {
+        label: t('stats.matchesByCategory'),
+        data: categoryFrequency.map((entry) => entry.count),
+        backgroundColor: 'rgba(79, 125, 255, 0.24)',
+        borderColor: '#8cb0ff',
+        borderWidth: 2,
+        pointBackgroundColor: '#f59e0b',
+        pointBorderColor: '#fde68a',
+        pointHoverBackgroundColor: '#ffffff',
+        pointHoverBorderColor: '#f59e0b',
+        pointRadius: 3,
+        pointHoverRadius: 4,
+      },
+    ],
+  }), [categoryFrequency, t]);
+
   const winnerBarOptions = useMemo(() => ({
     ...VERTICAL_BAR_OPTIONS,
     onClick: (_, elements) => {
@@ -650,6 +759,10 @@ export const Stats = ({
   }, [teamPlayers]);
 
   const userRateOptions = useMemo(() => horizontalBarOptions(100), []);
+  const categoryRadarOptions = useMemo(
+    () => makeRadarOptions(t('stats.matchesByCategory')),
+    [t]
+  );
 
   const chartHeight = (count, minimum = 180) => Math.max(minimum, count * 36);
 
@@ -799,6 +912,38 @@ export const Stats = ({
                 ) : (
                   <p className="empty-section">{t('stats.noTimedGames')}</p>
                 )
+              )}
+            </section>
+
+            {/* Activity calendar */}
+            <section className="stats-panel">
+              <div className="panel-header-row">
+                <h3><BarChart3 size={18} /> {t('stats.categoryRadarTitle')}</h3>
+              </div>
+              <p className="panel-subtitle">{t('stats.categoryRadarHint')}</p>
+
+              {categoryFrequency.length > 0 ? (
+                <>
+                  <div className="chart-wrapper chart-wrapper-radar">
+                    <Radar data={categoryRadarData} options={categoryRadarOptions} />
+                  </div>
+                  <div className="leaderboard">
+                    {categoryFrequency.map((entry, rank) => (
+                      <div key={entry.category} className="leaderboard-item">
+                        <span className="rank-badge">{rank + 1}</span>
+                        <div className="leaderboard-info">
+                          <span className="player-name">{entry.label}</span>
+                          <span className="player-stat">{t('stats.matchesCount').replace('{count}', entry.count)}</span>
+                        </div>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ width: `${(entry.count / categoryFrequency[0].count) * 100}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="empty-section">{t('stats.noCategoryData')}</p>
               )}
             </section>
 

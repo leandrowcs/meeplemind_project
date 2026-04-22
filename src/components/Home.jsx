@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BarChart3,
   BookOpen,
@@ -22,6 +22,21 @@ import { useLanguage } from '../hooks/useLanguage';
 import { formatDate } from '../utils/dateFormat';
 import './Home.css';
 
+const SWIPE_MIN_DISTANCE = 42;
+const SWIPE_MAX_VERTICAL_DRIFT = 56;
+const SWIPE_MAX_TIME_MS = 700;
+
+const pickRandomItems = (items, limit = 3) => {
+  const randomized = Array.isArray(items) ? [...items] : [];
+
+  for (let i = randomized.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [randomized[i], randomized[j]] = [randomized[j], randomized[i]];
+  }
+
+  return randomized.slice(0, limit);
+};
+
 export const Home = ({
   onNavigate,
   exportToCSV,
@@ -39,6 +54,7 @@ export const Home = ({
   const { t, isInitialized, language } = useLanguage();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [selectedInsight, setSelectedInsight] = useState(null);
+  const carouselTouchStartRef = useRef({ x: 0, y: 0, at: 0 });
 
   const formatTemplate = useCallback((key, replacements = {}) => {
     let text = t(key);
@@ -242,21 +258,52 @@ export const Home = ({
   ]);
 
   const highlights = useMemo(() => {
-    return insightPool.slice(0, 3);
+    return pickRandomItems(insightPool, 3);
   }, [insightPool]);
 
   const currentCarouselIndex = recentGames.length === 0 ? 0 : Math.min(carouselIndex, recentGames.length - 1);
   const currentGame = recentGames[currentCarouselIndex] || null;
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (recentGames.length <= 1) return;
     setCarouselIndex((prev) => (prev + 1) % recentGames.length);
-  };
+  }, [recentGames.length]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     if (recentGames.length <= 1) return;
     setCarouselIndex((prev) => (prev - 1 + recentGames.length) % recentGames.length);
-  };
+  }, [recentGames.length]);
+
+  const onCarouselTouchStart = useCallback((event) => {
+    if (event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    carouselTouchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      at: Date.now(),
+    };
+  }, []);
+
+  const onCarouselTouchEnd = useCallback((event) => {
+    if (recentGames.length <= 1 || event.changedTouches.length !== 1) return;
+
+    const start = carouselTouchStartRef.current;
+    const endTouch = event.changedTouches[0];
+    const deltaX = endTouch.clientX - start.x;
+    const deltaY = endTouch.clientY - start.y;
+    const duration = Date.now() - start.at;
+
+    if (duration > SWIPE_MAX_TIME_MS) return;
+    if (Math.abs(deltaX) < SWIPE_MIN_DISTANCE) return;
+    if (Math.abs(deltaY) > SWIPE_MAX_VERTICAL_DRIFT || Math.abs(deltaY) > Math.abs(deltaX)) return;
+
+    if (deltaX < 0) {
+      nextSlide();
+      return;
+    }
+
+    prevSlide();
+  }, [nextSlide, prevSlide, recentGames.length]);
 
   useEffect(() => {
     if (recentGames.length <= 1) {
@@ -331,7 +378,11 @@ export const Home = ({
             {!currentGame ? (
               <div className="empty-block">{t('home.carousel.empty')}</div>
             ) : (
-              <div className="last-game-carousel-card">
+              <div
+                className="last-game-carousel-card"
+                onTouchStart={onCarouselTouchStart}
+                onTouchEnd={onCarouselTouchEnd}
+              >
                 <div className="last-game-cover-wrap">
                   <img
                     src={getGameCover(currentGame.game)}
