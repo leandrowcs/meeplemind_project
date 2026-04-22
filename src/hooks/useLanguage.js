@@ -10,6 +10,30 @@ const LANGUAGE_STORAGE_KEY = 'meeplemind-language';
 const DEFAULT_LANGUAGE = 'pt-BR';
 const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'fr-CA'];
 
+const detectPreferredLanguage = () => {
+  const browserCandidates = [
+    ...(navigator.languages || []),
+    navigator.language,
+    navigator.userLanguage,
+  ].filter(Boolean);
+
+  for (const candidate of browserCandidates) {
+    const normalizedCandidate = String(candidate).toLowerCase();
+    const exactMatch = SUPPORTED_LANGUAGES.find(
+      (lang) => lang.toLowerCase() === normalizedCandidate
+    );
+    if (exactMatch) return exactMatch;
+
+    const baseLanguage = normalizedCandidate.split('-')[0];
+    const baseMatch = SUPPORTED_LANGUAGES.find(
+      (lang) => lang.toLowerCase().startsWith(baseLanguage)
+    );
+    if (baseMatch) return baseMatch;
+  }
+
+  return DEFAULT_LANGUAGE;
+};
+
 export const useLanguage = () => {
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -17,19 +41,13 @@ export const useLanguage = () => {
   // Initialize language from localStorage or browser preference
   useEffect(() => {
     const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    
+
     if (savedLanguage && SUPPORTED_LANGUAGES.includes(savedLanguage)) {
       setLanguage(savedLanguage);
     } else {
-      // Try to detect browser language
-      const browserLang = navigator.language || navigator.userLanguage;
-      const matchedLanguage = SUPPORTED_LANGUAGES.find(lang => 
-        browserLang.startsWith(lang.split('-')[0])
-      ) || DEFAULT_LANGUAGE;
-      
-      setLanguage(matchedLanguage);
+      setLanguage(detectPreferredLanguage());
     }
-    
+
     setIsInitialized(true);
   }, []);
 

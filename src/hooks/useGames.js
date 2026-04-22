@@ -1,9 +1,90 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { sanitizeText, sanitizePlayerName, sanitizeNumber, validateGameBackup } from '../utils/sanitize';
+import {
+  sanitizeText,
+  sanitizePlayerName,
+  sanitizeNumber,
+  sanitizeNotes,
+  validateGameBackup,
+} from '../utils/sanitize';
 import { formatDate } from '../utils/dateFormat';
 
 const STORAGE_KEY = 'meeplemind_games';
+const GAME_TYPE_COMPETITIVE = 'competitive';
+const GAME_TYPE_COOPERATIVE = 'cooperative';
+
+const sanitizeGameType = (value) =>
+  value === GAME_TYPE_COOPERATIVE ? GAME_TYPE_COOPERATIVE : GAME_TYPE_COMPETITIVE;
+
+const sanitizeCoopResult = (value) =>
+  value === 'win' || value === 'loss' ? value : null;
+
+const normalizeIsoDate = (value, fallback = new Date().toISOString()) => {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return fallback;
+  return parsed.toISOString();
+};
+
+const parseLocalDateInput = (value) => {
+  if (typeof value !== 'string') return new Date().toISOString();
+  const [y, m, d] = value.split('-');
+  const parsed = new Date(Number(y), Number(m) - 1, Number(d));
+  if (Number.isNaN(parsed.getTime())) return new Date().toISOString();
+  return parsed.toISOString();
+};
+
+const sanitizeGameEntry = (item) => {
+  if (!item || typeof item !== 'object') return null;
+
+  const id = sanitizeText(String(item.id || ''), 120);
+  const game = sanitizeText(String(item.game || ''));
+  const players = (item.players || []).map(sanitizePlayerName).filter(Boolean).slice(0, 20);
+
+  if (!id || !game || players.length === 0) return null;
+
+  return {
+    id,
+    game,
+    gameType: sanitizeGameType(item.gameType),
+    players,
+    points: Array.isArray(item.points)
+      ? item.points.slice(0, 20).map((p) => sanitizeNumber(p, -99999, 999999) ?? 0)
+      : [],
+    winner: item.winner ? sanitizePlayerName(String(item.winner)) : null,
+    coopResult: sanitizeCoopResult(item.coopResult),
+    duration: item.duration ? sanitizeNumber(item.duration, 1, 2880) : null,
+    date: normalizeIsoDate(item.date),
+    rating: sanitizeNumber(item.rating, 0, 5) ?? 0,
+    notes: sanitizeNotes(item.notes || ''),
+    updatedAt: normalizeIsoDate(item.updatedAt || item.date),
+  };
+};
+
+const serializeCsvCell = (value) => {
+  if (value === null || value === undefined) return '';
+  let normalized = typeof value === 'string' ? value : String(value);
+
+  // Prevent CSV formula injection in spreadsheet tools.
+  if (/^[=+\-@]/.test(normalized.trimStart())) {
+    normalized = `'${normalized}`;
+  }
+
+  const escaped = normalized.replace(/"/g, '""');
+  return /[",\r\n]/.test(escaped) ? `"${escaped}"` : escaped;
+};
+
+const downloadCsvFile = (filename, rows) => {
+  const csv = rows.map((row) => row.map(serializeCsvCell).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
 
 export const useGames = () => {
   const [games, setGames] = useState([]);
@@ -15,7 +96,13 @@ export const useGames = () => {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-          setGames(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const sanitized = parsed.map(sanitizeGameEntry).filter(Boolean);
+            setGames(sanitized);
+          } else {
+            setGames([]);
+          }
         } else {
           setGames([]);
         }
@@ -50,15 +137,15 @@ export const useGames = () => {
     const newGame = {
       id: uuidv4(),
       game: sanitizeText(gameData.game),
-      gameType: gameData.gameType || 'competitive',
+      gameType: sanitizeGameType(gameData.gameType),
       players: (gameData.players || []).map(sanitizePlayerName).filter(Boolean),
       points: (gameData.points || []).map((p) => sanitizeNumber(p, -99999, 999999) ?? 0),
       winner: gameData.winner ? sanitizePlayerName(gameData.winner) : null,
-      coopResult: gameData.coopResult || null,
+      coopResult: sanitizeCoopResult(gameData.coopResult),
       duration: gameData.duration ? sanitizeNumber(gameData.duration, 1, 2880) : null,
       // Parse date as local time to avoid UTC offset showing wrong day
       date: gameData.date
-        ? (() => { const [y, m, d] = gameData.date.split('-'); return new Date(Number(y), Number(m) - 1, Number(d)).toISOString(); })()
+        ? parseLocalDateInput(gameData.date)
         : new Date().toISOString(),
       rating: 0,
       notes: '',
@@ -83,7 +170,57 @@ export const useGames = () => {
   const updateGame = useCallback((gameId, updates) => {
     setGames((prevGames) => {
       const updated = prevGames.map((g) =>
-        g.id === gameId ? { ...g, ...updates, updatedAt: new Date().toISOString() } : g
+        g.id === gameId
+          ? {
+              ...g,
+              game: updates.game !== undefined ? sanitizeText(updates.game) : g.game,
+              gameType:
+                updates.gameType !== undefined
+                  ? sanitizeGameType(updates.gameType)
+                  : g.gameType,
+              players:
+                updates.players !== undefined
+                  ? (Array.isArray(updates.players)
+                      ? updates.players
+                      : [updates.players]
+                    )
+                      .map(sanitizePlayerName)
+                      .filter(Boolean)
+                      .slice(0, 20)
+                  : g.players,
+              points:
+                updates.points !== undefined && Array.isArray(updates.points)
+                  ? updates.points
+                      .slice(0, 20)
+                      .map((p) => sanitizeNumber(p, -99999, 999999) ?? 0)
+                  : g.points,
+              winner:
+                updates.winner !== undefined
+                  ? updates.winner
+                    ? sanitizePlayerName(updates.winner)
+                    : null
+                  : g.winner,
+              coopResult:
+                updates.coopResult !== undefined
+                  ? sanitizeCoopResult(updates.coopResult)
+                  : g.coopResult,
+              duration:
+                updates.duration !== undefined
+                  ? updates.duration
+                    ? sanitizeNumber(updates.duration, 1, 2880)
+                    : null
+                  : g.duration,
+              rating:
+                updates.rating !== undefined
+                  ? sanitizeNumber(updates.rating, 0, 5) ?? 0
+                  : g.rating,
+              notes:
+                updates.notes !== undefined
+                  ? sanitizeNotes(updates.notes)
+                  : g.notes,
+              updatedAt: new Date().toISOString(),
+            }
+          : g
       );
       persistGames(updated);
       return updated;
@@ -94,8 +231,11 @@ export const useGames = () => {
   const mergeFromDrive = useCallback((driveGames) => {
     if (!validateGameBackup(driveGames)) return;
     setGames((local) => {
+      const sanitizedDriveGames = driveGames.map(sanitizeGameEntry).filter(Boolean);
+      if (sanitizedDriveGames.length === 0) return local;
+
       const localMap = new Map(local.map((g) => [g.id, g]));
-      const driveMap = new Map(driveGames.map((g) => [g.id, g]));
+      const driveMap = new Map(sanitizedDriveGames.map((g) => [g.id, g]));
       const allIds = new Set([...localMap.keys(), ...driveMap.keys()]);
       const merged = Array.from(allIds).map((id) => {
         const loc = localMap.get(id);
@@ -247,15 +387,7 @@ export const useGames = () => {
   };
 
   const exportToCSV = (library, language = 'pt-BR') => {
-    if (games.length === 0) {
-      alert('Nenhuma partida para exportar');
-      return;
-    }
-
     try {
-      const XLSX = require('xlsx');
-
-      // Localize headers based on language
       const headerLabels = {
         'pt-BR': {
           date: 'Data',
@@ -272,8 +404,10 @@ export const useGames = () => {
           owned: 'Dono',
           yes: 'Sim',
           no: 'Não',
-          gameHistory: 'Histórico de Jogos',
-          library: 'Biblioteca',
+          gameHistoryFileSuffix: 'historico-jogos',
+          libraryFileSuffix: 'biblioteca',
+          emptyExport: 'Nenhuma partida para exportar',
+          exportError: 'Erro ao exportar CSV',
         },
         'en-US': {
           date: 'Date',
@@ -290,8 +424,10 @@ export const useGames = () => {
           owned: 'Owner',
           yes: 'Yes',
           no: 'No',
-          gameHistory: 'Game History',
-          library: 'Library',
+          gameHistoryFileSuffix: 'game-history',
+          libraryFileSuffix: 'library',
+          emptyExport: 'No matches to export',
+          exportError: 'Unable to export CSV',
         },
         'fr-CA': {
           date: 'Date',
@@ -308,14 +444,19 @@ export const useGames = () => {
           owned: 'Patron',
           yes: 'Oui',
           no: 'Non',
-          gameHistory: 'Historique des Parties',
-          library: 'Bibliothèque',
+          gameHistoryFileSuffix: 'historique-parties',
+          libraryFileSuffix: 'bibliotheque',
+          emptyExport: 'Aucune partie a exporter',
+          exportError: 'Impossible d\'exporter le CSV',
         },
       };
 
       const labels = headerLabels[language] || headerLabels['pt-BR'];
+      if (games.length === 0) {
+        alert(labels.emptyExport);
+        return;
+      }
 
-      // Aba 1: Histórico de Jogos
       const gamesHeaders = [labels.date, labels.game, labels.players, labels.winner, labels.duration, labels.rating, labels.notes];
       const gamesRows = games.map((g) => [
         formatDate(g.date, language),
@@ -326,9 +467,7 @@ export const useGames = () => {
         g.rating ? `${g.rating}/5` : '-',
         g.notes,
       ]);
-      const gamesData = [gamesHeaders, ...gamesRows];
 
-      // Aba 2: Biblioteca
       const libraryHeaders = [labels.name, labels.category, labels.minPlayers, labels.maxPlayers, labels.owned];
       const libraryRows = (library || []).map((game) => [
         game.name,
@@ -337,24 +476,25 @@ export const useGames = () => {
         game.maxPlayers || '-',
         game.owned ? labels.yes : labels.no,
       ]);
-      const libraryData = [libraryHeaders, ...libraryRows];
 
-      // Criar workbook Excel
-      const workbook = XLSX.utils.book_new();
-      const ws1 = XLSX.utils.aoa_to_sheet(gamesData);
-      const ws2 = XLSX.utils.aoa_to_sheet(libraryData);
-
-      // Ajustar largura das colunas
-      ws1['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 30 }];
-      ws2['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
-
-      XLSX.utils.book_append_sheet(workbook, ws1, labels.gameHistory);
-      XLSX.utils.book_append_sheet(workbook, ws2, labels.library);
-
-      XLSX.writeFile(workbook, `MeepleMind_${new Date().toISOString().split('T')[0]}.xlsx`);
+      const stamp = new Date().toISOString().split('T')[0];
+      downloadCsvFile(
+        `MeepleMind_${stamp}_${labels.gameHistoryFileSuffix}.csv`,
+        [gamesHeaders, ...gamesRows]
+      );
+      downloadCsvFile(
+        `MeepleMind_${stamp}_${labels.libraryFileSuffix}.csv`,
+        [libraryHeaders, ...libraryRows]
+      );
     } catch (error) {
       console.error('Erro ao exportar:', error);
-      alert('Erro ao exportar para Excel');
+      const headerLabels = {
+        'pt-BR': { exportError: 'Erro ao exportar CSV' },
+        'en-US': { exportError: 'Unable to export CSV' },
+        'fr-CA': { exportError: 'Impossible d\'exporter le CSV' },
+      };
+      const labels = headerLabels[language] || headerLabels['pt-BR'];
+      alert(labels.exportError);
     }
   };
 
@@ -406,10 +546,19 @@ export const useGames = () => {
           return;
         }
 
+        const sanitizedImportGames = gamesToImport
+          .map(sanitizeGameEntry)
+          .filter(Boolean);
+
+        if (sanitizedImportGames.length === 0) {
+          alert('Formato de arquivo inválido ou corrompido');
+          return;
+        }
+
         // Importar jogos
         setGames((prevGames) => {
           const existingIds = new Set(prevGames.map((g) => g.id));
-          const newEntries = gamesToImport.filter((g) => !existingIds.has(g.id));
+          const newEntries = sanitizedImportGames.filter((g) => !existingIds.has(g.id));
           const updated = [...newEntries, ...prevGames];
           persistGames(updated);
           return updated;

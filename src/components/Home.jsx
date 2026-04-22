@@ -34,6 +34,7 @@ export const Home = ({
   syncStatus,
   games = [],
   library = [],
+  googlePhotoUrl,
 }) => {
   const { t, isInitialized, language } = useLanguage();
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -304,10 +305,13 @@ export const Home = ({
               onExportJSON={exportToJSON}
               onImportJSON={importFromJSON}
               onClearData={clearAllData}
+              onOpenSettings={() => onNavigate('settings')}
               auth={auth}
               syncStatus={syncStatus}
               compact
               openFrom="right"
+              userName={displayPlayerName || primaryPlayer}
+              userPhotoUrl={googlePhotoUrl}
             />
           </div>
         </header>

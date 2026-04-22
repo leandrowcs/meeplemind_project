@@ -820,6 +820,51 @@
   font-size: 0.875rem;
 }
 
+.catalog-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.35rem 0.58rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+  margin-bottom: 0.35rem;
+}
+
+.catalog-source-badge.online {
+  color: #86efac;
+  background: rgba(22, 101, 52, 0.22);
+  border-color: rgba(134, 239, 172, 0.42);
+}
+
+.catalog-source-badge.offline {
+  color: #fdba74;
+  background: rgba(154, 52, 18, 0.24);
+  border-color: rgba(251, 146, 60, 0.45);
+}
+
+.catalog-source-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.catalog-source-badge.online .catalog-source-dot {
+  background: #86efac;
+}
+
+.catalog-source-badge.offline .catalog-source-dot {
+  background: #fb923c;
+}
+
+.catalog-source-note {
+  margin: -0.08rem 0 0.55rem;
+  font-size: 0.77rem;
+  color: #fbbf24;
+}
+
 .catalog-status {
   display: flex;
   align-items: center;
@@ -985,6 +1030,26 @@
   padding: 0;
   background: transparent;
   border: none;
+}
+
+.library-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.library-header-actions .hamburger-btn,
+.library-header-actions .hamburger-btn.compact {
+  position: static;
+  top: auto;
+  right: auto;
+}
+
+.library-header {
+  position: static;
+  top: auto;
+  z-index: auto;
+  backdrop-filter: none;
 }
 
 .library-title-wrap {

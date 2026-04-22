@@ -1,6 +1,8 @@
 const MAX_NAME_LENGTH = 100;
 const MAX_PLAYER_LENGTH = 50;
 const MAX_NOTES_LENGTH = 500;
+const MAX_URL_LENGTH = 1000;
+const SAFE_URL_PROTOCOLS = new Set(['http:', 'https:']);
 
 /**
  * Strip HTML tags and prevent XSS injection in text inputs.
@@ -36,6 +38,26 @@ export const sanitizeNumber = (value, min = 0, max = 9999) => {
 };
 
 /**
+ * Accept only absolute http/https URLs (or protocol-relative URLs).
+ * Blocks javascript:, data:, file:, and other unsafe schemes.
+ */
+export const sanitizeUrl = (value, maxLength = MAX_URL_LENGTH) => {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim().slice(0, maxLength);
+  if (!trimmed) return '';
+
+  const normalized = trimmed.startsWith('//') ? `https:${trimmed}` : trimmed;
+
+  try {
+    const parsed = new URL(normalized);
+    if (!SAFE_URL_PROTOCOLS.has(parsed.protocol)) return '';
+    return parsed.toString();
+  } catch {
+    return '';
+  }
+};
+
+/**
  * Validate the structure of a JSON game backup before importing.
  * Prevents importing malformed or malicious data.
  */
@@ -48,10 +70,19 @@ export const validateGameBackup = (data) => {
       typeof item === 'object' &&
       typeof item.id === 'string' &&
       item.id.length > 0 &&
+      item.id.length <= 120 &&
       typeof item.game === 'string' &&
+      item.game.length > 0 &&
+      item.game.length <= MAX_NAME_LENGTH &&
       Array.isArray(item.players) &&
       item.players.length >= 1 &&
-      item.players.every((p) => typeof p === 'string')
+      item.players.length <= 20 &&
+      item.players.every(
+        (p) =>
+          typeof p === 'string' &&
+          p.length > 0 &&
+          p.length <= MAX_PLAYER_LENGTH
+      )
   );
 };
 
@@ -67,7 +98,9 @@ export const validateLibraryBackup = (data) => {
       typeof item === 'object' &&
       typeof item.id === 'string' &&
       item.id.length > 0 &&
+      item.id.length <= 120 &&
       typeof item.name === 'string' &&
-      item.name.length > 0
+      item.name.length > 0 &&
+      item.name.length <= MAX_NAME_LENGTH
   );
 };

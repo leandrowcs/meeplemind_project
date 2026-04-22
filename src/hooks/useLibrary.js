@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { sanitizeText, sanitizeNumber, validateLibraryBackup } from '../utils/sanitize';
+import {
+  sanitizeText,
+  sanitizeNumber,
+  sanitizeUrl,
+  validateLibraryBackup,
+} from '../utils/sanitize';
 
 const LIBRARY_KEY = 'meeplemind_library';
 
@@ -17,19 +22,57 @@ export const GAME_CATEGORIES = [
   { value: 'other', label: 'library.categoryOther' },
 ];
 
-export const useLibrary = () => {
-  const [library, setLibrary] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+const sanitizeLocalizedMap = (value, maxLength = 500) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
 
-  useEffect(() => {
+  const normalized = {};
+  Object.entries(value).forEach(([lang, text]) => {
+    const languageKey = sanitizeText(String(lang || ''), 16);
+    const content = sanitizeText(String(text || ''), maxLength);
+    if (languageKey && content) normalized[languageKey] = content;
+  });
+
+  return normalized;
+};
+
+const normalizeIsoDate = (value) => {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return new Date().toISOString();
+  return parsed.toISOString();
+};
+
+const sanitizeLibraryEntry = (entry) => {
+  if (!entry || typeof entry !== 'object') return null;
+  const cleanId = sanitizeText(String(entry.id || ''), 120);
+  const cleanName = sanitizeText(String(entry.name || ''));
+  if (!cleanId || !cleanName) return null;
+
+  return {
+    id: cleanId,
+    name: cleanName,
+    category: sanitizeText(String(entry.category || ''), 50),
+    minPlayers: sanitizeNumber(entry.minPlayers, 1, 20),
+    maxPlayers: sanitizeNumber(entry.maxPlayers, 1, 20),
+    description: sanitizeText(String(entry.description || ''), 500),
+    coverUrl: sanitizeUrl(String(entry.coverUrl || ''), 1000),
+    owned: Boolean(entry.owned),
+    nameLocal: sanitizeLocalizedMap(entry.nameLocal, 120),
+    descriptionLocal: sanitizeLocalizedMap(entry.descriptionLocal, 500),
+    addedAt: normalizeIsoDate(entry.addedAt || entry.updatedAt),
+    updatedAt: normalizeIsoDate(entry.updatedAt || entry.addedAt),
+  };
+};
+
+export const useLibrary = () => {
+  const [library, setLibrary] = useState(() => {
     try {
       const stored = localStorage.getItem(LIBRARY_KEY);
-      setLibrary(stored ? JSON.parse(stored) : []);
+      return stored ? JSON.parse(stored) : [];
     } catch {
-      setLibrary([]);
+      return [];
     }
-    setIsLoading(false);
-  }, []);
+  });
+  const [isLoading] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -42,7 +85,9 @@ export const useLibrary = () => {
   }, [library, isLoading]);
 
   const persistLibrary = (libraryArr) => {
-    try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryArr)); } catch {}
+    try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryArr)); } catch {
+      // Intentionally ignore storage write failures (quota or browser policy).
+    }
   };
 
   const addToLibrary = useCallback(
@@ -72,7 +117,7 @@ export const useLibrary = () => {
           minPlayers: sanitizeNumber(minPlayers, 1, 20),
           maxPlayers: sanitizeNumber(maxPlayers, 1, 20),
           description: sanitizeText(description, 500),
-          coverUrl: sanitizeText(coverUrl, 1000),
+          coverUrl: sanitizeUrl(coverUrl, 1000),
           owned: Boolean(owned),
           nameLocal: {},
           descriptionLocal: {},
@@ -159,7 +204,7 @@ export const useLibrary = () => {
                   : g.description ?? '',
               coverUrl:
                 updates.coverUrl !== undefined
-                  ? sanitizeText(updates.coverUrl, 1000)
+                  ? sanitizeUrl(updates.coverUrl, 1000)
                   : g.coverUrl ?? '',
               owned: updates.owned !== undefined ? updates.owned : g.owned,
               nameLocal:
@@ -187,8 +232,14 @@ export const useLibrary = () => {
   const mergeFromDrive = useCallback((driveData) => {
     if (!validateLibraryBackup(driveData)) return;
     setLibrary((local) => {
+      const sanitizedDriveData = driveData
+        .map(sanitizeLibraryEntry)
+        .filter(Boolean);
+
+      if (sanitizedDriveData.length === 0) return local;
+
       const localMap = new Map(local.map((g) => [g.id, g]));
-      const driveMap = new Map(driveData.map((g) => [g.id, g]));
+      const driveMap = new Map(sanitizedDriveData.map((g) => [g.id, g]));
       const allIds = new Set([...localMap.keys(), ...driveMap.keys()]);
       const merged = Array.from(allIds).map((id) => {
         const loc = localMap.get(id);

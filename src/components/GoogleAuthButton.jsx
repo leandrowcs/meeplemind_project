@@ -10,7 +10,7 @@ import './GoogleAuthButton.css';
  */
 export const GoogleAuthButton = ({ auth, syncStatus }) => {
   const { t } = useLanguage();
-  const { isSignedIn, user, isLoading, isConfigured, signIn, signOut } = auth;
+  const { isSignedIn, isLoading, isConfigured, signIn, signOut } = auth;
 
   if (!isConfigured || isLoading) return null;
 
@@ -18,33 +18,18 @@ export const GoogleAuthButton = ({ auth, syncStatus }) => {
     synced: t('auth.synced'),
     syncing: t('auth.syncing'),
     error: t('auth.syncError'),
-    idle: null,
-  }[syncStatus] ?? null;
+    idle: t('auth.connected'),
+  }[syncStatus] ?? t('auth.connected');
 
-  if (isSignedIn && user) {
+  if (isSignedIn) {
     return (
       <div className="gauth-signed-in">
-        <div className="gauth-user">
-          {user.picture && (
-            <img
-              src={user.picture}
-              alt={user.name}
-              className="gauth-avatar"
-              referrerPolicy="no-referrer"
-            />
-          )}
-          <div className="gauth-info">
-            <span className="gauth-name">{user.name}</span>
-            {syncLabel && (
-              <span
-                className={`gauth-sync ${syncStatus === 'error' ? 'gauth-sync--error' : syncStatus === 'syncing' ? 'gauth-sync--syncing' : ''}`}
-              >
-                {syncStatus === 'syncing' ? <LoaderCircle size={14} /> : syncStatus === 'synced' ? <Check size={14} /> : <AlertTriangle size={14} />}
-                {syncLabel}
-              </span>
-            )}
-          </div>
-        </div>
+        <span
+          className={`gauth-sync ${syncStatus === 'error' ? 'gauth-sync--error' : syncStatus === 'syncing' ? 'gauth-sync--syncing' : ''}`}
+        >
+          {syncStatus === 'syncing' ? <LoaderCircle size={14} /> : syncStatus === 'error' ? <AlertTriangle size={14} /> : <Check size={14} />}
+          {syncLabel}
+        </span>
         <button className="gauth-signout" onClick={signOut}>
           {t('auth.logout')}
         </button>

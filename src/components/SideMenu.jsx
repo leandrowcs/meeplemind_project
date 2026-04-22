@@ -1,31 +1,29 @@
 import { useState } from 'react';
 import {
-  Download,
-  FileSpreadsheet,
+  ChevronDown,
+  ChevronUp,
   Languages,
+  Menu,
+  Newspaper,
   Settings,
-  Trash2,
-  Upload,
   X,
 } from 'lucide-react';
-import { Button } from './Button';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { useLanguage } from '../hooks/useLanguage';
+import { getChangelog } from '../data/changelog';
+import { version as APP_VERSION } from '../../package.json';
 import './SideMenu.css';
 
-const APP_VERSION = '1.0.0';
-
 const LANGUAGES = [
-  { code: 'pt-BR', label: 'Português (Brasil)' },
-  { code: 'en-US', label: 'English (US)' },
-  { code: 'fr-CA', label: 'Français (Canada)' },
+  { code: 'pt-BR', label: 'Português (Brasil)', flag: '🇧🇷', shortLabel: 'PT-BR' },
+  { code: 'en-US', label: 'English (US)', flag: '🇺🇸', shortLabel: 'EN-US' },
+  { code: 'fr-CA', label: 'Français (Canada)', flag: '🇨🇦', shortLabel: 'FR-CA' },
 ];
 
 export const SideMenu = ({
-  onExportCSV,
-  onExportJSON,
-  onImportJSON,
-  onClearData,
+  onOpenSettings,
+  userName,
+  userPhotoUrl,
   auth,
   syncStatus,
   compact = false,
@@ -33,26 +31,13 @@ export const SideMenu = ({
 }) => {
   const { t, language, changeLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-
-  const handleImport = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onImportJSON(file);
-      e.target.value = '';
-    }
-  };
-
-  const handleClearData = () => {
-    const confirmed = window.confirm(
-      `${t('menu.clearDataWarning')}\n${t('menu.clearDataConfirm')}`
-    );
-    if (confirmed) {
-      onClearData();
-      setIsOpen(false);
-    }
-  };
+  const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
+  const displayName = userName || auth?.user?.name || 'MeepleMind Player';
+  const profilePhoto = userPhotoUrl || auth?.user?.picture || '/user_icon.png';
+  const whatsNew = getChangelog(language, 3);
 
   const handleLanguageChange = (newLanguage) => {
+    if (newLanguage === language) return;
     changeLanguage(newLanguage);
     // Pequeno delay para garantir que a mudança foi processada
     setTimeout(() => {
@@ -68,7 +53,7 @@ export const SideMenu = ({
         onClick={() => setIsOpen(!isOpen)}
         aria-label={t('menu.settings')}
       >
-        <Settings size={20} className="menu-gear-icon" />
+        <Menu size={20} className="menu-trigger-icon" />
       </button>
 
       {/* Overlay */}
@@ -77,7 +62,6 @@ export const SideMenu = ({
       {/* Side Menu */}
       <div className={`side-menu ${openFrom === 'right' ? 'from-right' : 'from-left'} ${isOpen ? 'open' : ''}`}>
         <div className="menu-header">
-          <h3><Settings size={16} /> {t('menu.settings', 'Configurações')}</h3>
           <button
             className="close-btn"
             onClick={() => setIsOpen(false)}
@@ -88,78 +72,79 @@ export const SideMenu = ({
         </div>
 
         <div className="menu-content">
-          {/* Dados & Backup Section */}
+          <div className="menu-profile-card">
+            <img
+              src={profilePhoto}
+              alt={displayName}
+              className="menu-user-avatar"
+              referrerPolicy="no-referrer"
+              onError={(event) => {
+                event.currentTarget.src = '/user_icon.png';
+              }}
+            />
+            <div className="menu-user-details">
+              <strong className="menu-user-name">{displayName}</strong>
+            </div>
+          </div>
+
           <div className="menu-section">
-            <h4 className="section-title"><Download size={14} /> {t('menu.dataBackup', 'Dados & Backup')}</h4>
             <div className="section-items">
               <button
                 className="menu-item"
                 onClick={() => {
-                  onExportCSV(language);
+                  if (onOpenSettings) onOpenSettings();
                   setIsOpen(false);
                 }}
-                title={t('home.exportCSVTitle')}
+                title={t('menu.settings')}
               >
-                <FileSpreadsheet size={18} className="menu-icon" />
-                <span>{t('home.exportCSV')}</span>
-              </button>
-
-              <button
-                className="menu-item"
-                onClick={() => {
-                  onExportJSON();
-                  setIsOpen(false);
-                }}
-                title={t('home.backupJSONTitle')}
-              >
-                <Download size={18} className="menu-icon" />
-                <span>{t('home.backupJSON')}</span>
-              </button>
-
-              <button
-                className="menu-item"
-                onClick={() => document.getElementById('import-input-menu').click()}
-                title={t('home.importJSONTitle')}
-              >
-                <Upload size={18} className="menu-icon" />
-                <span>{t('home.importJSON')}</span>
-              </button>
-
-              <input
-                id="import-input-menu"
-                type="file"
-                accept=".json"
-                onChange={handleImport}
-                style={{ display: 'none' }}
-              />
-
-              <button
-                className="menu-item danger"
-                onClick={handleClearData}
-                title={t('menu.clearDataTitle')}
-              >
-                <Trash2 size={18} className="menu-icon" />
-                <span>{t('menu.clearData')}</span>
+                <Settings size={18} className="menu-icon" />
+                <span>{t('menu.settings')}</span>
               </button>
             </div>
+          </div>
+
+          <div className="menu-section">
+            <button
+              type="button"
+              className="menu-collapsible-btn"
+              onClick={() => setIsWhatsNewOpen((prev) => !prev)}
+              aria-expanded={isWhatsNewOpen}
+            >
+              <span className="menu-collapsible-title">
+                <Newspaper size={14} />
+                {whatsNew.title}
+              </span>
+              {isWhatsNewOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+
+            {isWhatsNewOpen && (
+              <ul className="menu-whats-new-list">
+                {whatsNew.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Language Section */}
           <div className="menu-section">
             <h4 className="section-title"><Languages size={14} /> {t('common.language')}</h4>
             <div className="section-items">
-              <select 
-                value={language}
-                onChange={(e) => handleLanguageChange(e.target.value)}
-                className="language-select-menu"
-                title={t('common.language')}
-              >
-                {LANGUAGES.map(lang => (
-                  <option key={lang.code} value={lang.code}>
-                    {lang.label}
-                  </option>
+              <div className="language-flags-menu" role="group" aria-label={t('common.language')}>
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    className={`language-flag-btn ${language === lang.code ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange(lang.code)}
+                    title={lang.label}
+                    aria-label={lang.label}
+                  >
+                    <span className="language-flag-icon" aria-hidden="true">{lang.flag}</span>
+                    <span className="language-flag-label">{lang.shortLabel}</span>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
           </div>
         </div>

@@ -12,6 +12,19 @@
   margin-bottom: var(--spacing-md);
 }
 
+.profile-header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.profile-header-page-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #e2e8f0;
+}
+
 .profile-avatar-block {
   display: grid;
   justify-items: center;

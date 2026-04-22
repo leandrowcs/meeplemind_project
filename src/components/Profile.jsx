@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from './Button';
+import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
 import './Profile.css';
 
@@ -36,6 +37,14 @@ const CATEGORY_LABELS = {
   euro: 'Euro',
 };
 
+const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
+
 export const Profile = ({
   onNavigate,
   games,
@@ -44,6 +53,12 @@ export const Profile = ({
   googlePhotoUrl,
   getPlayerStats,
   library = [],
+  exportToCSV,
+  exportToJSON,
+  importFromJSON,
+  clearAllData,
+  auth,
+  syncStatus,
 }) => {
   const { language, t } = useLanguage();
   const tr = useCallback((pt, en, fr) => {
@@ -180,7 +195,30 @@ export const Profile = ({
   const onAvatarUpload = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) return;
+
+    if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+      alert(
+        tr(
+          'Formato de imagem não suportado. Use JPG, PNG, WEBP ou GIF.',
+          'Unsupported image format. Please use JPG, PNG, WEBP, or GIF.',
+          'Format d\'image non pris en charge. Utilisez JPG, PNG, WEBP ou GIF.'
+        )
+      );
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_SIZE_BYTES) {
+      alert(
+        tr(
+          'Imagem muito grande. O limite é de 2 MB.',
+          'Image is too large. The limit is 2 MB.',
+          'Image trop volumineuse. La limite est de 2 Mo.'
+        )
+      );
+      event.target.value = '';
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -451,6 +489,22 @@ export const Profile = ({
     <>
       <div className="profile-container fade-in">
         <header className="profile-header-modern">
+          <div className="profile-header-top-row">
+            <h2 className="profile-header-page-title">{t('profile.title')}</h2>
+            <SideMenu
+              onExportCSV={exportToCSV}
+              onExportJSON={exportToJSON}
+              onImportJSON={importFromJSON}
+              onClearData={clearAllData}
+              onOpenSettings={() => onNavigate('settings')}
+              auth={auth}
+              syncStatus={syncStatus}
+              compact
+              openFrom="right"
+              userName={displayPlayerName || primaryPlayer}
+              userPhotoUrl={googlePhotoUrl}
+            />
+          </div>
           <div className="profile-avatar-block">
             <div className="profile-avatar-wrap">
               <img src={avatarSrc} alt={displayPlayerName || primaryPlayer} className="profile-avatar" referrerPolicy="no-referrer" />

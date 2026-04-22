@@ -10,10 +10,11 @@ import { History } from './components/History';
 import { Stats } from './components/Stats';
 import { Profile } from './components/Profile';
 import { Library } from './components/Library';
+import { AppSettings } from './components/AppSettings';
 import { OnboardingModal } from './components/OnboardingModal';
 import './App.css';
 
-const VALID_PAGES = new Set(['home', 'newgame', 'history', 'stats', 'profile', 'library']);
+const VALID_PAGES = new Set(['home', 'newgame', 'history', 'stats', 'profile', 'library', 'settings']);
 
 function getPageFromHash() {
   const hash = window.location.hash.replace(/^#/, '');
@@ -189,6 +190,7 @@ function App() {
           syncStatus={syncStatus}
           games={games}
           library={lib.library}
+          googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
         />
       )}
       {currentPage === 'newgame' && (
@@ -222,6 +224,8 @@ function App() {
           clearAllData={handleClearAllData}
           auth={auth}
           syncStatus={syncStatus}
+          displayPlayerName={displayPlayerName}
+          googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
         />
       )}
       {currentPage === 'profile' && (
@@ -233,6 +237,12 @@ function App() {
           googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
           getPlayerStats={getPlayerStats}
           library={lib.library}
+          exportToCSV={handleExportToCSV}
+          exportToJSON={handleExportToJSON}
+          importFromJSON={handleImportFromJSON}
+          clearAllData={handleClearAllData}
+          auth={auth}
+          syncStatus={syncStatus}
         />
       )}
       {currentPage === 'library' && (
@@ -244,6 +254,27 @@ function App() {
           onUpdate={lib.updateInLibrary}
           games={games}
           primaryPlayer={primaryPlayer}
+          displayPlayerName={displayPlayerName}
+          googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
+          exportToCSV={handleExportToCSV}
+          exportToJSON={handleExportToJSON}
+          importFromJSON={handleImportFromJSON}
+          clearAllData={handleClearAllData}
+          auth={auth}
+          syncStatus={syncStatus}
+        />
+      )}
+      {currentPage === 'settings' && (
+        <AppSettings
+          onNavigate={navigateTo}
+          displayPlayerName={displayPlayerName}
+          googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
+          exportToCSV={handleExportToCSV}
+          exportToJSON={handleExportToJSON}
+          importFromJSON={handleImportFromJSON}
+          clearAllData={handleClearAllData}
+          auth={auth}
+          syncStatus={syncStatus}
         />
       )}
     </div>

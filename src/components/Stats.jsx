@@ -180,6 +180,8 @@ export const Stats = ({
   clearAllData,
   auth,
   syncStatus,
+  displayPlayerName,
+  googlePhotoUrl,
 }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('competitive');
@@ -500,9 +502,12 @@ export const Stats = ({
             onExportJSON={exportToJSON}
             onImportJSON={importFromJSON}
             onClearData={clearAllData}
+            onOpenSettings={() => onNavigate('settings')}
             auth={auth}
             syncStatus={syncStatus}
             compact
+            userName={displayPlayerName || primaryPlayer}
+            userPhotoUrl={googlePhotoUrl}
           />
         </header>
 

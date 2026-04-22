@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   BadgeCheck,
   BarChart3,
@@ -19,6 +19,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
 import { GAME_CATEGORIES } from '../hooks/useLibrary';
 import './Library.css';
@@ -29,6 +30,8 @@ import './Library.css';
 // Roteado via corsproxy.io para contornar restrições CORS do navegador
 // ──────────────────────────────────────────────────
 const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
+const OPEN_LIBRARY_CATALOG_KEY = 'meeplemind-open-library-catalog';
+const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
 // Em desenvolvimento: usa proxy do Vite (/bggapi → boardgamegeek.com/xmlapi2)
 // Em produção: chama a API diretamente (requer CORS habilitado no servidor de hospedagem)
 const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
@@ -387,7 +390,23 @@ const IconTrash = () => (
 // ──────────────────────────────────────────────────
 // Main Library component
 // ──────────────────────────────────────────────────
-export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games, primaryPlayer }) => {
+export const Library = ({
+  onNavigate,
+  library,
+  onAdd,
+  onRemove,
+  onUpdate,
+  games,
+  primaryPlayer,
+  displayPlayerName,
+  googlePhotoUrl,
+  exportToCSV,
+  exportToJSON,
+  importFromJSON,
+  clearAllData,
+  auth,
+  syncStatus,
+}) => {
   const { language, t } = useLanguage();
   const [editingGame, setEditingGame] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -401,6 +420,7 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games,
   const [hotLoading, setHotLoading] = useState(false);
   const [hotError, setHotError] = useState(false);
   const [hotLoaded, setHotLoaded] = useState(false);
+  const [catalogDataSource, setCatalogDataSource] = useState('online');
   const [sortAlpha, setSortAlpha] = useState(false);
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogDetailsLoadingName, setCatalogDetailsLoadingName] = useState('');
@@ -555,7 +575,22 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games,
       }));
       setHotGames(parsed);
       setHotLoaded(true);
+      setCatalogDataSource('online');
     } catch {
+      try {
+        const cachedRaw = localStorage.getItem(BGG_OFFLINE_CACHE_KEY);
+        const cachedPayload = cachedRaw ? JSON.parse(cachedRaw) : null;
+        if (Array.isArray(cachedPayload?.items) && cachedPayload.items.length > 0) {
+          setHotGames(cachedPayload.items);
+          setHotLoaded(true);
+          setHotError(false);
+          setCatalogDataSource('offline');
+          return;
+        }
+      } catch {
+        // No valid offline cache available.
+      }
+      setCatalogDataSource('online');
       setHotError(true);
     } finally {
       setHotLoading(false);
@@ -566,6 +601,13 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games,
     setActiveTab('catalog');
     fetchHotGames();
   }, [fetchHotGames]);
+
+  useEffect(() => {
+    const shouldOpenCatalog = localStorage.getItem(OPEN_LIBRARY_CATALOG_KEY) === '1';
+    if (!shouldOpenCatalog) return;
+    localStorage.removeItem(OPEN_LIBRARY_CATALOG_KEY);
+    handleCatalogTab();
+  }, [handleCatalogTab]);
 
   const handleGoToCatalogSearch = useCallback(() => {
     handleCatalogTab();
@@ -642,7 +684,22 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games,
             <span className="library-title-icon"><BookOpen size={18} /></span>
             <h1>{t('library.title')}</h1>
           </div>
-          <span className="library-count" aria-label={String(library.length)}>{library.length}</span>
+          <div className="library-header-actions">
+            <span className="library-count" aria-label={String(library.length)}>{library.length}</span>
+            <SideMenu
+              onExportCSV={exportToCSV}
+              onExportJSON={exportToJSON}
+              onImportJSON={importFromJSON}
+              onClearData={clearAllData}
+              onOpenSettings={() => onNavigate('settings')}
+              auth={auth}
+              syncStatus={syncStatus}
+              compact
+              openFrom="right"
+              userName={displayPlayerName || primaryPlayer}
+              userPhotoUrl={googlePhotoUrl}
+            />
+          </div>
         </header>
 
         {/* Tab bar */}
@@ -822,6 +879,25 @@ export const Library = ({ onNavigate, library, onAdd, onRemove, onUpdate, games,
                 />
               </div>
             </div>
+
+            {!hotLoading && !hotError && (
+              <div
+                className={`catalog-source-badge ${catalogDataSource === 'offline' ? 'offline' : 'online'}`}
+                role="status"
+                aria-live="polite"
+              >
+                <span className="catalog-source-dot" aria-hidden="true" />
+                <span>
+                  {catalogDataSource === 'offline'
+                    ? t('library.bggSourceOffline')
+                    : t('library.bggSourceOnline')}
+                </span>
+              </div>
+            )}
+
+            {!hotLoading && !hotError && catalogDataSource === 'offline' && (
+              <p className="catalog-source-note">{t('library.bggSourceOfflineHint')}</p>
+            )}
 
             {hotLoading && (
               <div className="catalog-status">
