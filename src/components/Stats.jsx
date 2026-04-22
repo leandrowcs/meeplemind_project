@@ -5,13 +5,16 @@ import {
   Bird,
   BookOpen,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Flame,
   Gamepad2,
   House,
   PieChart,
-  Search,
   ShieldCheck,
   Skull,
   Swords,
+  Timer,
   Trophy,
   UserRound,
   Users,
@@ -87,13 +90,19 @@ const horizontalBarOptions = (max = 100) => ({
   },
 });
 
-const DOUGHNUT_OPTIONS = {
+const makeDoughnutOptions = (topN = 10) => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       position: 'right',
-      labels: { color: '#dbe3ff', font: { size: 11 }, boxWidth: 14, padding: 10 },
+      labels: {
+        color: '#dbe3ff',
+        font: { size: 11 },
+        boxWidth: 14,
+        padding: 10,
+        filter: (legendItem) => legendItem.index < topN,
+      },
     },
     tooltip: {
       callbacks: {
@@ -101,7 +110,9 @@ const DOUGHNUT_OPTIONS = {
       },
     },
   },
-};
+});
+
+const DOUGHNUT_OPTIONS = makeDoughnutOptions(10);
 
 const sortByCountAndName = (a, b) => {
   if (b[1] !== a[1]) return b[1] - a[1];
@@ -109,6 +120,7 @@ const sortByCountAndName = (a, b) => {
 };
 
 const RivalCard = ({ title, subtitle, icon, items, primaryPlayer, emptyMessage }) => {
+  const { t } = useLanguage();
   return (
     <section className="stats-panel rivalry-panel">
       <div className="panel-header-row">
@@ -130,7 +142,7 @@ const RivalCard = ({ title, subtitle, icon, items, primaryPlayer, emptyMessage }
                 <h4>{item.name}</h4>
                 <div className="rival-stats-grid">
                   <div>
-                    <span>Partidas</span>
+                    <span>{t('stats.rivalMatches')}</span>
                     <strong>{item.games}</strong>
                   </div>
                   <div>
@@ -155,8 +167,102 @@ const RivalCard = ({ title, subtitle, icon, items, primaryPlayer, emptyMessage }
   );
 };
 
-const ModalShell = ({ title, onClose, children }) => {
+const ActivityCalendar = ({ year, activityByDay }) => {
+  const { t, language } = useLanguage();
+  const startDate = new Date(year, 0, 1);
+  const endDate = new Date(year, 11, 31);
+  // Align to week start (Sunday)
+  const calStart = new Date(startDate);
+  calStart.setDate(calStart.getDate() - calStart.getDay());
+
+  const weeks = [];
+  const cur = new Date(calStart);
+
+  while (cur <= endDate) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      const key = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;
+      const count = activityByDay[key] || 0;
+      const inYear = cur.getFullYear() === year;
+      week.push({ key, count, inYear, date: new Date(cur) });
+      cur.setDate(cur.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+
+  const maxCount = Math.max(1, ...Object.values(activityByDay));
+
+  const getLevel = (count) => {
+    if (count === 0) return 0;
+    if (count <= Math.ceil(maxCount * 0.25)) return 1;
+    if (count <= Math.ceil(maxCount * 0.5)) return 2;
+    if (count <= Math.ceil(maxCount * 0.75)) return 3;
+    return 4;
+  };
+
+  const MONTH_LABELS = useMemo(
+    () => Array.from({ length: 12 }, (_, m) =>
+      new Intl.DateTimeFormat(language, { month: 'short' })
+        .format(new Date(2024, m, 1))
+        .replace('.', '')
+    ),
+    [language]
+  );
+
+  // Compute month label positions (week index where each month starts)
+  const monthOffsets = [];
+  let lastMonth = -1;
+  weeks.forEach((week, wi) => {
+    const firstInYear = week.find((d) => d.inYear);
+    if (firstInYear) {
+      const m = firstInYear.date.getMonth();
+      if (m !== lastMonth) {
+        monthOffsets.push({ month: m, weekIndex: wi });
+        lastMonth = m;
+      }
+    }
+  });
+
   return (
+    <div className="activity-calendar">
+      <div className="activity-scroll-wrap">
+        <div className="activity-month-labels">
+          {monthOffsets.map(({ month, weekIndex }) => (
+            <span
+              key={month}
+              className="activity-month-label"
+              style={{ left: `${weekIndex * (10 + 2)}px` }}
+            >
+              {MONTH_LABELS[month]}
+            </span>
+          ))}
+        </div>
+        <div className="activity-grid">
+          {weeks.map((week, wi) => (
+            <div key={wi} className="activity-col">
+              {week.map((day) => (
+                <div
+                  key={day.key}
+                  className={`activity-cell level-${day.inYear ? getLevel(day.count) : 'empty'}`}
+                  title={day.inYear ? `${day.key}: ${t('stats.matchesCount').replace('{count}', day.count)}` : ''}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="activity-legend">
+        <span>{t('stats.activityLess')}</span>
+        {[0, 1, 2, 3, 4].map((l) => (
+          <div key={l} className={`activity-cell level-${l}`} />
+        ))}
+        <span>{t('stats.activityMore')}</span>
+      </div>
+    </div>
+  );
+};
+
+const ModalShell = ({ title, onClose, children }) => {  return (
     <div className="stats-modal-overlay" onClick={onClose}>
       <div className="stats-modal" onClick={(e) => e.stopPropagation()}>
         <button className="stats-modal-close" onClick={onClose} aria-label="Fechar">
@@ -185,10 +291,11 @@ export const Stats = ({
 }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('competitive');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [topGamesView, setTopGamesView] = useState('count'); // 'count' | 'time'
   const [selectedWinner, setSelectedWinner] = useState(null);
   const [selectedTeamPlayer, setSelectedTeamPlayer] = useState(null);
   const [selectedGameName, setSelectedGameName] = useState(null);
+  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const safeGames = Array.isArray(games) ? games : [];
 
@@ -343,12 +450,6 @@ export const Stats = ({
     return [...names].sort((a, b) => a.localeCompare(b));
   }, [sortedGames]);
 
-  const searchedGames = useMemo(() => {
-    const normalized = searchQuery.trim().toLowerCase();
-    if (!normalized) return searchableGames.slice(0, 5);
-    return searchableGames.filter((name) => name.toLowerCase().includes(normalized)).slice(0, 8);
-  }, [searchableGames, searchQuery]);
-
   const last30DaysCount = useMemo(() => {
     const now = new Date();
     const minDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -357,6 +458,69 @@ export const Stats = ({
       return d >= minDate && d <= now;
     }).length;
   }, [sortedGames]);
+
+  const currentYear = new Date().getFullYear();
+
+  const availableYears = useMemo(() => {
+    const years = new Set(safeGames.map((g) => new Date(g.date).getFullYear()).filter(Boolean));
+    return [...years].sort((a, b) => b - a);
+  }, [safeGames]);
+
+  const yearGames = useMemo(() => {
+    return sortedGames.filter((g) => new Date(g.date).getFullYear() === currentYear);
+  }, [sortedGames, currentYear]);
+
+  // Games of the year panel: unique game names that appeared this year
+  const yearGameNames = useMemo(() => {
+    const names = new Set(yearGames.map((g) => g.game).filter(Boolean));
+    return [...names].sort((a, b) => a.localeCompare(b));
+  }, [yearGames]);
+
+  // Top 5 most played games overall (by count and by total duration)
+  const topGamesByCount = useMemo(() => {
+    const freq = {};
+    const time = {};
+    sortedGames.forEach((g) => {
+      if (!g.game) return;
+      freq[g.game] = (freq[g.game] || 0) + 1;
+      time[g.game] = (time[g.game] || 0) + (g.duration || 0);
+    });
+    return Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count, totalTime: time[name] || 0 }));
+  }, [sortedGames]);
+
+  const topGamesByTime = useMemo(() => {
+    const time = {};
+    const count = {};
+    sortedGames.forEach((g) => {
+      if (!g.game) return;
+      time[g.game] = (time[g.game] || 0) + (g.duration || 0);
+      count[g.game] = (count[g.game] || 0) + 1;
+    });
+    return Object.entries(time)
+      .filter(([, t]) => t > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, totalTime]) => ({ name, count: count[name] || 0, totalTime }));
+  }, [sortedGames]);
+
+  // Activity calendar: days with game counts for the selected calendar year
+  const calendarGames = useMemo(
+    () => sortedGames.filter((g) => new Date(g.date).getFullYear() === calendarYear),
+    [sortedGames, calendarYear]
+  );
+
+  const activityByDay = useMemo(() => {
+    const map = {};
+    calendarGames.forEach((g) => {
+      const d = new Date(g.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      map[key] = (map[key] || 0) + 1;
+    });
+    return map;
+  }, [calendarGames]);
 
   const selectedWinnerGames = useMemo(() => {
     if (!selectedWinner) return [];
@@ -531,68 +695,155 @@ export const Stats = ({
                 <span className="summary-icon"><Gamepad2 size={18} /></span>
                 <div className="summary-content">
                   <span className="summary-value">{stats?.totalGames || 0}</span>
-                  <span className="summary-label">Total de Partidas</span>
+                  <span className="summary-label">{t('stats.totalGames')}</span>
                 </div>
               </div>
               <div className="summary-card">
                 <span className="summary-icon"><ShieldCheck size={18} /></span>
                 <div className="summary-content">
                   <span className="summary-value">{stats?.uniqueGames || 0}</span>
-                  <span className="summary-label">Jogos diferentes</span>
+                  <span className="summary-label">{t('stats.uniqueGames')}</span>
                 </div>
               </div>
               <div className="summary-card">
                 <span className="summary-icon"><Users size={18} /></span>
                 <div className="summary-content">
                   <span className="summary-value">{participantsWithUser}</span>
-                  <span className="summary-label">Participantes com você</span>
+                  <span className="summary-label">{t('stats.participantsWithYou')}</span>
                 </div>
               </div>
             </div>
 
             <section className="stats-panel search-panel">
-              <div className="search-input-row">
-                <div className="search-input-wrap">
-                  <Search size={16} />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Pesquisar jogo..."
-                    aria-label="Pesquisar jogo"
-                  />
-                </div>
-                <span className="search-chip">{last30DaysCount} últimos 30 dias</span>
+              <div className="year-panel-header">
+                <CalendarDays size={16} />
+                <span className="year-panel-title">{t('stats.gamesOfYear').replace('{year}', currentYear)}</span>
+                <span className="search-chip"><Flame size={13} /> {last30DaysCount} {t('stats.last30Days')}</span>
               </div>
 
               <div className="search-results">
-                {searchedGames.map((name) => (
+                {yearGameNames.map((name) => (
                   <button
                     key={name}
                     className="search-result-btn"
-                    onClick={() => {
-                      setSelectedGameName(name);
-                      setSearchQuery('');
-                    }}
+                    onClick={() => setSelectedGameName(name)}
                   >
                     {name}
                   </button>
                 ))}
-                {searchedGames.length === 0 && (
-                  <span className="search-empty">Nenhum jogo encontrado</span>
+                {yearGameNames.length === 0 && (
+                  <span className="search-empty">{t('stats.noGamesThisYear')}</span>
                 )}
               </div>
             </section>
 
+            {/* Top games card */}
+            <section className="stats-panel">
+              <div className="panel-header-row">
+                <h3><Trophy size={18} /> {t('stats.topGamesTitle')}</h3>
+              </div>
+              <div className="top-games-view-toggle">
+                <button
+                  className={`view-toggle-btn${topGamesView === 'count' ? ' active' : ''}`}
+                  onClick={() => setTopGamesView('count')}
+                >
+                  <Gamepad2 size={13} /> {t('stats.toggleCount')}
+                </button>
+                <button
+                  className={`view-toggle-btn${topGamesView === 'time' ? ' active' : ''}`}
+                  onClick={() => setTopGamesView('time')}
+                >
+                  <Timer size={13} /> {t('stats.toggleTime')}
+                </button>
+              </div>
+              {topGamesView === 'count' ? (
+                topGamesByCount.length > 0 ? (
+                  <div className="top-games-list">
+                    {topGamesByCount.map((item, i) => (
+                      <div key={item.name} className="top-game-row">
+                        <span className="rank-badge">{i + 1}</span>
+                        <div className="leaderboard-info">
+                          <span className="player-name">{item.name}</span>
+                          <span className="player-stat">{t('stats.matchesCount').replace('{count}', item.count)}</span>
+                        </div>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ width: `${(item.count / topGamesByCount[0].count) * 100}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="empty-section">{t('stats.noGamesRecorded')}</p>
+                )
+              ) : (
+                topGamesByTime.length > 0 ? (
+                  <div className="top-games-list">
+                    {topGamesByTime.map((item, i) => {
+                      const hours = Math.floor(item.totalTime / 60);
+                      const mins = item.totalTime % 60;
+                      const label = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+                      return (
+                        <div key={item.name} className="top-game-row">
+                          <span className="rank-badge">{i + 1}</span>
+                          <div className="leaderboard-info">
+                            <span className="player-name">{item.name}</span>
+                            <span className="player-stat">{label}</span>
+                          </div>
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ width: `${(item.totalTime / topGamesByTime[0].totalTime) * 100}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="empty-section">{t('stats.noTimedGames')}</p>
+                )
+              )}
+            </section>
+
+            {/* Activity calendar */}
+            <section className="stats-panel">
+              <div className="panel-header-row">
+                <h3><CalendarDays size={18} /> {t('stats.activityTitle').replace('{year}', calendarYear)}</h3>
+                <div className="year-nav">
+                  <button
+                    className="year-nav-btn"
+                    onClick={() => {
+                      const idx = availableYears.indexOf(calendarYear);
+                      if (idx < availableYears.length - 1) setCalendarYear(availableYears[idx + 1]);
+                    }}
+                    disabled={availableYears.indexOf(calendarYear) >= availableYears.length - 1}
+                    aria-label={t('stats.activityLess')}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="year-nav-label">{calendarYear}</span>
+                  <button
+                    className="year-nav-btn"
+                    onClick={() => {
+                      const idx = availableYears.indexOf(calendarYear);
+                      if (idx > 0) setCalendarYear(availableYears[idx - 1]);
+                    }}
+                    disabled={availableYears.indexOf(calendarYear) <= 0}
+                    aria-label={t('stats.activityMore')}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+              <ActivityCalendar year={calendarYear} activityByDay={activityByDay} />
+            </section>
+
             <div className="stats-tabs">
               <button className={`tab-btn ${activeTab === 'competitive' ? 'active' : ''}`} onClick={() => setActiveTab('competitive')}>
-                Competitivo
+                {t('stats.competitive')}
               </button>
               <button className={`tab-btn ${activeTab === 'cooperative' ? 'active' : ''}`} onClick={() => setActiveTab('cooperative')}>
-                Cooperativo
+                {t('stats.cooperative')}
               </button>
               <button className={`tab-btn ${activeTab === 'rivalry' ? 'active' : ''}`} onClick={() => setActiveTab('rivalry')}>
-                Rivalidade
+                {t('stats.rivalry')}
               </button>
             </div>
 
@@ -600,10 +851,10 @@ export const Stats = ({
               <div className="stats-grid">
                 <section className="stats-panel">
                   <div className="panel-header-row">
-                    <h3><Trophy size={18} /> Vitórias por jogador</h3>
+                    <h3><Trophy size={18} /> {t('stats.winsByPlayer')}</h3>
                   </div>
-                  <p className="panel-subtitle">Apenas jogadores com ao menos uma vitória competitiva.</p>
-                  <p className="insights-note">Clique em uma barra ou nome para ver os jogos que esse jogador venceu.</p>
+                  <p className="panel-subtitle">{t('stats.onlyWithVictory')}</p>
+                  <p className="insights-note">{t('stats.clickBarHint')}</p>
 
                   {winnerCounts.length > 0 ? (
                     <>
@@ -620,7 +871,7 @@ export const Stats = ({
                             <span className="rank-badge">{rank + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{player}</span>
-                              <span className="player-stat">{wins} vitórias</span>
+                              <span className="player-stat">{t('stats.winsCount').replace('{count}', wins)}</span>
                             </div>
                             <div className="progress-bar">
                               <div className="progress-fill" style={{ width: `${(wins / winnerCounts[0][1]) * 100}%` }} />
@@ -630,13 +881,13 @@ export const Stats = ({
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Sem vitórias competitivas registradas.</p>
+                    <p className="empty-section">{t('stats.noCompWins')}</p>
                   )}
                 </section>
 
                 <section className="stats-panel">
                   <div className="panel-header-row">
-                    <h3><PieChart size={18} /> Jogos mais jogados</h3>
+                    <h3><PieChart size={18} /> {t('stats.mostPlayedLabel')}</h3>
                   </div>
 
                   {competitiveGameFreq.length > 0 ? (
@@ -650,7 +901,7 @@ export const Stats = ({
                             <span className="rank-badge">{rank + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{game}</span>
-                              <span className="player-stat">{count} partidas</span>
+                              <span className="player-stat">{t('stats.matchesCount').replace('{count}', count)}</span>
                             </div>
                             <div className="progress-bar">
                               <div className="progress-fill" style={{ width: `${(count / competitiveGameFreq[0][1]) * 100}%` }} />
@@ -660,13 +911,13 @@ export const Stats = ({
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Sem jogos competitivos registrados.</p>
+                    <p className="empty-section">{t('stats.noCompGames')}</p>
                   )}
                 </section>
 
                 <section className="stats-panel">
                   <div className="panel-header-row">
-                    <h3><ShieldCheck size={18} /> Taxa de vitória por jogo</h3>
+                    <h3><ShieldCheck size={18} /> {t('stats.winRateByGame')}</h3>
                   </div>
 
                   {userWinRateByGame.length > 0 ? (
@@ -680,7 +931,7 @@ export const Stats = ({
                             <span className="rank-badge">{rank + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{entry.game}</span>
-                              <span className="player-stat">{entry.wins}/{entry.played} vitórias</span>
+                              <span className="player-stat">{entry.wins}/{entry.played} {t('stats.victories').toLowerCase()}</span>
                             </div>
                             <div className="progress-bar">
                               <div className="progress-fill" style={{ width: `${entry.winRate}%` }} />
@@ -691,7 +942,7 @@ export const Stats = ({
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Nenhum jogo competitivo seu para calcular taxa.</p>
+                    <p className="empty-section">{t('stats.noWinRateData')}</p>
                   )}
                 </section>
               </div>
@@ -701,22 +952,22 @@ export const Stats = ({
               <div className="stats-grid">
                 <section className="stats-panel full-width-panel">
                   <div className="panel-header-row">
-                    <h3><ShieldCheck size={18} /> Taxa de sucesso</h3>
+                    <h3><ShieldCheck size={18} /> {t('stats.successRateLabel')}</h3>
                   </div>
 
                   {coopSummary.total > 0 ? (
                     <div className="coop-success-wrap">
                       <div className="coop-success-grid">
                         <div className="coop-success-main">
-                          <span>Taxa de sucesso</span>
+                          <span>{t('stats.successRateLabel')}</span>
                           <strong>{coopSummary.successRate}%</strong>
                         </div>
                         <div className="coop-success-stat">
-                          <span>Vitórias</span>
+                          <span>{t('stats.victories')}</span>
                           <strong>{coopSummary.wins}</strong>
                         </div>
                         <div className="coop-success-stat">
-                          <span>Derrotas</span>
+                          <span>{t('stats.defeats')}</span>
                           <strong>{coopSummary.losses}</strong>
                         </div>
                       </div>
@@ -725,13 +976,13 @@ export const Stats = ({
                       </div>
                     </div>
                   ) : (
-                    <p className="empty-section">Nenhum jogo cooperativo com você registrado.</p>
+                    <p className="empty-section">{t('stats.noCoopWithYou')}</p>
                   )}
                 </section>
 
                 <section className="stats-panel">
                   <div className="panel-header-row">
-                    <h3><PieChart size={18} /> Jogos mais jogados</h3>
+                    <h3><PieChart size={18} /> {t('stats.mostPlayedLabel')}</h3>
                   </div>
 
                   {cooperativeGameFreq.length > 0 ? (
@@ -745,7 +996,7 @@ export const Stats = ({
                             <span className="rank-badge">{rank + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{game}</span>
-                              <span className="player-stat">{count} partidas</span>
+                              <span className="player-stat">{t('stats.matchesCount').replace('{count}', count)}</span>
                             </div>
                             <div className="progress-bar">
                               <div className="progress-fill" style={{ width: `${(count / cooperativeGameFreq[0][1]) * 100}%` }} />
@@ -755,15 +1006,15 @@ export const Stats = ({
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Nenhum jogo cooperativo ainda.</p>
+                    <p className="empty-section">{t('stats.noCoopYet')}</p>
                   )}
                 </section>
 
                 <section className="stats-panel">
                   <div className="panel-header-row">
-                    <h3><Users size={18} /> Sempre na equipe</h3>
+                    <h3><Users size={18} /> {t('stats.alwaysOnTeam')}</h3>
                   </div>
-                  <p className="panel-subtitle">Participantes de partidas cooperativas com você.</p>
+                  <p className="panel-subtitle">{t('stats.coopParticipantsHint')}</p>
 
                   {teamPlayers.length > 0 ? (
                     <>
@@ -776,7 +1027,7 @@ export const Stats = ({
                             <span className="rank-badge">{index + 1}</span>
                             <div className="leaderboard-info">
                               <span className="player-name">{entry.name}</span>
-                              <span className="player-stat">{entry.games} partidas</span>
+                              <span className="player-stat">{t('stats.matchesCount').replace('{count}', entry.games)}</span>
                             </div>
                             <div className="progress-bar">
                               <div className="progress-fill" style={{ width: `${(entry.games / teamPlayers[0].games) * 100}%` }} />
@@ -786,7 +1037,7 @@ export const Stats = ({
                       </div>
                     </>
                   ) : (
-                    <p className="empty-section">Registre partidas cooperativas com outros participantes.</p>
+                    <p className="empty-section">{t('stats.registerCoopHint')}</p>
                   )}
                 </section>
               </div>
@@ -795,30 +1046,30 @@ export const Stats = ({
             {activeTab === 'rivalry' && (
               <div className="stats-grid">
                 <RivalCard
-                  title="Maior rival"
-                  subtitle="Quem mais cruzou o seu caminho!"
+                  title={t('stats.rivalMajor')}
+                  subtitle={t('stats.rivalMajorHint')}
                   icon={<Swords size={18} />}
                   items={mainRivals}
                   primaryPlayer={primaryPlayer}
-                  emptyMessage="Sem dados suficientes de rivalidade ainda."
+                  emptyMessage={t('stats.rivalMajorEmpty')}
                 />
 
                 <RivalCard
-                  title="Maior freguês"
-                  subtitle="Quem mais perde pra você, feito um patinho!"
+                  title={t('stats.rivalFreg')}
+                  subtitle={t('stats.rivalFregHint')}
                   icon={<Bird size={18} />}
                   items={ducklings}
                   primaryPlayer={primaryPlayer}
-                  emptyMessage="Ainda não existe um freguês definido."
+                  emptyMessage={t('stats.rivalFregEmpty')}
                 />
 
                 <RivalCard
-                  title="Maior carrasco"
-                  subtitle="Quem mais te derrota!"
+                  title={t('stats.rivalCarrasco')}
+                  subtitle={t('stats.rivalCarrascoHint')}
                   icon={<Skull size={18} />}
                   items={executioners}
                   primaryPlayer={primaryPlayer}
-                  emptyMessage="Ainda não existe um carrasco definido."
+                  emptyMessage={t('stats.rivalCarrascoEmpty')}
                 />
               </div>
             )}
@@ -846,7 +1097,7 @@ export const Stats = ({
       </div>
 
       {selectedWinner && (
-        <ModalShell title={`Vitórias de ${selectedWinner}`} onClose={() => setSelectedWinner(null)}>
+        <ModalShell title={t('stats.winsOf').replace('{name}', selectedWinner)} onClose={() => setSelectedWinner(null)}>
           {selectedWinnerGames.length > 0 ? (
             <div className="stats-modal-list">
               {selectedWinnerGames.map((entry) => (
@@ -858,24 +1109,24 @@ export const Stats = ({
               ))}
             </div>
           ) : (
-            <p className="empty-section">Nenhuma vitória encontrada.</p>
+            <p className="empty-section">{t('stats.noWinsFound')}</p>
           )}
         </ModalShell>
       )}
 
       {selectedTeamData && (
-        <ModalShell title={`Parceria com ${selectedTeamData.name}`} onClose={() => setSelectedTeamPlayer(null)}>
+        <ModalShell title={t('stats.partnershipWith').replace('{name}', selectedTeamData.name)} onClose={() => setSelectedTeamPlayer(null)}>
           <div className="stats-modal-summary-grid">
             <div>
-              <span>Partidas</span>
+              <span>{t('stats.rivalMatches')}</span>
               <strong>{selectedTeamData.games}</strong>
             </div>
             <div>
-              <span>Vitórias</span>
+              <span>{t('stats.victories')}</span>
               <strong>{selectedTeamData.wins}</strong>
             </div>
             <div>
-              <span>Taxa de sucesso</span>
+              <span>{t('stats.successRateLabel')}</span>
               <strong>
                 {selectedTeamData.games > 0
                   ? `${Math.round((selectedTeamData.wins / selectedTeamData.games) * 100)}%`
@@ -884,7 +1135,7 @@ export const Stats = ({
             </div>
           </div>
 
-          <h4 className="stats-modal-subtitle">Jogos que vocês já jogaram juntos</h4>
+          <h4 className="stats-modal-subtitle">{t('stats.gamesPlayedTogether')}</h4>
           <div className="stats-modal-chip-list">
             {selectedTeamData.gamesPlayedList.map((name) => (
               <span key={name} className="stats-chip">{name}</span>
@@ -894,45 +1145,45 @@ export const Stats = ({
       )}
 
       {selectedGameName && selectedGameStats && (
-        <ModalShell title={`Estatísticas de ${selectedGameName}`} onClose={() => setSelectedGameName(null)}>
+        <ModalShell title={t('stats.gameStatsOf').replace('{name}', selectedGameName)} onClose={() => setSelectedGameName(null)}>
           <div className="stats-modal-summary-grid">
             <div>
-              <span>Total</span>
+              <span>{t('stats.totalLabel')}</span>
               <strong>{selectedGameStats.total}</strong>
             </div>
             <div>
-              <span>Competitivo</span>
+              <span>{t('stats.competitive')}</span>
               <strong>{selectedGameStats.competitive}</strong>
             </div>
             <div>
-              <span>Cooperativo</span>
+              <span>{t('stats.cooperative')}</span>
               <strong>{selectedGameStats.cooperative}</strong>
             </div>
             <div>
-              <span>Seu aproveitamento</span>
+              <span>{t('stats.myRate')}</span>
               <strong>{selectedGameStats.myRate}%</strong>
             </div>
             <div>
-              <span>Vitórias coop</span>
+              <span>{t('stats.coopWinsLabel')}</span>
               <strong>{selectedGameStats.coopWins}</strong>
             </div>
           </div>
 
           {selectedGameStats.topWinners.length > 0 && (
             <>
-              <h4 className="stats-modal-subtitle">Quem mais venceu este jogo</h4>
+              <h4 className="stats-modal-subtitle">{t('stats.topWinnersGame')}</h4>
               <div className="stats-modal-list compact">
                 {selectedGameStats.topWinners.map(([name, winsCount]) => (
                   <article key={name} className="stats-modal-item compact">
                     <p>{name}</p>
-                    <strong>{winsCount} vitórias</strong>
+                    <strong>{t('stats.winsCount').replace('{count}', winsCount)}</strong>
                   </article>
                 ))}
               </div>
             </>
           )}
 
-          <h4 className="stats-modal-subtitle">Últimas partidas</h4>
+          <h4 className="stats-modal-subtitle">{t('stats.latestMatches')}</h4>
           <div className="stats-modal-list">
             {selectedGameRecords.slice(0, 8).map((g) => (
               <article key={g.id} className="stats-modal-item">
@@ -940,8 +1191,8 @@ export const Stats = ({
                 <small><Users size={14} /> {(g.players || []).join(', ')}</small>
                 <small>
                   {(g.gameType || 'competitive') === 'competitive'
-                    ? `Vencedor: ${g.winner || '—'}`
-                    : `Resultado: ${g.coopResult === 'win' ? 'Vitória' : 'Derrota'}`}
+                    ? t('stats.gameWinner').replace('{winner}', g.winner || '—')
+                    : t('stats.gameResult').replace('{result}', g.coopResult === 'win' ? t('stats.victory') : t('stats.defeat'))}
                 </small>
               </article>
             ))}
