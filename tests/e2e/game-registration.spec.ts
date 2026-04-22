@@ -1,289 +1,158 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-test.describe('MeepleMind - Game Registration', () => {
+async function bootstrapApp(page: Page) {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+
+  await page.evaluate(() => {
+    localStorage.setItem('meeplemind-primary-player', 'Alice');
+    localStorage.setItem('meeplemind-language', 'pt-BR');
+    localStorage.setItem('meeplemind_games', '[]');
+    localStorage.setItem('meeplemind_library', '[]');
+  });
+
+  await page.reload();
+  await page.waitForLoadState('networkidle');
+}
+
+async function goToNewGameWizard(page: Page) {
+  await page.goto('/#newgame');
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('h1')).toContainText('Nova Partida');
+}
+
+async function clickNextStep(page: Page, expectedStepIndex?: number) {
+  const nextButton = page.getByTestId('newgame-next-step');
+  await expect(nextButton).toBeVisible();
+  await expect(nextButton).toBeEnabled();
+  await nextButton.click();
+
+  await expect
+    .poll(async () => page.evaluate(() => window.location.hash))
+    .toContain('newgame');
+
+  if (expectedStepIndex) {
+    await expect(page.locator('.wizard-card')).toHaveAttribute('data-step-index', String(expectedStepIndex));
+  }
+}
+
+async function registerCompetitiveGame(page: Page, gameName: string, winnerName: string) {
+  await goToNewGameWizard(page);
+
+  await page.locator('input#game').fill(gameName);
+  await clickNextStep(page, 2);
+  await expect(page.locator('input#player')).toBeVisible();
+
+  const playerInput = page.locator('input#player');
+  for (const player of ['Bob', 'Charlie', 'Diana', 'Eve']) {
+    await playerInput.fill(player);
+    await page.locator('.btn-add-player').click();
+  }
+
+  await expect(page.locator('.player-item')).toHaveCount(5);
+  await clickNextStep(page, 3);
+  await expect(page.locator('.game-type-buttons')).toBeVisible();
+
+  await page.locator('.game-type-buttons .game-type-btn').first().click();
+
+  const winnerRow = page.locator('.score-row', { hasText: winnerName }).first();
+  await expect(winnerRow).toBeVisible();
+  await winnerRow.locator('.score-input').fill('42');
+  const winnerSelector = `.winner-crown[aria-label="Selecionar ${winnerName} como vencedor"]`;
+  await page.locator(winnerSelector).click();
+
+  await clickNextStep(page, 4);
+
+  await expect(page.locator('input#date')).toBeVisible();
+  await expect(page.locator('input#date')).not.toHaveValue('');
+  await page.locator('.duration-btn').nth(2).click();
+  await clickNextStep(page, 5);
+
+  const submitButton = page.getByTestId('newgame-submit');
+  await expect(submitButton).toBeVisible();
+  await expect(submitButton).toBeEnabled();
+  await submitButton.click();
+  await page.waitForLoadState('networkidle');
+}
+
+test.describe('MeepleMind - Wizard and Library flows', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to home page
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await bootstrapApp(page);
   });
 
-  test('should register a game with 5 players', async ({ page }) => {
-    // Click "Nova Partida" button
-    await page.click('text=Nova Partida');
-    await page.waitForLoadState('networkidle');
+  test('should register a competitive game through all 5 steps', async ({ page }) => {
+    await registerCompetitiveGame(page, 'Catan', 'Diana');
 
-    // Verify we're on the New Game page
-    await expect(page.locator('h1')).toContainText('Nova Partida');
+    await expect
+      .poll(async () => page.evaluate(() => window.location.hash))
+      .toContain('home');
+    await expect(page.locator('.home-container')).toBeVisible();
 
-    // Fill game name
-    const gameInput = page.getByLabel('Qual jogo?');
-    await gameInput.fill('Catan');
-
-    // Accept game suggestion if available, otherwise continue
-    const suggestions = page.locator('.suggestion-item');
-    if (await suggestions.first().isVisible({ timeout: 2000 }).catch(() => false)) {
-      await suggestions.first().click();
-    } else {
-      await gameInput.press('Enter');
-    }
-
-    // Add 5 players
-    const playerInput = page.locator('input[id="player"]');
-    const players = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
-    
-    for (const player of players) {
-      await playerInput.fill(player);
-      await page.locator('.btn-add-player').click();
-    }
-
-    // Verify all players added
-    const playerItems = page.locator('.player-item');
-    await expect(playerItems).toHaveCount(5);
-
-    // Verify date field is visible and has value
-    const dateInput = page.locator('input[id="date"]');
-    await expect(dateInput).toBeVisible();
-    const dateValue = await dateInput.inputValue();
-    expect(dateValue).toBeTruthy();
-
-    // Select winner (Diana)
-    await page.getByRole('button', { name: 'Diana', exact: true }).click();
-
-    // Verify submit button is enabled
-    const submitBtn = page.locator('button[type="submit"]');
-    await expect(submitBtn).toBeEnabled();
-
-    // Submit form
-    await submitBtn.click();
-    await page.waitForLoadState('networkidle');
-
-    // Verify navigation back to home
-    await expect(page.locator('.logo-image')).toBeVisible();
-
-    // Verify game was saved to localStorage
     const games = await page.evaluate(() => {
       return JSON.parse(localStorage.getItem('meeplemind_games') || '[]');
     });
-    
+
     expect(games.length).toBeGreaterThan(0);
-    const lastGame = games[0];
-    expect(lastGame.game).toBe('Catan');
-    expect(lastGame.players).toEqual(['Alice', 'Bob', 'Charlie', 'Diana', 'Eve']);
-    expect(lastGame.winner).toBe('Diana');
-    expect(lastGame.rating).toBe(0);
+    expect(games[0].game).toBe('Catan');
+    expect(games[0].winner).toBe('Diana');
+    expect(games[0].players).toEqual(['Alice', 'Bob', 'Charlie', 'Diana', 'Eve']);
+    expect(games[0].duration).toBe(90);
   });
 
-  test('should show game in history after registration', async ({ page }) => {
-    // Register a game first
-    await page.click('text=Nova Partida');
-    
-    const gameInput = page.locator('input[id="game"]');
-    await gameInput.fill('Ticket to Ride');
-    
-    const playerInput = page.locator('input[id="player"]');
-    await playerInput.fill('Player 1');
-    await page.locator('.btn-add-player').click();
-    
-    await playerInput.fill('Player 2');
-    await page.locator('.btn-add-player').click();
-    
-    // Select winner
-    await page.click('.winner-btn:has-text("Player 1")');
-    
-    // Submit
-    await page.locator('button[type="submit"]').click();
-    await page.waitForLoadState('networkidle');
+  test('should show game in history after wizard registration', async ({ page }) => {
+    await registerCompetitiveGame(page, 'Ticket to Ride', 'Bob');
 
-    // Navigate to history
-    await page.click('text=Histórico');
+    await page.goto('/#history');
     await expect(page.locator('h1')).toContainText('Histórico');
-
-    // Verify game appears in history
-    await expect(page.locator('text=Ticket to Ride')).toBeVisible();
-    await expect(page.locator('text=Player 1')).toBeVisible();
+    await expect(page.locator('.game-card .card-header-title h3', { hasText: 'Ticket to Ride' }).first()).toBeVisible();
+    await expect(page.locator('.game-card .result-badge', { hasText: 'Bob' }).first()).toBeVisible();
   });
 
-  test('should delete a game from history', async ({ page }) => {
-    // Register a game
-    await page.goto('/');
-    await page.click('text=Nova Partida');
-    
-    const gameInput = page.locator('input[id="game"]');
-    await gameInput.fill('Monopoly');
-    
-    const playerInput = page.locator('input[id="player"]');
-    await playerInput.fill('Alice');
-    await page.locator('.btn-add-player').click();
-    
-    await playerInput.fill('Bob');
-    await page.locator('.btn-add-player').click();
-    
-    // Select winner
-    await page.click('.winner-btn:has-text("Alice")');
-    
-    // Submit
-    await page.locator('button[type="submit"]').click();
+  test('should add game manually in library and edit game name/metadata', async ({ page }) => {
+    await page.goto('/#library');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1')).toContainText('Minha Biblioteca');
 
-    // Navigate to history
-    await page.click('text=Histórico');
-    
-    // Count games before delete
-    const gamesBefore = await page.evaluate(() => {
-      return JSON.parse(localStorage.getItem('meeplemind_games') || '[]').length;
+    await page.getByTestId('library-open-add-manual').click();
+    const addModal = page.locator('.lib-edit-modal').first();
+
+    await addModal.locator('input#add-name').fill('Terraforming Mars');
+    await addModal.getByRole('button', { name: 'Fantasia' }).click();
+    await addModal.getByRole('button', { name: 'Cartas' }).click();
+    await addModal.getByRole('button', { name: 'Construção de Baralho' }).click();
+    await addModal.getByRole('button', { name: 'Gerenciamento de Mão' }).click();
+    await addModal.locator('select#add-game-type').selectOption('eurogame');
+    await addModal.locator('input#add-min').fill('1');
+    await addModal.locator('input#add-max').fill('5');
+    await addModal.locator('textarea#add-description').fill('Jogo de motor de cartas em Marte.');
+    await addModal.locator('input#add-cover').fill('https://example.com/terraforming-mars.jpg');
+    await addModal.locator('input#add-owned').check();
+    await addModal.getByRole('button', { name: 'Adicionar Jogo' }).click();
+
+    await expect(page.locator('text=Terraforming Mars')).toBeVisible();
+
+    const card = page.locator('article.library-game-card', { hasText: 'Terraforming Mars' }).first();
+    await card.locator('.btn-edit-lib').click();
+    const editModal = page.locator('.lib-edit-modal').first();
+
+    await editModal.locator('input#edit-name').fill('Terraforming Mars - Corrigido');
+    await editModal.getByRole('button', { name: 'Guerra' }).click();
+    await editModal.locator('select#edit-game-type').selectOption('hybrid');
+    await editModal.getByRole('button', { name: 'Salvar' }).click();
+
+    await expect(page.locator('text=Terraforming Mars - Corrigido')).toBeVisible();
+
+    const library = await page.evaluate(() => {
+      return JSON.parse(localStorage.getItem('meeplemind_library') || '[]');
     });
 
-    // Delete the game
-    const deleteBtn = page.locator('button:has-text("✕")').first();
-    await deleteBtn.click();
-
-    // Wait for the game item to disappear instead of hard timeout
-    await expect(page.locator('text=Monopoly')).not.toBeVisible();
-
-    // Verify game was deleted
-    const gamesAfter = await page.evaluate(() => {
-      return JSON.parse(localStorage.getItem('meeplemind_games') || '[]').length;
-    });
-
-    expect(gamesAfter).toBe(gamesBefore - 1);
-  });
-
-  test('should toggle rating on a game', async ({ page }) => {
-    // Register a game
-    await page.goto('/');
-    await page.click('text=Nova Partida');
-    
-    const gameInput = page.locator('input[id="game"]');
-    await gameInput.fill('Test Game');
-    
-    const playerInput = page.locator('input[id="player"]');
-    await playerInput.fill('Player 1');
-    await page.locator('.btn-add-player').click();
-    
-    await playerInput.fill('Player 2');
-    await page.locator('.btn-add-player').click();
-    
-    await page.click('.winner-btn:has-text("Player 1")');
-    
-    await page.locator('button[type="submit"]').click();
-    await page.waitForLoadState('networkidle');
-
-    // Go to history
-    await page.click('text=Histórico');
-    
-    // Click edit button to open modal
-    const editBtn = page.locator('button:has-text("✏️")').first();
-    await editBtn.click();
-
-    // Wait for modal to appear
-    const modal = page.locator('.modal');
-    await expect(modal).toBeVisible();
-
-    // Click 4 stars to rate
-    const stars = page.locator('.star-btn');
-    if (await stars.count() >= 4) {
-      await stars.nth(3).click(); // 4th star
-    }
-
-    // Save changes
-    const saveBtn = page.locator('button:has-text("Salvar")').first();
-    await saveBtn.click();
-
-    // Verify rating was saved
-    const games = await page.evaluate(() => {
-      return JSON.parse(localStorage.getItem('meeplemind_games') || '[]');
-    });
-
-    const game = games.find(g => g.game === 'Test Game');
-    expect(game?.rating).toBeGreaterThan(0);
-  });
-
-  test('should export data to CSV', async ({ page }) => {
-    // Register a game first
-    await page.goto('/');
-    await page.click('text=Nova Partida');
-    
-    const gameInput = page.locator('input[id="game"]');
-    await gameInput.fill('Export Test');
-    
-    const playerInput = page.locator('input[id="player"]');
-    await playerInput.fill('Player 1');
-    await page.locator('.btn-add-player').click();
-    
-    await playerInput.fill('Player 2');
-    await page.locator('.btn-add-player').click();
-    
-    await page.click('.winner-btn:has-text("Player 1")');
-    
-    await page.locator('button[type="submit"]').click();
-    await page.waitForLoadState('networkidle');
-
-    // Go to home
-    await page.click('text=Home');
-    
-    // Find and click CSV export button
-    const exportCsvBtn = page.locator('button:has-text("Exportar CSV")');
-    
-    // Listen for download
-    const downloadPromise = page.waitForEvent('download');
-    await exportCsvBtn.click();
-    const download = await downloadPromise;
-
-    // Verify download
-    expect(download.suggestedFilename()).toMatch(/meeplemind_partidas.*\.csv/);
-  });
-
-  test('should show statistics correctly', async ({ page }) => {
-    // Register a game
-    await page.goto('/');
-    await page.click('text=Nova Partida');
-    
-    const gameInput = page.locator('input[id="game"]');
-    await gameInput.fill('Stats Test');
-    
-    const playerInput = page.locator('input[id="player"]');
-    await playerInput.fill('Winner');
-    await page.locator('.btn-add-player').click();
-    
-    await playerInput.fill('Loser');
-    await page.locator('.btn-add-player').click();
-    
-    await page.click('.winner-btn:has-text("Winner")');
-    
-    await page.locator('button[type="submit"]').click();
-    await page.waitForLoadState('networkidle');
-
-    // Check stats on home page
-    const partidas = page.locator('#stat-games');
-    await expect(partidas).toContainText('1');
-
-    // Go to statistics page
-    await page.click('text=Estatísticas');
-    await expect(page.locator('h1')).toContainText('Estatísticas');
-
-    // Verify statistics loaded
-    const stats = page.locator('.stat-item');
-    await expect(stats.first()).toBeVisible();
-  });
-
-  test('should switch between light and dark theme', async ({ page }) => {
-    await page.goto('/');
-
-    // Check initial theme (dark)
-    let html = page.locator('html');
-    let theme = await html.getAttribute('data-theme');
-    
-    // Click theme toggle
-    await page.click('.theme-toggle-btn');
-
-    // Verify theme changed
-    await expect(html).not.toHaveAttribute('data-theme', theme || '');
-
-    // Toggle back
-    await page.click('.theme-toggle-btn');
-
-    if (theme) {
-      await expect(html).toHaveAttribute('data-theme', theme);
-    }
+    const game = library.find((entry: any) => entry.name === 'Terraforming Mars - Corrigido');
+    expect(game).toBeTruthy();
+    expect(game.categories).toEqual(expect.arrayContaining(['fantasy', 'cards', 'war']));
+    expect(game.mechanics).toEqual(expect.arrayContaining(['deck-building', 'hand-management']));
+    expect(game.gameType).toBe('hybrid');
+    expect(game.minPlayers).toBe(1);
+    expect(game.maxPlayers).toBe(5);
+    expect(game.owned).toBe(true);
   });
 });

@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v2.4.9: Nova Partida virou wizard em 5 etapas com transições, testes e2e atualizados e Biblioteca com adição manual + edição de nome/categorias/mecânicas/tipo.',
       'v2.4.8: Exportacao CSV nativa (2 arquivos) sem xlsx para reduzir risco de dependencia vulneravel.',
       'v2.4.7: Instruções da IA padronizadas e hardening de segurança para sanitização/importação de dados.',
       'v2.4.6: Configurações migradas para i18n completo + card BGG com aviso legal e indicador de cache offline no catalogo.',
@@ -16,6 +17,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v2.4.9: New Game is now a 5-step wizard with transitions, e2e coverage updated, and Library supports manual add + editable name/categories/mechanics/type.',
       'v2.4.8: Native 2-file CSV export replaces xlsx usage to reduce vulnerable dependency risk.',
       'v2.4.7: Standardized AI coding instructions and stronger security hardening for input/data import sanitization.',
       'v2.4.6: Settings moved to full i18n + BGG card now includes legal notice and offline-cache indicator in catalog.',
@@ -30,6 +32,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v2.4.9: Nouvelle partie en assistant 5 etapes avec transitions, tests e2e mis a jour, et Bibliotheque avec ajout manuel + edition du nom/categories/mecaniques/type.',
       'v2.4.8: Export CSV natif en 2 fichiers, sans xlsx, pour reduire le risque lie aux dependances vulnerables.',
       'v2.4.7: Instructions IA standardisees et renforcement de securite pour la sanitisation des saisies/imports.',
       'v2.4.6: Paramètres migrés vers un i18n complet + carte BGG avec mention légale et indicateur de cache hors ligne dans le catalogue.',

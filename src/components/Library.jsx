@@ -12,6 +12,7 @@ import {
   Info,
   LoaderCircle,
   Pencil,
+  Plus,
   Search,
   Trash2,
   Trophy,
@@ -21,7 +22,7 @@ import {
 } from 'lucide-react';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
-import { GAME_CATEGORIES } from '../hooks/useLibrary';
+import { GAME_CATEGORIES, GAME_MECHANICS, GAME_TYPES } from '../hooks/useLibrary';
 import './Library.css';
 
 // ──────────────────────────────────────────────────
@@ -104,6 +105,44 @@ async function fetchBGGData(gameName) {
     maxPlayers: item.querySelector('maxplayers')?.getAttribute('value') || '',
   };
 }
+
+const LEGACY_CATEGORY_LABEL_KEYS = {
+  strategy: 'library.categoryStrategy',
+  cooperative: 'library.categoryCooperative',
+  family: 'library.categoryFamily',
+  rpg: 'library.categoryRPG',
+  'deck-building': 'library.categoryDeckBuilding',
+  'worker-placement': 'library.categoryWorkerPlacement',
+  euro: 'library.categoryEuro',
+  other: 'library.categoryOther',
+};
+
+const getCategoryMetaByValue = (value) =>
+  GAME_CATEGORIES.find((item) => item.value === value)
+  || (LEGACY_CATEGORY_LABEL_KEYS[value]
+    ? { value, label: LEGACY_CATEGORY_LABEL_KEYS[value] }
+    : null);
+
+const getMechanicMetaByValue = (value) =>
+  GAME_MECHANICS.find((item) => item.value === value) || null;
+
+const getTypeMetaByValue = (value) =>
+  GAME_TYPES.find((item) => item.value === value) || null;
+
+const normalizeGameCategories = (game) => {
+  if (Array.isArray(game?.categories) && game.categories.length > 0) {
+    return game.categories.filter(Boolean);
+  }
+
+  if (game?.category) return [game.category];
+
+  return [];
+};
+
+const normalizeGameMechanics = (game) => {
+  if (!Array.isArray(game?.mechanics)) return [];
+  return game.mechanics.filter(Boolean);
+};
 
 // ──────────────────────────────────────────────────
 // SVG placeholder shown when a game has no cover
@@ -212,7 +251,9 @@ function computeGameStats(gameName, games, primaryPlayer) {
 // ──────────────────────────────────────────────────
 function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG, canEdit, onClose, onEdit }) {
   const [imgError, setImgError] = useState(false);
-  const catMeta = GAME_CATEGORIES.find((c) => c.value === game.category);
+  const categories = normalizeGameCategories(game);
+  const mechanics = normalizeGameMechanics(game);
+  const typeMeta = getTypeMetaByValue(game.gameType || '');
   const displayName = game.nameLocal?.[language] || game.name;
   const displayDescription = game.descriptionLocal?.[language] || game.description;
   const displayCoverUrl = normalizeImageUrl(game.coverUrl);
@@ -267,8 +308,16 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
           </div>
 
           <div className="lib-details-badges">
-            {catMeta && (
-              <span className="lib-badge lib-badge-cat">{t(catMeta.label)}</span>
+            {categories.map((categoryValue) => {
+              const meta = getCategoryMetaByValue(categoryValue);
+              return (
+                <span key={`cat-${categoryValue}`} className="lib-badge lib-badge-cat">
+                  {meta ? t(meta.label) : categoryValue}
+                </span>
+              );
+            })}
+            {typeMeta && (
+              <span className="lib-badge lib-badge-plays">{t(typeMeta.label)}</span>
             )}
             {(game.minPlayers || game.maxPlayers) && (
               <span className="lib-badge">
@@ -276,6 +325,19 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
               </span>
             )}
           </div>
+
+          {mechanics.length > 0 && (
+            <div className="lib-details-badges">
+              {mechanics.map((mechanicValue) => {
+                const meta = getMechanicMetaByValue(mechanicValue);
+                return (
+                  <span key={`mechanic-${mechanicValue}`} className="lib-badge">
+                    {meta ? t(meta.label) : mechanicValue}
+                  </span>
+                );
+              })}
+            </div>
+          )}
 
           {displayDescription && (
             <p className="lib-details-description">
@@ -387,6 +449,52 @@ const IconTrash = () => (
   <Trash2 size={16} />
 );
 
+const createGameDraft = (game = null) => {
+  if (!game) {
+    return {
+      id: '',
+      name: '',
+      category: '',
+      categories: [],
+      mechanics: [],
+      gameType: '',
+      minPlayers: '',
+      maxPlayers: '',
+      description: '',
+      coverUrl: '',
+      owned: false,
+      nameLocal: {},
+      descriptionLocal: {},
+    };
+  }
+
+  const normalizedCategories = normalizeGameCategories(game);
+  const normalizedMechanics = normalizeGameMechanics(game);
+
+  return {
+    ...game,
+    category: normalizedCategories[0] || '',
+    categories: normalizedCategories,
+    mechanics: normalizedMechanics,
+    gameType: game.gameType || '',
+    minPlayers: game.minPlayers ?? '',
+    maxPlayers: game.maxPlayers ?? '',
+    description: game.description ?? '',
+    coverUrl: game.coverUrl ?? '',
+    owned: Boolean(game.owned),
+    nameLocal: game.nameLocal ?? {},
+    descriptionLocal: game.descriptionLocal ?? {},
+  };
+};
+
+const toggleArrayValue = (values, target) => {
+  if (!Array.isArray(values)) return [target];
+  if (values.includes(target)) {
+    return values.filter((value) => value !== target);
+  }
+  return [...values, target];
+};
+
 // ──────────────────────────────────────────────────
 // Main Library component
 // ──────────────────────────────────────────────────
@@ -408,10 +516,17 @@ export const Library = ({
   syncStatus,
 }) => {
   const { language, t } = useLanguage();
+  const [addingGame, setAddingGame] = useState(null);
   const [editingGame, setEditingGame] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
+  const [bggAddStatus, setBggAddStatus] = useState('idle');
   const [bggEditStatus, setBggEditStatus] = useState('idle');
   const [categoryFilter, setCategoryFilter] = useState('all');
+
+  const getCategoryLabel = useCallback((categoryValue) => {
+    const meta = getCategoryMetaByValue(categoryValue);
+    return meta ? t(meta.label) : categoryValue;
+  }, [t]);
 
   // Tab state: 'shelf' | 'catalog'
   const [activeTab, setActiveTab] = useState('shelf');
@@ -444,7 +559,7 @@ export const Library = ({
       if (game?.name) entries.set(game.name.toLowerCase(), game);
     });
     return entries;
-  }, [library]);
+  }, [library, t]);
 
   const libraryNamesLower = useMemo(
     () => new Set(Array.from(libraryByNameLower.keys())),
@@ -452,17 +567,25 @@ export const Library = ({
   );
 
   const availableCategoryFilters = useMemo(() => {
-    const usedCategories = new Set(
-      library
-        .map((game) => game.category)
-        .filter(Boolean)
-    );
-    return GAME_CATEGORIES.filter((cat) => usedCategories.has(cat.value));
+    const usedCategories = new Set();
+    library.forEach((game) => {
+      normalizeGameCategories(game).forEach((categoryValue) => {
+        if (categoryValue) usedCategories.add(categoryValue);
+      });
+    });
+
+    return Array.from(usedCategories)
+      .map((value) => getCategoryMetaByValue(value) || { value, label: '' })
+      .sort((a, b) => {
+        const labelA = a.label ? t(a.label) : a.value;
+        const labelB = b.label ? t(b.label) : b.value;
+        return labelA.localeCompare(labelB);
+      });
   }, [library]);
 
   const filteredLibrary = useMemo(() => {
     if (categoryFilter === 'all') return library;
-    return library.filter((game) => game.category === categoryFilter);
+    return library.filter((game) => normalizeGameCategories(game).includes(categoryFilter));
   }, [library, categoryFilter]);
 
   const resolveBggDetails = useCallback(async (gameName) => {
@@ -483,6 +606,69 @@ export const Library = ({
 
   const handleEditField = (key) => (e) =>
     setEditingGame((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const handleAddField = (key) => (e) =>
+    setAddingGame((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const toggleEditCategory = (value) => {
+    setEditingGame((prev) => {
+      const nextCategories = toggleArrayValue(prev.categories || [], value);
+      return {
+        ...prev,
+        categories: nextCategories,
+        category: nextCategories[0] || '',
+      };
+    });
+  };
+
+  const toggleAddCategory = (value) => {
+    setAddingGame((prev) => {
+      const nextCategories = toggleArrayValue(prev.categories || [], value);
+      return {
+        ...prev,
+        categories: nextCategories,
+        category: nextCategories[0] || '',
+      };
+    });
+  };
+
+  const toggleEditMechanic = (value) => {
+    setEditingGame((prev) => ({
+      ...prev,
+      mechanics: toggleArrayValue(prev.mechanics || [], value),
+    }));
+  };
+
+  const toggleAddMechanic = (value) => {
+    setAddingGame((prev) => ({
+      ...prev,
+      mechanics: toggleArrayValue(prev.mechanics || [], value),
+    }));
+  };
+
+  const handleBGGAddSearch = async () => {
+    const name = addingGame?.name?.trim();
+    if (!name) return;
+
+    setBggAddStatus('loading');
+    try {
+      const data = await fetchBGGData(name);
+      if (!data) {
+        setBggAddStatus('notfound');
+        return;
+      }
+      setAddingGame((prev) => ({
+        ...prev,
+        description: data.description || prev.description,
+        coverUrl: data.thumbnail || prev.coverUrl,
+        minPlayers: data.minPlayers || prev.minPlayers,
+        maxPlayers: data.maxPlayers || prev.maxPlayers,
+      }));
+      setBggAddStatus('found');
+    } catch {
+      setBggAddStatus('error');
+    }
+  };
 
   const handleBGGEditSearch = async () => {
     const name = editingGame?.name?.trim();
@@ -506,8 +692,14 @@ export const Library = ({
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
+    if (!editingGame?.name?.trim()) return;
+
     onUpdate(editingGame.id, {
+      name: editingGame.name,
       category: editingGame.category,
+      categories: editingGame.categories ?? [],
+      mechanics: editingGame.mechanics ?? [],
+      gameType: editingGame.gameType ?? '',
       minPlayers: editingGame.minPlayers ? parseInt(editingGame.minPlayers, 10) : null,
       maxPlayers: editingGame.maxPlayers ? parseInt(editingGame.maxPlayers, 10) : null,
       owned: editingGame.owned,
@@ -520,18 +712,35 @@ export const Library = ({
     setEditingGame(null);
   };
 
+  const handleAddSubmit = (e) => {
+    e.preventDefault();
+    if (!addingGame?.name?.trim()) return;
+
+    onAdd({
+      name: addingGame.name,
+      category: addingGame.category,
+      categories: addingGame.categories ?? [],
+      mechanics: addingGame.mechanics ?? [],
+      gameType: addingGame.gameType ?? '',
+      minPlayers: addingGame.minPlayers ? parseInt(addingGame.minPlayers, 10) : null,
+      maxPlayers: addingGame.maxPlayers ? parseInt(addingGame.maxPlayers, 10) : null,
+      description: addingGame.description,
+      coverUrl: addingGame.coverUrl,
+      owned: addingGame.owned,
+    });
+
+    setAddingGame(null);
+  };
+
+  const openAdd = useCallback(() => {
+    setBggAddStatus('idle');
+    setAddingGame(createGameDraft());
+  }, []);
+
   const openEdit = useCallback((game, e) => {
     e?.stopPropagation();
     setBggEditStatus('idle');
-    setEditingGame({
-      ...game,
-      minPlayers: game.minPlayers ?? '',
-      maxPlayers: game.maxPlayers ?? '',
-      description: game.description ?? '',
-      coverUrl: game.coverUrl ?? '',
-      nameLocal: game.nameLocal ?? {},
-      descriptionLocal: game.descriptionLocal ?? {},
-    });
+    setEditingGame(createGameDraft(game));
   }, []);
 
   const openDetails = useCallback((game) => {
@@ -622,6 +831,10 @@ export const Library = ({
     const coverUrl = normalizeImageUrl(bggGame.thumbnail);
     onAdd({
       name: bggGame.name,
+      category: '',
+      categories: [],
+      mechanics: [],
+      gameType: '',
       coverUrl,
       owned: true,
       minPlayers: cachedDetails?.minPlayers ? parseInt(cachedDetails.minPlayers, 10) : null,
@@ -646,6 +859,9 @@ export const Library = ({
       id: null,
       name: bggGame.name,
       category: '',
+      categories: [],
+      mechanics: [],
+      gameType: '',
       minPlayers: null,
       maxPlayers: null,
       description: '',
@@ -722,12 +938,23 @@ export const Library = ({
           {/* ── Minha Estante tab ── */}
           {activeTab === 'shelf' && (
           <>
-          <button
-            className="btn btn-accent btn-md"
-            onClick={handleGoToCatalogSearch}
-          >
-            <Search size={16} /> {t('library.bggSearch')}
-          </button>
+          <div className="library-shelf-actions">
+            <button
+              className="btn btn-secondary btn-md"
+              onClick={openAdd}
+              data-testid="library-open-add-manual"
+            >
+              <Plus size={16} /> {t('library.addManualGame')}
+            </button>
+
+            <button
+              className="btn btn-accent btn-md"
+              onClick={handleGoToCatalogSearch}
+              data-testid="library-open-bgg-search"
+            >
+              <Search size={16} /> {t('library.bggSearch')}
+            </button>
+          </div>
 
           {availableCategoryFilters.length > 0 && (
             <div className="library-quick-filters" role="group" aria-label={t('library.category')}>
@@ -745,7 +972,7 @@ export const Library = ({
                   className={`library-filter-btn ${categoryFilter === cat.value ? 'active' : ''}`}
                   onClick={() => setCategoryFilter(cat.value)}
                 >
-                  {t(cat.label)}
+                  {getCategoryLabel(cat.value)}
                 </button>
               ))}
             </div>
@@ -761,9 +988,8 @@ export const Library = ({
             <ul className="library-card-grid">
               {filteredLibrary.map((game) => {
                 const count = playCount[game.name.toLowerCase()] || 0;
-                const catMeta = GAME_CATEGORIES.find(
-                  (c) => c.value === game.category
-                );
+                const primaryCategory = normalizeGameCategories(game)[0] || '';
+                const typeMeta = getTypeMetaByValue(game.gameType || '');
                 const shelfCoverUrl = normalizeImageUrl(game.coverUrl);
                 const playersLabel =
                   (game.minPlayers || game.maxPlayers)
@@ -810,8 +1036,9 @@ export const Library = ({
                         <h3>{game.nameLocal?.[language] || game.name}</h3>
                         <div className="library-card-meta">
                           <span className="library-card-chip">
-                            {catMeta ? t(catMeta.label) : t('library.categoryNone')}
+                            {primaryCategory ? getCategoryLabel(primaryCategory) : t('library.categoryNone')}
                           </span>
+                          {typeMeta && <span className="library-card-chip subtle">{t(typeMeta.label)}</span>}
                           {count > 0 && <span className="library-card-chip subtle">{count}x</span>}
                         </div>
                       </div>
@@ -930,9 +1157,9 @@ export const Library = ({
                       : (cachedDetails?.minPlayers || cachedDetails?.maxPlayers)
                         ? `${cachedDetails?.minPlayers ?? '?'}-${cachedDetails?.maxPlayers ?? '?'}`
                       : '?';
-                  const catMeta = inLibraryEntry
-                    ? GAME_CATEGORIES.find((c) => c.value === inLibraryEntry.category)
-                    : null;
+                  const primaryCategory = inLibraryEntry
+                    ? (normalizeGameCategories(inLibraryEntry)[0] || '')
+                    : '';
                   return (
                     <li key={game.id}>
                       <article
@@ -975,7 +1202,7 @@ export const Library = ({
                           <h3>{game.name}</h3>
                           <div className="library-card-meta">
                             <span className="library-card-chip">
-                              {catMeta ? t(catMeta.label) : 'BGG'}
+                              {primaryCategory ? getCategoryLabel(primaryCategory) : 'BGG'}
                             </span>
                             {game.yearPublished && (
                               <span className="library-card-chip subtle">{game.yearPublished}</span>
@@ -1050,6 +1277,192 @@ export const Library = ({
         />
       )}
 
+      {/* Add modal */}
+      {addingGame && (
+        <div className="modal-overlay" onClick={() => setAddingGame(null)}>
+          <div
+            className="modal-content lib-edit-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="lib-edit-title">{t('library.addManualTitle')}</h2>
+            <button
+              className="modal-close"
+              onClick={() => setAddingGame(null)}
+              aria-label={t('common.cancel')}
+            >
+              ✕
+            </button>
+            <form onSubmit={handleAddSubmit} className="library-form lib-edit-form">
+              <div className="lib-bgg-row">
+                <button
+                  type="button"
+                  className={`btn-bgg-search${bggAddStatus === 'loading' ? ' loading' : ''}`}
+                  onClick={handleBGGAddSearch}
+                  disabled={bggAddStatus === 'loading'}
+                >
+                  {bggAddStatus === 'loading'
+                    ? <><LoaderCircle size={14} /> {t('library.bggSearching')}</>
+                    : <><Search size={14} /> {t('library.bggSearch')}</>}
+                </button>
+                {bggAddStatus === 'found' && (
+                  <span className="lib-bgg-msg lib-bgg-success"><Check size={14} /> {t('library.bggFound')}</span>
+                )}
+                {bggAddStatus === 'notfound' && (
+                  <span className="lib-bgg-msg lib-bgg-error">{t('library.bggNotFound')}</span>
+                )}
+                {bggAddStatus === 'error' && (
+                  <span className="lib-bgg-msg lib-bgg-error">{t('library.bggError')}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="add-name">{t('library.gameName')}</label>
+                <input
+                  id="add-name"
+                  type="text"
+                  value={addingGame.name}
+                  onChange={handleAddField('name')}
+                  placeholder={t('library.gameNamePlaceholder')}
+                  maxLength={120}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{t('library.categories')}</label>
+                <div className="lib-multi-grid">
+                  {GAME_CATEGORIES.map((cat) => (
+                    <button
+                      key={`add-cat-${cat.value}`}
+                      type="button"
+                      className={`lib-tag-btn ${addingGame.categories?.includes(cat.value) ? 'selected' : ''}`}
+                      onClick={() => toggleAddCategory(cat.value)}
+                    >
+                      {t(cat.label)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>{t('library.mechanics')}</label>
+                <div className="lib-multi-grid">
+                  {GAME_MECHANICS.map((mechanic) => (
+                    <button
+                      key={`add-mechanic-${mechanic.value}`}
+                      type="button"
+                      className={`lib-tag-btn ${addingGame.mechanics?.includes(mechanic.value) ? 'selected' : ''}`}
+                      onClick={() => toggleAddMechanic(mechanic.value)}
+                    >
+                      {t(mechanic.label)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="add-game-type">{t('library.gameType')}</label>
+                <select
+                  id="add-game-type"
+                  value={addingGame.gameType ?? ''}
+                  onChange={handleAddField('gameType')}
+                >
+                  <option value="">{t('library.typeNone')}</option>
+                  {GAME_TYPES.map((typeOption) => (
+                    <option key={typeOption.value} value={typeOption.value}>
+                      {t(typeOption.label)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="add-min">{t('library.minPlayers')}</label>
+                  <input
+                    id="add-min"
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={addingGame.minPlayers}
+                    onChange={handleAddField('minPlayers')}
+                    placeholder="1"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="add-max">{t('library.maxPlayers')}</label>
+                  <input
+                    id="add-max"
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={addingGame.maxPlayers}
+                    onChange={handleAddField('maxPlayers')}
+                    placeholder="8"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="add-description">{t('library.description')}</label>
+                <textarea
+                  id="add-description"
+                  value={addingGame.description ?? ''}
+                  onChange={handleAddField('description')}
+                  placeholder={t('library.descriptionPlaceholder')}
+                  maxLength={500}
+                  rows={3}
+                  className="lib-textarea"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="add-cover">{t('library.coverUrl')}</label>
+                <input
+                  id="add-cover"
+                  type="url"
+                  value={addingGame.coverUrl ?? ''}
+                  onChange={handleAddField('coverUrl')}
+                  placeholder={t('library.coverUrlPlaceholder')}
+                  maxLength={1000}
+                />
+                <span className="lib-field-hint">{t('library.coverUrlHint')}</span>
+              </div>
+
+              <div className="form-group form-checkbox">
+                <label htmlFor="add-owned" className="checkbox-label">
+                  <input
+                    id="add-owned"
+                    type="checkbox"
+                    checked={addingGame.owned ?? false}
+                    onChange={(e) =>
+                      setAddingGame((prev) => ({
+                        ...prev,
+                        owned: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>{t('library.ownedLabel')}</span>
+                </label>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel-lib"
+                  onClick={() => setAddingGame(null)}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button type="submit" className="btn-save-lib">
+                  {t('library.addGame')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Edit modal */}
       {editingGame && (
         <div className="modal-overlay" onClick={() => setEditingGame(null)}>
@@ -1057,7 +1470,7 @@ export const Library = ({
             className="modal-content lib-edit-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="lib-edit-title">{editingGame.name}</h2>
+            <h2 className="lib-edit-title">{t('library.editGame')}</h2>
             <button
               className="modal-close"
               onClick={() => setEditingGame(null)}
@@ -1091,16 +1504,61 @@ export const Library = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="edit-category">{t('library.category')}</label>
-                <select
-                  id="edit-category"
-                  value={editingGame.category ?? ''}
-                  onChange={handleEditField('category')}
-                >
-                  <option value="">{t('library.categoryNone')}</option>
+                <label htmlFor="edit-name">{t('library.gameName')}</label>
+                <input
+                  id="edit-name"
+                  type="text"
+                  value={editingGame.name}
+                  onChange={handleEditField('name')}
+                  placeholder={t('library.gameNamePlaceholder')}
+                  maxLength={120}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{t('library.categories')}</label>
+                <div className="lib-multi-grid">
                   {GAME_CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
+                    <button
+                      key={`edit-cat-${cat.value}`}
+                      type="button"
+                      className={`lib-tag-btn ${editingGame.categories?.includes(cat.value) ? 'selected' : ''}`}
+                      onClick={() => toggleEditCategory(cat.value)}
+                    >
                       {t(cat.label)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>{t('library.mechanics')}</label>
+                <div className="lib-multi-grid">
+                  {GAME_MECHANICS.map((mechanic) => (
+                    <button
+                      key={`edit-mechanic-${mechanic.value}`}
+                      type="button"
+                      className={`lib-tag-btn ${editingGame.mechanics?.includes(mechanic.value) ? 'selected' : ''}`}
+                      onClick={() => toggleEditMechanic(mechanic.value)}
+                    >
+                      {t(mechanic.label)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="edit-game-type">{t('library.gameType')}</label>
+                <select
+                  id="edit-game-type"
+                  value={editingGame.gameType ?? ''}
+                  onChange={handleEditField('gameType')}
+                >
+                  <option value="">{t('library.typeNone')}</option>
+                  {GAME_TYPES.map((typeOption) => (
+                    <option key={typeOption.value} value={typeOption.value}>
+                      {t(typeOption.label)}
                     </option>
                   ))}
                 </select>

@@ -9,6 +9,7 @@ export const Button = ({
   onClick,
   type = 'button',
   className = '',
+  ...rest
 }) => {
   return (
     <button
@@ -16,6 +17,7 @@ export const Button = ({
       className={`btn btn-${variant} btn-${size} ${fullWidth ? 'btn-full' : ''} ${className}`}
       disabled={disabled}
       onClick={onClick}
+      {...rest}
     >
       {children}
     </button>

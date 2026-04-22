@@ -132,6 +132,34 @@
   gap: 0.75rem;
 }
 
+.lib-multi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.lib-tag-btn {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #e2e8f0;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lib-tag-btn:hover {
+  border-color: rgba(59, 130, 246, 0.7);
+}
+
+.lib-tag-btn.selected {
+  border-color: rgba(16, 185, 129, 0.78);
+  background: rgba(16, 185, 129, 0.18);
+  color: #bbf7d0;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -1130,6 +1158,12 @@
   margin-top: -0.2rem;
 }
 
+.library-shelf-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
 .library-filter-btn {
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 999px;
@@ -1418,6 +1452,10 @@
 }
 
 @media (max-width: 560px) {
+  .library-shelf-actions {
+    grid-template-columns: 1fr;
+  }
+
   .library-card-grid {
     grid-template-columns: 1fr;
   }
