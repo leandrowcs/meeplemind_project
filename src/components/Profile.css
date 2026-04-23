@@ -123,6 +123,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-sm);
 }
 
 .profile-card-title,
@@ -135,6 +136,23 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+}
+
+.profile-card-icon-button {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.72);
+  color: #bfdbfe;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.profile-card-icon-button:hover {
+  border-color: rgba(147, 197, 253, 0.65);
 }
 
 .profile-competitive-row,
@@ -156,6 +174,7 @@
   color: #f8fafc;
   font-weight: 700;
   text-align: right;
+  line-height: 1.2;
 }
 
 .profile-progress-track {
@@ -167,6 +186,7 @@
 }
 
 .profile-progress-fill {
+  display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #14532d 0%, #4ade80 100%);
@@ -174,6 +194,7 @@
 }
 
 .profile-time-progress-fill {
+  display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #1d4ed8 0%, #60a5fa 100%);
@@ -181,10 +202,18 @@
 }
 
 .profile-level-progress-fill {
+  display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #f97316 0%, #facc15 100%);
   transition: width 0.3s ease;
+}
+
+.profile-progress-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
 }
 
 .profile-time-summary {
@@ -199,6 +228,78 @@
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.58);
   padding: 0.18rem 0.55rem;
+}
+
+.profile-time-card-layout {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+}
+
+.profile-time-col-left {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.profile-time-col-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.profile-time-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs);
+  gap: 0.1rem;
+}
+
+.profile-time-stat-number {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #60a5fa;
+  line-height: 1.1;
+}
+
+.profile-time-stat-label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-time-bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.profile-time-total-label {
+  color: #dbeafe;
+  font-size: 0.88rem;
+}
+
+.profile-time-total-label strong {
+  font-size: 1rem;
+}
+
+.profile-time-milestone-label {
+  color: #f8fafc;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-align: right;
 }
 
 .profile-level-head {
@@ -232,10 +333,93 @@
   font-weight: 700;
 }
 
+.profile-achievement-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.profile-achievement-tab {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  background: rgba(15, 23, 42, 0.6);
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.profile-achievement-tab.active {
+  border-color: rgba(250, 204, 21, 0.6);
+  background: rgba(245, 158, 11, 0.2);
+  color: #fef3c7;
+}
+
 .profile-medal-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
+}
+
+.profile-podium-section {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.profile-podium-title {
+  font-weight: 600;
+}
+
+.profile-podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  align-items: end;
+}
+
+.profile-podium-card {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 0.45rem;
+  background: rgba(15, 23, 42, 0.55);
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+}
+
+.profile-podium-card.second {
+  min-height: 85px;
+  border-color: rgba(148, 163, 184, 0.45);
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.2), rgba(15, 23, 42, 0.6));
+}
+
+.profile-podium-card.first {
+  min-height: 110px;
+  border-color: rgba(250, 204, 21, 0.58);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.24), rgba(15, 23, 42, 0.62));
+}
+
+.profile-podium-card.third {
+  min-height: 70px;
+  border-color: rgba(251, 146, 60, 0.5);
+  background: linear-gradient(180deg, rgba(180, 83, 9, 0.26), rgba(15, 23, 42, 0.62));
+}
+
+.profile-podium-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #fcd34d;
+}
+
+.profile-podium-place {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+}
+
+.profile-podium-count {
+  color: #f8fafc;
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .profile-medal-card {
@@ -520,6 +704,14 @@
   color: #cbd5e1;
 }
 
+.profile-help-rules-list {
+  margin: 0.65rem 0;
+  padding-left: 1.1rem;
+  color: #dbeafe;
+  display: grid;
+  gap: 0.3rem;
+}
+
 .insight-modal-close {
   position: absolute;
   top: 0.5rem;
@@ -538,8 +730,20 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .profile-achievement-tabs {
+    grid-template-columns: 1fr;
+  }
+
   .profile-medal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profile-podium-grid {
+    gap: 0.3rem;
+  }
+
+  .profile-podium-card.first {
+    min-height: 96px;
   }
 
   .profile-player-name {

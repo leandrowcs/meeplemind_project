@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v2.5.1: Perfil refinado com card Conquistas (abas em progresso/concluídas), modal explicativo de XP, barra de progresso corrigida e pódio competitivo com ouro/prata/bronze.',
       'v2.5.0: Estatísticas agora exibem mini-capas nos rankings, Perfil ganhou jogos diferentes + tempo total + gamificação/medalhas e Histórico recebeu layout novo com header moderno e fundo com capa no item expandido.',
       'v2.4.9: Nova Partida virou wizard em 5 etapas com transições, testes e2e atualizados e Biblioteca com adição manual + edição de nome/categorias/mecânicas/tipo.',
       'v2.4.8: Exportacao CSV nativa (2 arquivos) sem xlsx para reduzir risco de dependencia vulneravel.',
@@ -18,6 +19,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v2.5.1: Profile now has a refined Achievements card (in-progress/completed tabs), XP help modal, corrected progress fill behavior, and a competitive podium with gold/silver/bronze placements.',
       'v2.5.0: Statistics now show mini cover badges in rankings, Profile gained unique-games/time-played/gamification medals, and History received a modern header plus cover background on expanded cards.',
       'v2.4.9: New Game is now a 5-step wizard with transitions, e2e coverage updated, and Library supports manual add + editable name/categories/mechanics/type.',
       'v2.4.8: Native 2-file CSV export replaces xlsx usage to reduce vulnerable dependency risk.',
@@ -34,6 +36,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v2.5.1: Profil amélioré avec carte Succès (onglets en cours/terminés), modal d\'explication XP, remplissage des barres corrigé et podium compétitif or/argent/bronze.',
       'v2.5.0: Les statistiques affichent des mini-couvertures dans les classements, le profil ajoute jeux differents/temps de jeu/gamification, et l\'historique adopte un nouveau header avec fond de couverture en mode etendu.',
       'v2.4.9: Nouvelle partie en assistant 5 etapes avec transitions, tests e2e mis a jour, et Bibliotheque avec ajout manuel + edition du nom/categories/mecaniques/type.',
       'v2.4.8: Export CSV natif en 2 fichiers, sans xlsx, pour reduire le risque lie aux dependances vulnerables.',

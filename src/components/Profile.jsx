@@ -11,9 +11,11 @@ import {
   HandFist,
   Handshake,
   House,
+  MessageCircleQuestionMark,
   ShelvingUnit,
   ShieldAlert,
   Sparkles,
+  SquareStar,
   Swords,
   Target,
   Trophy,
@@ -80,6 +82,44 @@ const pickStableRandomItems = (items, limit, seed) => {
     .slice(0, limit);
 };
 
+const clampProgress = (value) => {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+};
+
+const getCompetitivePlacement = (game, playerName) => {
+  const players = Array.isArray(game?.players) ? game.players : [];
+  if (!players.includes(playerName)) return null;
+
+  if (game?.winner === playerName) {
+    return 1;
+  }
+
+  const hasPoints = Array.isArray(game?.points) && game.points.length >= players.length;
+  if (!hasPoints) return null;
+
+  const rankedPlayers = players
+    .map((player, index) => {
+      const rawPoints = Number(game.points[index]);
+      return {
+        player,
+        index,
+        points: Number.isFinite(rawPoints) ? rawPoints : 0,
+        isWinner: Boolean(game?.winner) && game.winner === player,
+      };
+    })
+    .sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (a.isWinner !== b.isWinner) return a.isWinner ? -1 : 1;
+      return a.index - b.index;
+    });
+
+  const placement = rankedPlayers.findIndex((entry) => entry.player === playerName) + 1;
+  if (placement < 1 || placement > 3) return null;
+
+  return placement;
+};
+
 export const Profile = ({
   onNavigate,
   games,
@@ -103,6 +143,8 @@ export const Profile = ({
   }, [language]);
   const [insightSeed] = useState(() => Math.floor(Math.random() * 1_000_000));
   const [selectedInsight, setSelectedInsight] = useState(null);
+  const [achievementTab, setAchievementTab] = useState('progress');
+  const [showGamificationHelp, setShowGamificationHelp] = useState(false);
   const [avatarState, setAvatarState] = useState(() => {
     try {
       return {
@@ -152,19 +194,17 @@ export const Profile = ({
   const totalHoursPlayed = Math.floor(totalMinutesPlayed / 60);
   const totalDaysPlayed = Math.floor(totalHoursPlayed / 24);
   const totalMonthsPlayed = Math.floor(totalDaysPlayed / 30);
+  const remainderDays = totalDaysPlayed % 30;
+  const remainderHours = totalHoursPlayed % 24;
 
   const playTimeProgress = useMemo(() => {
-    const milestones = [10, 25, 50, 100, 200, 350, 500, 750, 1000, 1500, 2000];
+    const milestones = [24, 48, 96, 240, 480, 720, 1000, 1500, 2000];
     const previous = milestones.filter((value) => value <= totalHoursPlayed).pop() || 0;
     const next = milestones.find((value) => value > totalHoursPlayed) || (Math.floor(totalHoursPlayed / 500) + 1) * 500;
     const delta = Math.max(next - previous, 1);
-    const progress = Math.min(100, Math.round(((totalHoursPlayed - previous) / delta) * 100));
+    const progress = clampProgress(((totalHoursPlayed - previous) / delta) * 100);
 
-    return {
-      previous,
-      next,
-      progress,
-    };
+    return { previous, next, progress };
   }, [totalHoursPlayed]);
 
   const competitiveGames = useMemo(
@@ -224,17 +264,21 @@ export const Profile = ({
     const level = Math.max(1, Math.floor(score / levelStep) + 1);
     const floor = (level - 1) * levelStep;
     const nextLevelScore = level * levelStep;
-    const levelProgress = Math.min(100, Math.round(((score - floor) / levelStep) * 100));
+    const currentLevelXp = Math.max(score - floor, 0);
+    const levelProgress = clampProgress((currentLevelXp / levelStep) * 100);
 
     return {
       score,
       level,
       nextLevelScore,
       levelProgress,
+      currentLevelXp,
+      xpForNextLevel: levelStep,
+      missingForNextLevel: Math.max(nextLevelScore - score, 0),
     };
   }, [library.length, playerStats.totalGames, totalWins, uniquePlayedGamesCount, streakSummary.longestStreak, totalHoursPlayed]);
 
-  const medals = useMemo(() => {
+  const achievements = useMemo(() => {
     const medalGroups = [
       {
         id: 'collection',
@@ -275,7 +319,7 @@ export const Profile = ({
     return medalGroups.flatMap((group) => (
       group.tiers.map((threshold, index) => {
         const unlocked = group.value >= threshold;
-        const progress = Math.min(100, Math.round((group.value / threshold) * 100));
+        const progress = clampProgress((group.value / threshold) * 100);
 
         return {
           id: `${group.id}-${threshold}`,
@@ -289,6 +333,56 @@ export const Profile = ({
       })
     ));
   }, [library.length, playerStats.totalGames, totalWins, streakSummary.longestStreak, t]);
+
+  const achievementsByTab = useMemo(() => {
+    const inProgress = achievements
+      .filter((achievement) => !achievement.unlocked)
+      .sort((a, b) => {
+        if (b.progress !== a.progress) return b.progress - a.progress;
+        return a.threshold - b.threshold;
+      });
+    const completed = achievements
+      .filter((achievement) => achievement.unlocked)
+      .sort((a, b) => b.threshold - a.threshold);
+
+    return {
+      progress: inProgress,
+      completed,
+    };
+  }, [achievements]);
+
+  const activeAchievements = achievementTab === 'completed'
+    ? achievementsByTab.completed
+    : achievementsByTab.progress;
+
+  const competitivePodium = useMemo(() => {
+    const summary = {
+      gold: 0,
+      silver: 0,
+      bronze: 0,
+      trackedGames: 0,
+      totalCompetitiveGames: 0,
+    };
+
+    competitiveGames.forEach((game) => {
+      const placement = getCompetitivePlacement(game, primaryPlayer);
+      if (placement === null) {
+        if ((game.players || []).includes(primaryPlayer)) {
+          summary.totalCompetitiveGames += 1;
+        }
+        return;
+      }
+
+      summary.totalCompetitiveGames += 1;
+      summary.trackedGames += 1;
+
+      if (placement === 1) summary.gold += 1;
+      if (placement === 2) summary.silver += 1;
+      if (placement === 3) summary.bronze += 1;
+    });
+
+    return summary;
+  }, [competitiveGames, primaryPlayer]);
 
   const competitiveSummary = useMemo(() => {
     const wins = competitiveGames.filter((g) => g.winner === primaryPlayer).length;
@@ -734,29 +828,60 @@ export const Profile = ({
               <h3 className="profile-card-title-with-icon"><Clock3 size={18} /> {t('profile.totalPlayTime')}</h3>
             </div>
 
-            <div className="profile-competitive-row">
-              <span className="profile-competitive-left">{totalHoursPlayed} {t('profile.hoursShort')}</span>
-              <span className="profile-competitive-right">{playTimeProgress.progress}%</span>
-            </div>
+            <div className="profile-time-card-layout">
+              <div className="profile-time-col-left">
+                <div className="profile-time-stat-card">
+                  <span className="profile-time-stat-number">{totalMonthsPlayed}</span>
+                  <span className="profile-time-stat-label">{t('profile.monthsShort')}</span>
+                </div>
+                <div className="profile-time-stat-card">
+                  <span className="profile-time-stat-number">{remainderDays}</span>
+                  <span className="profile-time-stat-label">{t('profile.daysShort')}</span>
+                </div>
+                <div className="profile-time-stat-card">
+                  <span className="profile-time-stat-number">{remainderHours}</span>
+                  <span className="profile-time-stat-label">{t('profile.hoursFull')}</span>
+                </div>
+              </div>
 
-            <div className="profile-progress-track" aria-hidden>
-              <span className="profile-time-progress-fill" style={{ width: `${playTimeProgress.progress}%` }} />
+              <div className="profile-time-col-right">
+                <div className="profile-time-bar-header">
+                  <span className="profile-time-total-label">
+                    <strong>{totalHoursPlayed}</strong>{t('profile.hoursShort')} {t('profile.playedLabel')}
+                  </span>
+                  <span className="profile-time-milestone-label">
+                    {t('profile.milestoneLabel')}: {playTimeProgress.next}{t('profile.hoursShort')}
+                  </span>
+                </div>
+                <div className="profile-progress-track" aria-hidden>
+                  <span className="profile-time-progress-fill" style={{ width: `${playTimeProgress.progress}%` }} />
+                </div>
+                <p className="profile-subtle-text profile-progress-legend">
+                  <span>{playTimeProgress.previous}{t('profile.hoursShort')}</span>
+                  <span>{playTimeProgress.next}{t('profile.hoursShort')}</span>
+                </p>
+                <p className="profile-subtle-text">
+                  {t('profile.hoursToNextMilestone').replace('{hours}', Math.max(playTimeProgress.next - totalHoursPlayed, 0))}
+                </p>
+              </div>
             </div>
-
-            <p className="profile-subtle-text profile-time-summary">
-              <span>{totalHoursPlayed} {t('profile.hoursShort')}</span>
-              <span>{totalDaysPlayed} {t('profile.daysShort')}</span>
-              <span>{totalMonthsPlayed} {t('profile.monthsShort')}</span>
-            </p>
-            <p className="profile-subtle-text">
-              {t('profile.nextTimeMilestone').replace('{hours}', playTimeProgress.next)}
-            </p>
           </section>
 
           <section className="profile-main-card">
             <div className="profile-card-header">
-              <h3 className="profile-card-title-with-icon"><Medal size={18} /> {t('profile.gamificationTitle')}</h3>
+              <h3 className="profile-card-title-with-icon"><SquareStar size={18} /> {t('profile.gamificationTitle')}</h3>
+              <button
+                type="button"
+                className="profile-card-icon-button"
+                onClick={() => setShowGamificationHelp(true)}
+                aria-label={t('profile.gamificationHelpAria')}
+                title={t('profile.gamificationHelpAria')}
+              >
+                <MessageCircleQuestionMark size={16} />
+              </button>
             </div>
+
+            <p className="profile-subtle-text">{t('profile.gamificationDescription')}</p>
 
             <div className="profile-level-head">
               <div>
@@ -774,29 +899,85 @@ export const Profile = ({
             </div>
 
             <p className="profile-subtle-text">
-              {t('profile.nextLevelAt').replace('{score}', gamificationSummary.nextLevelScore)}
+              {t('profile.currentLevelXp').replace('{current}', gamificationSummary.currentLevelXp).replace('{target}', gamificationSummary.xpForNextLevel)}
+            </p>
+            <p className="profile-subtle-text">
+              {t('profile.nextLevelAt').replace('{score}', gamificationSummary.nextLevelScore)} • {t('profile.xpMissingToNext').replace('{xp}', gamificationSummary.missingForNextLevel)}
             </p>
             <p className="profile-subtle-text">
               {t('profile.longestStreak').replace('{count}', streakSummary.longestStreak)} • {t('profile.currentStreak').replace('{count}', streakSummary.recentStreak)}
             </p>
 
+            <div className="profile-achievement-tabs" role="tablist" aria-label={t('profile.achievementsTabAria')}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={achievementTab === 'progress'}
+                className={`profile-achievement-tab${achievementTab === 'progress' ? ' active' : ''}`}
+                onClick={() => setAchievementTab('progress')}
+              >
+                {t('profile.achievementsInProgressTab')} ({achievementsByTab.progress.length})
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={achievementTab === 'completed'}
+                className={`profile-achievement-tab${achievementTab === 'completed' ? ' active' : ''}`}
+                onClick={() => setAchievementTab('completed')}
+              >
+                {t('profile.achievementsCompletedTab')} ({achievementsByTab.completed.length})
+              </button>
+            </div>
+
             <div className="profile-medal-grid">
-              {medals.map((medal) => (
-                <article key={medal.id} className={`profile-medal-card${medal.unlocked ? ' unlocked' : ''}`}>
-                  <span className="profile-medal-icon"><medal.icon size={15} /></span>
-                  <div className="profile-medal-content">
-                    <span className="profile-medal-title">{medal.title}</span>
-                    <span className="profile-medal-subtitle">
-                      {medal.unlocked
-                        ? t('profile.medalUnlocked')
-                        : t('profile.medalProgress').replace('{current}', medal.current).replace('{target}', medal.threshold)}
-                    </span>
-                    <span className="profile-medal-progress-track" aria-hidden>
-                      <span className="profile-medal-progress-fill" style={{ width: `${medal.progress}%` }} />
-                    </span>
-                  </div>
+              {activeAchievements.length > 0 ? (
+                activeAchievements.map((achievement) => (
+                  <article key={achievement.id} className={`profile-medal-card${achievement.unlocked ? ' unlocked' : ''}`}>
+                    <span className="profile-medal-icon"><achievement.icon size={15} /></span>
+                    <div className="profile-medal-content">
+                      <span className="profile-medal-title">{achievement.title}</span>
+                      <span className="profile-medal-subtitle">
+                        {achievement.unlocked
+                          ? t('profile.medalUnlocked')
+                          : t('profile.medalProgress').replace('{current}', achievement.current).replace('{target}', achievement.threshold)}
+                      </span>
+                      <span className="profile-medal-progress-track" aria-hidden>
+                        <span className="profile-medal-progress-fill" style={{ width: `${achievement.progress}%` }} />
+                      </span>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="profile-subtle-text">
+                  {achievementTab === 'progress'
+                    ? t('profile.noAchievementsInProgress')
+                    : t('profile.noAchievementsCompleted')}
+                </p>
+              )}
+            </div>
+
+            <div className="profile-podium-section">
+              <p className="profile-subtle-text profile-podium-title">{t('profile.competitivePodiumTitle')}</p>
+              <div className="profile-podium-grid">
+                <article className="profile-podium-card second">
+                  <span className="profile-podium-icon"><Medal size={16} /></span>
+                  <span className="profile-podium-place">{t('profile.podiumSecond')}</span>
+                  <strong className="profile-podium-count">{competitivePodium.silver}</strong>
                 </article>
-              ))}
+                <article className="profile-podium-card first">
+                  <span className="profile-podium-icon"><Trophy size={18} /></span>
+                  <span className="profile-podium-place">{t('profile.podiumFirst')}</span>
+                  <strong className="profile-podium-count">{competitivePodium.gold}</strong>
+                </article>
+                <article className="profile-podium-card third">
+                  <span className="profile-podium-icon"><Medal size={16} /></span>
+                  <span className="profile-podium-place">{t('profile.podiumThird')}</span>
+                  <strong className="profile-podium-count">{competitivePodium.bronze}</strong>
+                </article>
+              </div>
+              <p className="profile-subtle-text">
+                {t('profile.podiumTrackedGames').replace('{tracked}', competitivePodium.trackedGames).replace('{total}', competitivePodium.totalCompetitiveGames)}
+              </p>
             </div>
           </section>
 
@@ -930,6 +1111,34 @@ export const Profile = ({
             <small>{t('home.profile')}</small>
           </button>
         </nav>
+
+        {showGamificationHelp && (
+          <div className="insight-modal-overlay" onClick={() => setShowGamificationHelp(false)}>
+            <div className="insight-modal" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="insight-modal-close"
+                onClick={() => setShowGamificationHelp(false)}
+                aria-label={t('common.close')}
+              >
+                <X size={18} />
+              </button>
+              <p className="insight-modal-title">
+                <SquareStar size={18} /> {t('profile.gamificationHelpTitle')}
+              </p>
+              <p className="insight-modal-detail">{t('profile.gamificationHelpIntro')}</p>
+              <ul className="profile-help-rules-list">
+                <li>{t('profile.gamificationRuleCollection')}</li>
+                <li>{t('profile.gamificationRuleMatches')}</li>
+                <li>{t('profile.gamificationRuleWins')}</li>
+                <li>{t('profile.gamificationRuleUniqueGames')}</li>
+                <li>{t('profile.gamificationRuleStreak')}</li>
+                <li>{t('profile.gamificationRulePlaytime')}</li>
+              </ul>
+              <p className="profile-subtle-text">{t('profile.gamificationHelpFooter')}</p>
+            </div>
+          </div>
+        )}
 
         {selectedInsight && (
           <div className="insight-modal-overlay" onClick={() => setSelectedInsight(null)}>
