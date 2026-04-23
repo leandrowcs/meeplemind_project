@@ -34,7 +34,7 @@ export const SideMenu = ({
   const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
   const displayName = userName || auth?.user?.name || 'MeepleMind Player';
   const profilePhoto = userPhotoUrl || auth?.user?.picture || '/user_icon.png';
-  const whatsNew = getChangelog(language, 3);
+  const whatsNew = getChangelog(language, 5);
 
   const handleLanguageChange = (newLanguage) => {
     if (newLanguage === language) return;

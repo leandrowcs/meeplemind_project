@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v2.5.4: Card de maior rival agora exibe todos os empatados (critério: mais partidas + mais vitórias contra o usuário). Biblioteca ganhou upload de capa por arquivo + validação de URL. Perfil exibe badge de conta Google conectada. Reestruturação visual dos mini-stats do perfil.',
       'v2.5.3: Welcome ganhou seleção de idioma por bandeiras no rodapé, texto de apresentação mais claro, logo maior e botão Google centralizado.',
       'v2.5.2: Welcome agora oferece login com Google na primeira tela para recuperar histórico e biblioteca do Drive antes de informar nome manualmente.',
       'v2.5.1: Perfil refinado com card Conquistas (abas em progresso/concluídas), modal explicativo de XP, barra de progresso corrigida e pódio competitivo com ouro/prata/bronze.',
@@ -21,6 +22,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v2.5.4: Top rival card now shows all tied rivals (ranked by most games together, then most wins against you). Library gained cover image upload + URL validation. Profile displays a Google connected badge. Profile mini-stats visuals were restructured.',
       'v2.5.3: Welcome now includes bottom flag language selection, clearer product intro copy, a larger logo, and centered Google sign-in button content.',
       'v2.5.2: Welcome now offers Google sign-in on first launch to restore history and library from Drive before manual name entry.',
       'v2.5.1: Profile now has a refined Achievements card (in-progress/completed tabs), XP help modal, corrected progress fill behavior, and a competitive podium with gold/silver/bronze placements.',
@@ -40,6 +42,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v2.5.4: La carte du grand rival affiche désormais tous les ex-æquo (critère : plus de parties ensemble, puis plus de victoires contre vous). La bibliothèque propose l\'upload de couverture par fichier + validation d\'URL. Le profil affiche un badge de compte Google connecté. Restructuration visuelle des mini-stats du profil.',
       'v2.5.3: L\'écran de bienvenue ajoute le sélecteur de langue par drapeaux en bas, un texte de présentation plus clair, un logo agrandi et un bouton Google visuellement centré.',
       'v2.5.2: L\'écran de bienvenue propose maintenant la connexion Google dès le départ pour restaurer l\'historique et la bibliothèque Drive avant la saisie manuelle du nom.',
       'v2.5.1: Profil amélioré avec carte Succès (onglets en cours/terminés), modal d\'explication XP, remplissage des barres corrigé et podium compétitif or/argent/bronze.',

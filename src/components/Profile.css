@@ -71,6 +71,18 @@
   line-height: 1.15;
 }
 
+.profile-google-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 20px;
+  padding: 0.15rem 0.5rem;
+}
+
 .profile-content {
   display: grid;
   gap: var(--spacing-md);
@@ -83,30 +95,36 @@
 }
 
 .profile-small-stat-card {
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(26, 39, 68, 0.9));
+  border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.26);
-  border-radius: 14px;
-  padding: var(--spacing-sm) var(--spacing-md);
-  display: grid;
-  gap: 2px;
-}
-
-.profile-small-stat-icon {
-  color: #cbd5e1;
-  display: inline-flex;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(24, 37, 74, 0.82));
+  padding: 0.7rem;
+  display: flex;
+  gap: 0.5rem;
   align-items: center;
 }
 
+.profile-small-stat-icon {
+  color: #9bb5ff;
+}
+
+.profile-small-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .profile-small-stat-number {
-  font-size: 2rem;
-  line-height: 1;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: #dbeafe;
+  color: #f8fafc;
 }
 
 .profile-small-stat-label {
-  color: #cbd5e1;
-  font-size: 1.1rem;
+  font-size: 0.68rem;
+  color: #b9c6ee;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .profile-main-card {
@@ -526,6 +544,18 @@
   justify-content: flex-end;
 }
 
+.profile-rival-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.profile-rival-entry--sep {
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  padding-top: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
 .profile-rival-name {
   margin: 0;
   font-size: 1.3rem;
@@ -585,6 +615,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  min-height: 44px;
 }
 
 .profile-library-item > * {
@@ -726,10 +757,6 @@
 }
 
 @media (max-width: 460px) {
-  .profile-top-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .profile-achievement-tabs {
     grid-template-columns: 1fr;
   }

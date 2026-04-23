@@ -16,6 +16,7 @@ import {
   Search,
   Trash2,
   Trophy,
+  Upload,
   UserRound,
   Users,
   X,
@@ -23,6 +24,7 @@ import {
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
 import { GAME_CATEGORIES, GAME_MECHANICS, GAME_TYPES } from '../hooks/useLibrary';
+import { sanitizeUrl } from '../utils/sanitize';
 import './Library.css';
 
 // ──────────────────────────────────────────────────
@@ -521,6 +523,8 @@ export const Library = ({
   const [selectedGame, setSelectedGame] = useState(null);
   const [bggAddStatus, setBggAddStatus] = useState('idle');
   const [bggEditStatus, setBggEditStatus] = useState('idle');
+  const [addCoverError, setAddCoverError] = useState('');
+  const [editCoverError, setEditCoverError] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
   const getCategoryLabel = useCallback((categoryValue) => {
@@ -542,6 +546,8 @@ export const Library = ({
   const [bggCardDetails, setBggCardDetails] = useState({});
   const catalogSearchInputRef = useRef(null);
   const bggDetailsCacheRef = useRef({});
+  const addCoverInputRef = useRef(null);
+  const editCoverInputRef = useRef(null);
 
   // Build a play-count map from game session history
   const playCount = useMemo(() => {
@@ -694,6 +700,14 @@ export const Library = ({
     e.preventDefault();
     if (!editingGame?.name?.trim()) return;
 
+    const rawCover = editingGame.coverUrl ?? '';
+    if (rawCover && !rawCover.startsWith('data:')) {
+      if (!sanitizeUrl(rawCover)) {
+        setEditCoverError(t('library.coverUrlInvalid'));
+        return;
+      }
+    }
+
     onUpdate(editingGame.id, {
       name: editingGame.name,
       category: editingGame.category,
@@ -712,9 +726,61 @@ export const Library = ({
     setEditingGame(null);
   };
 
+  const handleAddCoverUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setAddCoverError(t('library.coverUrlInvalid'));
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAddCoverError(t('library.coverFileTooLarge'));
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setAddingGame((prev) => ({ ...prev, coverUrl: ev.target.result }));
+      setAddCoverError('');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleEditCoverUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setEditCoverError(t('library.coverUrlInvalid'));
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setEditCoverError(t('library.coverFileTooLarge'));
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setEditingGame((prev) => ({ ...prev, coverUrl: ev.target.result }));
+      setEditCoverError('');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   const handleAddSubmit = (e) => {
     e.preventDefault();
     if (!addingGame?.name?.trim()) return;
+
+    const rawCover = addingGame.coverUrl ?? '';
+    if (rawCover && !rawCover.startsWith('data:')) {
+      if (!sanitizeUrl(rawCover)) {
+        setAddCoverError(t('library.coverUrlInvalid'));
+        return;
+      }
+    }
 
     onAdd({
       name: addingGame.name,
@@ -1418,15 +1484,48 @@ export const Library = ({
 
               <div className="form-group">
                 <label htmlFor="add-cover">{t('library.coverUrl')}</label>
-                <input
-                  id="add-cover"
-                  type="url"
-                  value={addingGame.coverUrl ?? ''}
-                  onChange={handleAddField('coverUrl')}
-                  placeholder={t('library.coverUrlPlaceholder')}
-                  maxLength={1000}
-                />
-                <span className="lib-field-hint">{t('library.coverUrlHint')}</span>
+                <div className="lib-cover-input-row">
+                  <input
+                    id="add-cover"
+                    type="text"
+                    value={addingGame.coverUrl ?? ''}
+                    onChange={(e) => {
+                      setAddingGame((prev) => ({ ...prev, coverUrl: e.target.value }));
+                      setAddCoverError('');
+                    }}
+                    placeholder={t('library.coverUrlPlaceholder')}
+                    maxLength={1000}
+                    className={addCoverError ? 'input-error' : ''}
+                  />
+                  <button
+                    type="button"
+                    className="btn-upload-cover"
+                    onClick={() => addCoverInputRef.current?.click()}
+                    title={t('library.coverUploadBtn')}
+                    aria-label={t('library.coverUploadBtn')}
+                  >
+                    <Upload size={14} />
+                  </button>
+                  <input
+                    ref={addCoverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="lib-cover-file-input"
+                    onChange={handleAddCoverUpload}
+                  />
+                </div>
+                {addCoverError && <span className="lib-field-error">{addCoverError}</span>}
+                <span className="lib-field-hint">{t('library.coverHint')}</span>
+                {addingGame.coverUrl && (
+                  <div className="lib-cover-preview-wrap">
+                    <img
+                      src={addingGame.coverUrl}
+                      alt="preview"
+                      className="lib-cover-preview"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="form-group form-checkbox">
@@ -1644,15 +1743,38 @@ export const Library = ({
 
               <div className="form-group">
                 <label htmlFor="edit-cover">{t('library.coverUrl')}</label>
-                <input
-                  id="edit-cover"
-                  type="url"
-                  value={editingGame.coverUrl ?? ''}
-                  onChange={handleEditField('coverUrl')}
-                  placeholder={t('library.coverUrlPlaceholder')}
-                  maxLength={1000}
-                />
-                <span className="lib-field-hint">{t('library.coverUrlHint')}</span>
+                <div className="lib-cover-input-row">
+                  <input
+                    id="edit-cover"
+                    type="text"
+                    value={editingGame.coverUrl ?? ''}
+                    onChange={(e) => {
+                      setEditingGame((prev) => ({ ...prev, coverUrl: e.target.value }));
+                      setEditCoverError('');
+                    }}
+                    placeholder={t('library.coverUrlPlaceholder')}
+                    maxLength={1000}
+                    className={editCoverError ? 'input-error' : ''}
+                  />
+                  <button
+                    type="button"
+                    className="btn-upload-cover"
+                    onClick={() => editCoverInputRef.current?.click()}
+                    title={t('library.coverUploadBtn')}
+                    aria-label={t('library.coverUploadBtn')}
+                  >
+                    <Upload size={14} />
+                  </button>
+                  <input
+                    ref={editCoverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="lib-cover-file-input"
+                    onChange={handleEditCoverUpload}
+                  />
+                </div>
+                {editCoverError && <span className="lib-field-error">{editCoverError}</span>}
+                <span className="lib-field-hint">{t('library.coverHint')}</span>
                 {editingGame.coverUrl && (
                   <div className="lib-cover-preview-wrap">
                     <img

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   BarChart3,
+  BadgeCheck,
   Brain,
   BookOpen,
   Clock3,
@@ -422,36 +423,51 @@ export const Profile = ({
   }, [competitiveGames, primaryPlayer]);
 
   const rivalSummary = useMemo(() => {
-    const opponents = {};
+    const opponentStats = {};
 
     competitiveGames.forEach((game) => {
       (game.players || []).forEach((player) => {
         if (player === primaryPlayer) return;
-        opponents[player] = (opponents[player] || 0) + 1;
+        if (!opponentStats[player]) opponentStats[player] = { games: 0, rivalWins: 0 };
+        opponentStats[player].games += 1;
+        if (game.winner === player) opponentStats[player].rivalWins += 1;
       });
     });
 
-    const topRival = Object.entries(opponents).sort(([, a], [, b]) => b - a)[0]?.[0] || null;
-    if (!topRival) return null;
+    const entries = Object.entries(opponentStats);
+    if (entries.length === 0) return null;
 
-    const rivalGames = competitiveGames.filter((g) => (g.players || []).includes(topRival));
-    const myWins = rivalGames.filter((g) => g.winner === primaryPlayer).length;
-    const winRate = rivalGames.length > 0 ? Math.round((myWins / rivalGames.length) * 100) : 0;
+    // Sort: most games together first, then most rival wins as tiebreaker
+    entries.sort(([, a], [, b]) =>
+      b.games !== a.games ? b.games - a.games : b.rivalWins - a.rivalWins
+    );
 
-    const gameCount = {};
-    rivalGames.forEach((g) => {
-      if (!g.game) return;
-      gameCount[g.game] = (gameCount[g.game] || 0) + 1;
-    });
-    const topGameEntry = Object.entries(gameCount).sort(([, a], [, b]) => b - a)[0] || null;
+    const [, topStats] = entries[0];
 
-    return {
-      name: topRival,
-      games: rivalGames.length,
-      myWins,
-      winRate,
-      topGame: topGameEntry ? { name: topGameEntry[0], plays: topGameEntry[1] } : null,
-    };
+    // All players that share both top criteria are co-rivals
+    return entries
+      .filter(([, s]) => s.games === topStats.games && s.rivalWins === topStats.rivalWins)
+      .map(([name, s]) => {
+        const rivalGames = competitiveGames.filter((g) => (g.players || []).includes(name));
+        const myWins = rivalGames.filter((g) => g.winner === primaryPlayer).length;
+        const winRate = rivalGames.length > 0 ? Math.round((myWins / rivalGames.length) * 100) : 0;
+
+        const gameCount = {};
+        rivalGames.forEach((g) => {
+          if (!g.game) return;
+          gameCount[g.game] = (gameCount[g.game] || 0) + 1;
+        });
+        const topGameEntry = Object.entries(gameCount).sort(([, a], [, b]) => b - a)[0] || null;
+
+        return {
+          name,
+          games: s.games,
+          rivalWins: s.rivalWins,
+          myWins,
+          winRate,
+          topGame: topGameEntry ? { name: topGameEntry[0], plays: topGameEntry[1] } : null,
+        };
+      });
   }, [competitiveGames, primaryPlayer]);
 
   const librarySummary = useMemo(() => {
@@ -801,6 +817,12 @@ export const Profile = ({
               />
             </div>
             <h1 className="profile-player-name">{displayPlayerName || primaryPlayer}</h1>
+            {auth?.isSignedIn && (
+              <div className="profile-google-badge">
+                <BadgeCheck size={13} />
+                <span>{t('profile.googleConnected')}</span>
+              </div>
+            )}
           </div>
         </header>
 
@@ -808,18 +830,24 @@ export const Profile = ({
           <section className="profile-top-stats" aria-label={t('profile.summaryAria')}>
             <article className="profile-small-stat-card">
               <span className="profile-small-stat-icon"><Dices size={18} /></span>
-              <span className="profile-small-stat-number">{playerStats.totalGames}</span>
-              <span className="profile-small-stat-label">{t('profile.matches')}</span>
+              <div className="profile-small-stat-content">
+                <span className="profile-small-stat-number">{playerStats.totalGames}</span>
+                <span className="profile-small-stat-label">{t('profile.matches')}</span>
+              </div>
             </article>
             <article className="profile-small-stat-card">
               <span className="profile-small-stat-icon"><Trophy size={18} /></span>
-              <span className="profile-small-stat-number">{totalWins}</span>
-              <span className="profile-small-stat-label">{t('stats.victories')}</span>
+              <div className="profile-small-stat-content">
+                <span className="profile-small-stat-number">{totalWins}</span>
+                <span className="profile-small-stat-label">{t('stats.victories')}</span>
+              </div>
             </article>
             <article className="profile-small-stat-card">
               <span className="profile-small-stat-icon"><Star size={18} /></span>
-              <span className="profile-small-stat-number">{uniquePlayedGamesCount}</span>
-              <span className="profile-small-stat-label">{t('profile.uniqueGames')}</span>
+              <div className="profile-small-stat-content">
+                <span className="profile-small-stat-number">{uniquePlayedGamesCount}</span>
+                <span className="profile-small-stat-label">{t('profile.uniqueGames')}</span>
+              </div>
             </article>
           </section>
 
@@ -1045,19 +1073,21 @@ export const Profile = ({
             <div className="profile-card-header">
               <h3 className="profile-card-title-with-icon"><HandFist size={18} /> {t('stats.rivalMajor')}</h3>
             </div>
-            {rivalSummary ? (
-              <>
-                <p className="profile-rival-name">{rivalSummary.name}</p>
-                <div className="profile-rival-grid">
-                  <p><span>{t('profile.matches')}</span><strong>{rivalSummary.games}</strong></p>
-                  <p className="profile-rival-grid-wins"><span>{t('stats.victories')}</span><strong>{rivalSummary.myWins}</strong></p>
-                  <p className="profile-rival-grid-losses"><span>{t('stats.defeats')}</span><strong>{Math.max(rivalSummary.games - rivalSummary.myWins, 0)}</strong></p>
-                  <p><span>{t('stats.winRateLabel')}</span><strong>{rivalSummary.winRate}%</strong></p>
+            {rivalSummary?.length > 0 ? (
+              rivalSummary.map((rival, idx) => (
+                <div key={rival.name} className={idx > 0 ? 'profile-rival-entry profile-rival-entry--sep' : 'profile-rival-entry'}>
+                  <p className="profile-rival-name">{rival.name}</p>
+                  <div className="profile-rival-grid">
+                    <p><span>{t('profile.matches')}</span><strong>{rival.games}</strong></p>
+                    <p className="profile-rival-grid-wins"><span>{t('stats.victories')}</span><strong>{rival.myWins}</strong></p>
+                    <p className="profile-rival-grid-losses"><span>{t('stats.defeats')}</span><strong>{Math.max(rival.games - rival.myWins, 0)}</strong></p>
+                    <p><span>{t('stats.winRateLabel')}</span><strong>{rival.winRate}%</strong></p>
+                  </div>
+                  <p className="profile-subtle-text">
+                    {t('profile.mostPlayedGameLabel')}: {rival.topGame ? `${rival.topGame.name} (${rival.topGame.plays})` : '—'}
+                  </p>
                 </div>
-                <p className="profile-subtle-text">
-                  {t('profile.mostPlayedGameLabel')}: {rivalSummary.topGame ? `${rivalSummary.topGame.name} (${rivalSummary.topGame.plays})` : '—'}
-                </p>
-              </>
+              ))
             ) : (
               <p className="profile-subtle-text">{t('profile.noRivalData')}</p>
             )}
