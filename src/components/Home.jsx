@@ -6,7 +6,6 @@ import {
   CircleStar,
   Dices,
   Flame,
-  Hand,
   Handshake,
   History,
   House,
@@ -343,7 +342,6 @@ export const Home = ({
             <div>
               <h2 className="welcome-message">
                 {t('home.welcome')}, <span className="username">{displayPlayerName || primaryPlayer}</span>
-                <Hand size={18} className="waving-hand" />
               </h2>
               <p className="header-subtitle"><Flame size={16} /> {gamesLast30Days} {t('home.gamesLast30Days')}</p>
             </div>

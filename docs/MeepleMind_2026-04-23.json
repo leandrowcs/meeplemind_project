@@ -2,11 +2,31 @@
   "version": "2.0",
   "games": [
     {
+      "id": "717aff92-1499-4c8c-a1b9-c85eea47198b",
+      "game": "Sky Team",
+      "gameType": "cooperative",
+      "players": [
+        "Leandro Wanderley Couto",
+        "Ketlin"
+      ],
+      "points": [
+        0,
+        0
+      ],
+      "winner": null,
+      "coopResult": "win",
+      "duration": 30,
+      "date": "2026-04-18T04:00:00.000Z",
+      "rating": 0,
+      "notes": "",
+      "updatedAt": "2026-04-22T15:34:04.284Z"
+    },
+    {
       "id": "2f87f4af-4b1a-49ac-992c-4abc9ec68335",
       "game": "Ticket to Ride",
       "gameType": "competitive",
       "players": [
-        "Leandro",
+        "Leandro Wanderley Couto",
         "Edu",
         "Ori",
         "Jonathas",
@@ -19,19 +39,20 @@
         79,
         55
       ],
-      "winner": "Leandro",
+      "winner": "Leandro Wanderley Couto",
       "coopResult": null,
       "duration": 90,
       "date": "2026-04-12T00:00:00.000Z",
       "rating": 0,
-      "notes": ""
+      "notes": "",
+      "updatedAt": "2026-04-12T00:00:00.000Z"
     },
     {
       "id": "0d750144-5d2d-4a75-b344-58306ba256b1",
       "game": "Whistle Montain",
       "gameType": "competitive",
       "players": [
-        "Leandro",
+        "Leandro Wanderley Couto",
         "Danilo",
         "Fabio",
         "Jonathas"
@@ -42,19 +63,20 @@
         142,
         95
       ],
-      "winner": "Leandro",
+      "winner": "Leandro Wanderley Couto",
       "coopResult": null,
       "duration": 180,
       "date": "2026-03-14T00:00:00.000Z",
       "rating": 0,
-      "notes": ""
+      "notes": "",
+      "updatedAt": "2026-03-14T00:00:00.000Z"
     },
     {
       "id": "3be0097a-d70d-4e3e-b4a4-e5565e80637d",
       "game": "Zombicide: Army of the Dead",
       "gameType": "cooperative",
       "players": [
-        "Leandro",
+        "Leandro Wanderley Couto",
         "Ketlin",
         "Bruno Abia",
         "Bruno Rebanda",
@@ -72,14 +94,15 @@
       "duration": 180,
       "date": "2025-12-27T00:00:00.000Z",
       "rating": 0,
-      "notes": ""
+      "notes": "",
+      "updatedAt": "2025-12-27T00:00:00.000Z"
     },
     {
       "id": "54263c76-4b11-4b5a-a873-94072f996056",
       "game": "Zombicide: Army of the Dead",
       "gameType": "cooperative",
       "players": [
-        "Leandro",
+        "Leandro Wanderley Couto",
         "Ketlin",
         "Bruno Abia",
         "Bruno Rebanda"
@@ -97,18 +120,59 @@
       "rating": 0,
       "notes": "",
       "updatedAt": "2026-04-17T15:53:58.140Z"
+    },
+    {
+      "id": "71cdf41a-3f65-4a83-ab50-3d2777c55225",
+      "game": "Fallout",
+      "gameType": "competitive",
+      "players": [
+        "Leandro Wanderley Couto",
+        "Fabio",
+        "Jonathas"
+      ],
+      "points": [
+        9,
+        11,
+        8
+      ],
+      "winner": "Fabio",
+      "coopResult": null,
+      "duration": 240,
+      "date": "2025-12-13T05:00:00.000Z",
+      "rating": 0,
+      "notes": "",
+      "updatedAt": "2026-04-22T18:00:28.369Z"
+    },
+    {
+      "id": "e44e9f9b-756b-4b76-b38e-607f3a84eb19",
+      "game": "River Dragons",
+      "gameType": "competitive",
+      "players": [
+        "Leandro Wanderley Couto",
+        "Edu",
+        "Ketlin",
+        "Ju",
+        "Ori",
+        "Ana"
+      ],
+      "points": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "winner": "Leandro Wanderley Couto",
+      "coopResult": null,
+      "duration": 90,
+      "date": "2025-11-15T05:00:00.000Z",
+      "rating": 0,
+      "notes": "",
+      "updatedAt": "2026-04-22T18:36:34.757Z"
     }
   ],
   "library": [
-    {
-      "id": "782c61fa-571f-45c9-a98c-21adab1d2005",
-      "name": "Au Feu!",
-      "category": "cooperative",
-      "minPlayers": 2,
-      "maxPlayers": 6,
-      "addedAt": "2026-04-16T00:10:09.856Z",
-      "owned": true
-    },
     {
       "id": "057339b5-faf8-47bd-a2a1-c7690c50298d",
       "name": "Avalon",
@@ -127,13 +191,13 @@
       "category": "cooperative",
       "minPlayers": 3,
       "maxPlayers": 6,
-      "addedAt": "2026-04-16T00:08:14.745Z",
       "description": "",
-      "coverUrl": "",
+      "coverUrl": "https://cf.geekdo-images.com/lqmt2Oti_qJS65XqHcB8AA__imagepagezoom/img/klYqQ3Oh1c3g9Nwv6I0trtCjCLI=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic5146864.png",
       "owned": true,
       "nameLocal": {},
       "descriptionLocal": {},
-      "updatedAt": "2026-04-21T15:50:10.132Z"
+      "addedAt": "2026-04-16T00:08:14.745Z",
+      "updatedAt": "2026-04-21T20:25:12.170Z"
     },
     {
       "id": "0243016b-3e5e-4210-a41a-c898a85e65ee",
@@ -179,15 +243,45 @@
       "id": "80bb9aed-463a-4e10-a18f-7a3d369b8059",
       "name": "Fallout",
       "category": "strategy",
+      "categories": [
+        "strategy",
+        "science-fiction",
+        "adventure"
+      ],
+      "mechanics": [],
+      "gameType": "semi-cooperative",
       "minPlayers": 1,
       "maxPlayers": 4,
-      "addedAt": "2026-04-16T00:09:43.771Z",
       "description": "",
-      "coverUrl": "",
+      "coverUrl": "https://cf.geekdo-images.com/9gjrMWDqLCBb-G0AYbKuSQ__imagepage/img/ecf4qAJy79pCFqBw5vlfoOOF7AU=/fit-in/900x600/filters:no_upscale():strip_icc()/pic3728149.jpg",
       "owned": true,
       "nameLocal": {},
       "descriptionLocal": {},
-      "updatedAt": "2026-04-21T15:50:21.669Z"
+      "addedAt": "2026-04-16T00:09:43.771Z",
+      "updatedAt": "2026-04-22T18:02:56.778Z"
+    },
+    {
+      "id": "782c61fa-571f-45c9-a98c-21adab1d2005",
+      "name": "Flash Point: Fire Rescue",
+      "category": "cooperative",
+      "categories": [
+        "cooperative",
+        "adventure"
+      ],
+      "mechanics": [
+        "dice-rolling",
+        "action-points"
+      ],
+      "gameType": "cooperative",
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "description": "",
+      "coverUrl": "https://cf.geekdo-images.com/v6bTbxeprDFj1nN4AenvjA__imagepage/img/9mQ2p35prFsRvuPQUfNqEHIgt2c=/fit-in/900x600/filters:no_upscale():strip_icc()/pic1129370.jpg",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:10:09.856Z",
+      "updatedAt": "2026-04-22T17:36:45.925Z"
     },
     {
       "id": "a261c783-14df-4eb6-b76e-cda0227ed9b7",
@@ -219,13 +313,26 @@
       "id": "fa8a2cea-df9e-4e73-ad8e-0ab52afcc59a",
       "name": "Mansions of Madness",
       "category": "cooperative",
+      "categories": [
+        "cooperative",
+        "fantasy",
+        "adventure"
+      ],
+      "mechanics": [
+        "dice-rolling",
+        "hidden-roles",
+        "action-points"
+      ],
+      "gameType": "cooperative",
       "minPlayers": 1,
       "maxPlayers": 5,
-      "addedAt": "2026-04-16T00:20:00.040Z",
       "description": "",
-      "coverUrl": "https://boardgamegeek.com/boardgame/205059/mansions-of-madness-second-edition",
+      "coverUrl": "https://cf.geekdo-images.com/LIooA9bTdjnE9qmhjL-UFw__imagepage/img/nhF-Ys7IOrSMNwJVZSjMV2iVjXo=/fit-in/900x600/filters:no_upscale():strip_icc()/pic3118622.jpg",
       "owned": true,
-      "updatedAt": "2026-04-17T20:27:19.432Z"
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:20:00.040Z",
+      "updatedAt": "2026-04-23T12:14:09.028Z"
     },
     {
       "id": "b33e870a-1f15-4af6-bbe3-d8b1500b62f0",
@@ -247,17 +354,35 @@
       "category": "cooperative",
       "minPlayers": 1,
       "maxPlayers": 4,
+      "description": "",
+      "coverUrl": "",
       "owned": true,
-      "addedAt": "2026-04-17T12:43:53.307Z"
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-17T12:43:53.307Z",
+      "updatedAt": "2026-04-21T04:13:33.545Z"
     },
     {
       "id": "8c9c1e70-e6de-4381-b773-3995e198e96f",
       "name": "River Dragons",
       "category": "family",
+      "categories": [
+        "family",
+        "abstract"
+      ],
+      "mechanics": [
+        "action-points"
+      ],
+      "gameType": "gateway",
       "minPlayers": 2,
       "maxPlayers": 6,
+      "description": "",
+      "coverUrl": "https://cf.geekdo-images.com/DXA__BmtPAOfEyH9m_dvKQ__imagepagezoom/img/GxUEcgWYe2mpdflIkYQUfdUSNuw=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic1374907.jpg",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
       "addedAt": "2026-04-16T00:12:27.964Z",
-      "owned": true
+      "updatedAt": "2026-04-22T18:41:13.129Z"
     },
     {
       "id": "5882c34c-928e-4033-b61b-7444499d0f63",
@@ -305,7 +430,13 @@
       "category": "strategy",
       "minPlayers": 1,
       "maxPlayers": 5,
-      "addedAt": "2026-04-16T00:07:03.652Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:07:03.652Z",
+      "updatedAt": "2026-04-21T04:12:26.951Z"
     },
     {
       "id": "c91b5cd2-72b9-4760-9004-74da7ef34519",
@@ -313,7 +444,13 @@
       "category": "family",
       "minPlayers": 1,
       "maxPlayers": 2,
-      "addedAt": "2026-04-16T00:12:50.326Z"
+      "description": "",
+      "coverUrl": "https://cf.geekdo-images.com/uXMeQzNenHb3zK7Hoa6b2w__imagepage/img/pGD_ZWkXcMk6JsTpFwwBVYk-sdk=/fit-in/900x600/filters:no_upscale():strip_icc()/pic7398904.jpg",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:12:50.326Z",
+      "updatedAt": "2026-04-22T15:35:05.204Z"
     },
     {
       "id": "1ba635a7-a4f5-4390-bb68-d63560efe1bb",
@@ -321,7 +458,13 @@
       "category": "strategy",
       "minPlayers": 2,
       "maxPlayers": 6,
-      "addedAt": "2026-04-16T00:11:14.299Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:11:14.299Z",
+      "updatedAt": "2026-04-21T04:12:26.951Z"
     },
     {
       "id": "2048e93c-7026-4b11-812b-4e58afbacc0a",
@@ -329,7 +472,13 @@
       "category": "strategy",
       "minPlayers": 1,
       "maxPlayers": 4,
-      "addedAt": "2026-04-16T00:18:26.029Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:18:26.029Z",
+      "updatedAt": "2026-04-21T04:12:26.951Z"
     },
     {
       "id": "646e2ce2-0801-4e62-9a52-67f064957bfe",
@@ -337,7 +486,13 @@
       "category": "party",
       "minPlayers": 3,
       "maxPlayers": 6,
-      "addedAt": "2026-04-16T00:15:42.557Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:15:42.557Z",
+      "updatedAt": "2026-04-21T04:12:26.951Z"
     },
     {
       "id": "d7665eba-5e5f-48ac-a72a-d77071f5bad0",
@@ -345,7 +500,13 @@
       "category": "party",
       "minPlayers": 2,
       "maxPlayers": 8,
-      "addedAt": "2026-04-16T00:15:23.586Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:15:23.586Z",
+      "updatedAt": "2026-04-21T04:12:26.951Z"
     },
     {
       "id": "baaeeb32-ff1c-4f40-970d-dd048d23b695",
@@ -353,7 +514,13 @@
       "category": "strategy",
       "minPlayers": 1,
       "maxPlayers": 5,
-      "addedAt": "2026-04-16T00:12:11.038Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:12:11.038Z",
+      "updatedAt": "2026-04-21T04:12:26.952Z"
     },
     {
       "id": "d01ce642-0f06-414b-af0a-279daec9f1ac",
@@ -375,7 +542,13 @@
       "category": "strategy",
       "minPlayers": 2,
       "maxPlayers": 6,
-      "addedAt": "2026-04-16T00:19:29.679Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:19:29.679Z",
+      "updatedAt": "2026-04-21T04:12:26.952Z"
     },
     {
       "id": "5180082f-15f3-4724-a49d-b564d17ea8cf",
@@ -383,7 +556,13 @@
       "category": "party",
       "minPlayers": 8,
       "maxPlayers": 20,
-      "addedAt": "2026-04-16T00:14:14.967Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:14:14.967Z",
+      "updatedAt": "2026-04-21T04:12:26.952Z"
     },
     {
       "id": "e51058f1-18bb-46fe-af0f-c4f607db8d61",
@@ -391,7 +570,13 @@
       "category": "strategy",
       "minPlayers": 2,
       "maxPlayers": 6,
-      "addedAt": "2026-04-16T00:05:33.661Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:05:33.661Z",
+      "updatedAt": "2026-04-21T04:12:26.952Z"
     },
     {
       "id": "da718748-57b5-4c7f-9d42-f1e231a2d39c",
@@ -426,8 +611,14 @@
       "category": "cooperative",
       "minPlayers": 1,
       "maxPlayers": 10,
-      "addedAt": "2026-04-16T00:21:11.260Z"
+      "description": "",
+      "coverUrl": "",
+      "owned": true,
+      "nameLocal": {},
+      "descriptionLocal": {},
+      "addedAt": "2026-04-16T00:21:11.260Z",
+      "updatedAt": "2026-04-21T04:12:26.952Z"
     }
   ],
-  "exportedAt": "2026-04-21T19:56:42.478Z"
+  "exportedAt": "2026-04-23T13:28:28.609Z"
 }

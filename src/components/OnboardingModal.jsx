@@ -7,7 +7,7 @@ import './OnboardingModal.css';
 const WELCOME_LANGUAGES = [
   { code: 'pt-BR', flag: '🇧🇷', labelKey: 'onboarding.langPTBR' },
   { code: 'en-US', flag: '🇺🇸', labelKey: 'onboarding.langENUS' },
-  { code: 'fr-CA', flag: '🇨🇦', labelKey: 'onboarding.langFRCA' },
+  { code: 'fr-CA', flag: null, flagLeft: '🇫🇷', flagRight: '🇨🇦', labelKey: 'onboarding.langFRCA' },
 ];
 
 export const OnboardingModal = ({ onComplete, auth, syncStatus }) => {
@@ -83,7 +83,14 @@ export const OnboardingModal = ({ onComplete, auth, syncStatus }) => {
             title={t(item.labelKey)}
             aria-label={t(item.labelKey)}
           >
-            <span aria-hidden>{item.flag}</span>
+            {item.flagLeft ? (
+              <span className="flag-split" aria-hidden>
+                <span className="flag-split-half flag-split-left">{item.flagLeft}</span>
+                <span className="flag-split-half flag-split-right">{item.flagRight}</span>
+              </span>
+            ) : (
+              <span aria-hidden>{item.flag}</span>
+            )}
           </button>
         ))}
       </div>

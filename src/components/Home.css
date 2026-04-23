@@ -21,8 +21,9 @@
   margin: 0;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--spacing-xs);
-  font-size: 28px;
+  font-size: 22px;
 }
 
 .username {
@@ -465,27 +466,18 @@
 
 @media (max-width: 460px) {
   .welcome-message {
-    font-size: 1.6rem;
+    font-size: 22px;
   }
 
   .card-title {
-    font-size: 1.4rem;
+    font-size: 22px;
   }
 
   .history-summary-grid {
     grid-template-columns: 1fr;
   }
 
-  .fab-new-game {
-    width: 60px;
-    height: 60px;
-    top: -38px;
-    right: 0.38rem;
-  }
-
-  .home-container .bottom-nav::before {
-    width: 104px;
-    height: 48px;
-    top: -34px;
+  .bottom-nav {
+    padding-right: calc(60px + 0.38rem + 0.4rem);
   }
 }
