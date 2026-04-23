@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
+import { GoogleAuthButton } from './GoogleAuthButton';
 import logoImage from '../assets/meeplemind_logo.png';
 import './OnboardingModal.css';
 
-export const OnboardingModal = ({ onComplete }) => {
-  const { t } = useLanguage();
+const WELCOME_LANGUAGES = [
+  { code: 'pt-BR', flag: '🇧🇷', labelKey: 'onboarding.langPTBR' },
+  { code: 'en-US', flag: '🇺🇸', labelKey: 'onboarding.langENUS' },
+  { code: 'fr-CA', flag: '🇨🇦', labelKey: 'onboarding.langFRCA' },
+];
+
+export const OnboardingModal = ({ onComplete, auth, syncStatus }) => {
+  const { t, language, changeLanguage } = useLanguage();
   const [name, setName] = useState('');
   const [touched, setTouched] = useState(false);
 
@@ -25,7 +32,19 @@ export const OnboardingModal = ({ onComplete }) => {
       <div className="onboarding-card fade-in">
         <img src={logoImage} alt="MeepleMind" className="onboarding-logo" />
         <h1 className="onboarding-title">{t('onboarding.title')}</h1>
+        <p className="onboarding-about">{t('onboarding.about')}</p>
         <p className="onboarding-desc">{t('onboarding.description')}</p>
+        
+        {auth?.isConfigured && (
+          <div className="onboarding-google-block" aria-label={t('onboarding.googleSectionAria')}>
+            <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
+            <p className="onboarding-google-hint">{t('onboarding.googleHint')}</p>
+          </div>
+        )}
+
+        <div className="onboarding-divider" aria-hidden>
+          <span>{t('onboarding.orUseName')}</span>
+        </div>
 
         <form onSubmit={handleSubmit} className="onboarding-form">
           <input
@@ -52,6 +71,21 @@ export const OnboardingModal = ({ onComplete }) => {
             {t('onboarding.submit')}
           </button>
         </form>
+      </div>
+
+      <div className="onboarding-language-bottom" aria-label={t('onboarding.languageSelectorLabel')}>
+        {WELCOME_LANGUAGES.map((item) => (
+          <button
+            key={item.code}
+            type="button"
+            className={`onboarding-language-flag${language === item.code ? ' active' : ''}`}
+            onClick={() => changeLanguage(item.code)}
+            title={t(item.labelKey)}
+            aria-label={t(item.labelKey)}
+          >
+            <span aria-hidden>{item.flag}</span>
+          </button>
+        ))}
       </div>
     </div>
   );

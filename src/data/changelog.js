@@ -2,6 +2,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v2.5.3: Welcome ganhou seleção de idioma por bandeiras no rodapé, texto de apresentação mais claro, logo maior e botão Google centralizado.',
+      'v2.5.2: Welcome agora oferece login com Google na primeira tela para recuperar histórico e biblioteca do Drive antes de informar nome manualmente.',
       'v2.5.1: Perfil refinado com card Conquistas (abas em progresso/concluídas), modal explicativo de XP, barra de progresso corrigida e pódio competitivo com ouro/prata/bronze.',
       'v2.5.0: Estatísticas agora exibem mini-capas nos rankings, Perfil ganhou jogos diferentes + tempo total + gamificação/medalhas e Histórico recebeu layout novo com header moderno e fundo com capa no item expandido.',
       'v2.4.9: Nova Partida virou wizard em 5 etapas com transições, testes e2e atualizados e Biblioteca com adição manual + edição de nome/categorias/mecânicas/tipo.',
@@ -19,6 +21,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v2.5.3: Welcome now includes bottom flag language selection, clearer product intro copy, a larger logo, and centered Google sign-in button content.',
+      'v2.5.2: Welcome now offers Google sign-in on first launch to restore history and library from Drive before manual name entry.',
       'v2.5.1: Profile now has a refined Achievements card (in-progress/completed tabs), XP help modal, corrected progress fill behavior, and a competitive podium with gold/silver/bronze placements.',
       'v2.5.0: Statistics now show mini cover badges in rankings, Profile gained unique-games/time-played/gamification medals, and History received a modern header plus cover background on expanded cards.',
       'v2.4.9: New Game is now a 5-step wizard with transitions, e2e coverage updated, and Library supports manual add + editable name/categories/mechanics/type.',
@@ -36,6 +40,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v2.5.3: L\'écran de bienvenue ajoute le sélecteur de langue par drapeaux en bas, un texte de présentation plus clair, un logo agrandi et un bouton Google visuellement centré.',
+      'v2.5.2: L\'écran de bienvenue propose maintenant la connexion Google dès le départ pour restaurer l\'historique et la bibliothèque Drive avant la saisie manuelle du nom.',
       'v2.5.1: Profil amélioré avec carte Succès (onglets en cours/terminés), modal d\'explication XP, remplissage des barres corrigé et podium compétitif or/argent/bronze.',
       'v2.5.0: Les statistiques affichent des mini-couvertures dans les classements, le profil ajoute jeux differents/temps de jeu/gamification, et l\'historique adopte un nouveau header avec fond de couverture en mode etendu.',
       'v2.4.9: Nouvelle partie en assistant 5 etapes avec transitions, tests e2e mis a jour, et Bibliotheque avec ajout manuel + edition du nom/categories/mecaniques/type.',

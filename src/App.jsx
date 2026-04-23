@@ -65,6 +65,17 @@ function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  useEffect(() => {
+    if (primaryPlayer) return;
+    if (!auth.isSignedIn) return;
+
+    const googleName = auth.user?.name?.trim();
+    if (!googleName) return;
+
+    localStorage.setItem(PRIMARY_PLAYER_KEY, googleName);
+    setPrimaryPlayer(googleName);
+  }, [auth.isSignedIn, auth.user?.name, primaryPlayer]);
+
   const stats = getStats();
 
   // ── Google Drive: load data on sign-in ────────────────────────────────────
@@ -162,6 +173,8 @@ function App() {
   if (!primaryPlayer) {
     return (
       <OnboardingModal
+        auth={auth}
+        syncStatus={syncStatus}
         onComplete={(name) => {
           localStorage.setItem(PRIMARY_PLAYER_KEY, name);
           setPrimaryPlayer(name);
