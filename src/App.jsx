@@ -207,9 +207,17 @@ function App() {
         <History
           onNavigate={navigateTo}
           games={games}
+          library={lib.library}
           onDelete={deleteGame}
           onUpdate={updateGame}
-          uniqueGames={getUniqueGames()}
+          exportToCSV={handleExportToCSV}
+          exportToJSON={handleExportToJSON}
+          importFromJSON={handleImportFromJSON}
+          clearAllData={handleClearAllData}
+          auth={auth}
+          syncStatus={syncStatus}
+          displayPlayerName={displayPlayerName}
+          googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
         />
       )}
       {currentPage === 'stats' && (
