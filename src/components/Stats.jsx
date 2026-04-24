@@ -37,6 +37,11 @@ import { Bar, Doughnut, Radar } from 'react-chartjs-2';
 import { Button } from './Button';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
+import {
+  THEME_LABEL_KEYS,
+  MECHANIC_LABEL_KEYS,
+  GAMETYPE_LABEL_KEYS,
+} from '../utils/classifications';
 import { formatDate } from '../utils/dateFormat';
 import { buildLibraryCoverMap, getCoverByGameName } from '../utils/gameCover';
 import './Stats.css';
@@ -45,28 +50,6 @@ ChartJS.register(CategoryScale, LinearScale, RadialLinearScale, BarElement, ArcE
 
 const CHART_COLORS = ['#4f7dff', '#f08a2f', '#8f7cff', '#2fbf8f', '#f4bf34', '#f97373', '#2dd4bf', '#60a5fa', '#c084fc', '#fb7185'];
 
-const CATEGORY_LABEL_KEYS = {
-  strategy: 'library.categoryStrategy',
-  cooperative: 'library.categoryCooperative',
-  family: 'library.categoryFamily',
-  party: 'library.categoryParty',
-  rpg: 'library.categoryRPG',
-  'deck-building': 'library.categoryDeckBuilding',
-  'worker-placement': 'library.categoryWorkerPlacement',
-  abstract: 'library.categoryAbstract',
-  euro: 'library.categoryEuro',
-  adventure: 'library.categoryAdventure',
-  war: 'library.categoryWar',
-  economy: 'library.categoryEconomy',
-  fantasy: 'library.categoryFantasy',
-  'science-fiction': 'library.categoryScienceFiction',
-  historical: 'library.categoryHistorical',
-  negotiation: 'library.categoryNegotiation',
-  trivia: 'library.categoryTrivia',
-  cards: 'library.categoryCards',
-  other: 'library.categoryOther',
-  none: 'library.categoryNone',
-};
 
 const VERTICAL_BAR_OPTIONS = {
   responsive: true,
@@ -365,6 +348,7 @@ export const Stats = ({
   const [selectedTeamPlayer, setSelectedTeamPlayer] = useState(null);
   const [selectedGameName, setSelectedGameName] = useState(null);
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
+  const [categoryRadarTab, setCategoryRadarTab] = useState('theme');
 
   const safeGames = Array.isArray(games) ? games : [];
   const safeLibrary = Array.isArray(library) ? library : [];
@@ -639,49 +623,92 @@ export const Stats = ({
     };
   }, [selectedGameName, selectedGameRecords, primaryPlayer]);
 
-  const categoryFrequency = useMemo(() => {
-    const categoryByGame = new Map();
-
+  const themeFrequency = useMemo(() => {
+    const classificationByGame = new Map();
     safeLibrary.forEach((entry) => {
-      const normalizedName = (entry?.name || '').trim().toLowerCase();
-      if (!normalizedName) return;
-
-      const firstCategory = Array.isArray(entry?.categories) && entry.categories.length > 0
-        ? entry.categories[0]
-        : entry?.category;
-
-      const rawCategory = typeof firstCategory === 'string'
-        ? firstCategory.trim().toLowerCase()
-        : '';
-      const normalizedCategory = CATEGORY_LABEL_KEYS[rawCategory]
-        ? rawCategory
-        : rawCategory
-          ? 'other'
-          : 'none';
-
-      categoryByGame.set(normalizedName, normalizedCategory);
+      const key = (entry?.name || '').trim().toLowerCase();
+      if (!key) return;
+      classificationByGame.set(key, {
+        themes: Array.isArray(entry?.themes) ? entry.themes : [],
+        sessionMechanics: Array.isArray(entry?.sessionMechanics) ? entry.sessionMechanics : [],
+        sessionGameCategories: Array.isArray(entry?.sessionGameCategories) ? entry.sessionGameCategories : [],
+      });
     });
 
     const counts = {};
     sortedGames.forEach((game) => {
-      const normalizedGameName = (game?.game || '').trim().toLowerCase();
-      if (!normalizedGameName) return;
+      const key = (game?.game || '').trim().toLowerCase();
+      if (!key) return;
+      const classification = classificationByGame.get(key);
+      if (!classification) return;
+      classification.themes.forEach((slug) => {
+        counts[slug] = (counts[slug] || 0) + 1;
+      });
+    });
+    return Object.entries(counts)
+      .map(([slug, count]) => ({ slug, count, label: t(THEME_LABEL_KEYS[slug] || slug) }))
+      .sort((a, b) => b.count !== a.count ? b.count - a.count : a.label.localeCompare(b.label, language));
+  }, [safeLibrary, sortedGames, t, language]);
 
-      const category = categoryByGame.get(normalizedGameName) || 'none';
-      counts[category] = (counts[category] || 0) + 1;
+  const mechanicFrequency = useMemo(() => {
+    const classificationByGame = new Map();
+    safeLibrary.forEach((entry) => {
+      const key = (entry?.name || '').trim().toLowerCase();
+      if (!key) return;
+      classificationByGame.set(key, {
+        themes: Array.isArray(entry?.themes) ? entry.themes : [],
+        sessionMechanics: Array.isArray(entry?.sessionMechanics) ? entry.sessionMechanics : [],
+        sessionGameCategories: Array.isArray(entry?.sessionGameCategories) ? entry.sessionGameCategories : [],
+      });
     });
 
-    return Object.entries(counts)
-      .map(([category, count]) => ({
-        category,
-        count,
-        label: t(CATEGORY_LABEL_KEYS[category] || 'library.categoryNone'),
-      }))
-      .sort((a, b) => {
-        if (b.count !== a.count) return b.count - a.count;
-        return a.label.localeCompare(b.label, language);
+    const counts = {};
+    sortedGames.forEach((game) => {
+      const key = (game?.game || '').trim().toLowerCase();
+      if (!key) return;
+      const classification = classificationByGame.get(key);
+      if (!classification) return;
+      classification.sessionMechanics.forEach((slug) => {
+        counts[slug] = (counts[slug] || 0) + 1;
       });
+    });
+    return Object.entries(counts)
+      .map(([slug, count]) => ({ slug, count, label: t(MECHANIC_LABEL_KEYS[slug] || slug) }))
+      .sort((a, b) => b.count !== a.count ? b.count - a.count : a.label.localeCompare(b.label, language));
   }, [safeLibrary, sortedGames, t, language]);
+
+  const gameCatFrequency = useMemo(() => {
+    const classificationByGame = new Map();
+    safeLibrary.forEach((entry) => {
+      const key = (entry?.name || '').trim().toLowerCase();
+      if (!key) return;
+      classificationByGame.set(key, {
+        themes: Array.isArray(entry?.themes) ? entry.themes : [],
+        sessionMechanics: Array.isArray(entry?.sessionMechanics) ? entry.sessionMechanics : [],
+        sessionGameCategories: Array.isArray(entry?.sessionGameCategories) ? entry.sessionGameCategories : [],
+      });
+    });
+
+    const counts = {};
+    sortedGames.forEach((game) => {
+      const key = (game?.game || '').trim().toLowerCase();
+      if (!key) return;
+      const classification = classificationByGame.get(key);
+      if (!classification) return;
+      classification.sessionGameCategories.forEach((slug) => {
+        counts[slug] = (counts[slug] || 0) + 1;
+      });
+    });
+    return Object.entries(counts)
+      .map(([slug, count]) => ({ slug, count, label: t(GAMETYPE_LABEL_KEYS[slug] || slug) }))
+      .sort((a, b) => b.count !== a.count ? b.count - a.count : a.label.localeCompare(b.label, language));
+  }, [safeLibrary, sortedGames, t, language]);
+
+  const activeFrequency = categoryRadarTab === 'mechanic'
+    ? mechanicFrequency
+    : categoryRadarTab === 'type'
+      ? gameCatFrequency
+      : themeFrequency;
 
   const winnerBarData = useMemo(() => ({
     labels: winnerCounts.map(([name]) => name),
@@ -742,11 +769,11 @@ export const Stats = ({
   }), [teamPlayers]);
 
   const categoryRadarData = useMemo(() => ({
-    labels: categoryFrequency.map((entry) => entry.label),
+    labels: activeFrequency.map((entry) => entry.label),
     datasets: [
       {
         label: t('stats.matchesByCategory'),
-        data: categoryFrequency.map((entry) => entry.count),
+        data: activeFrequency.map((entry) => entry.count),
         backgroundColor: 'rgba(79, 125, 255, 0.24)',
         borderColor: '#8cb0ff',
         borderWidth: 2,
@@ -758,7 +785,7 @@ export const Stats = ({
         pointHoverRadius: 4,
       },
     ],
-  }), [categoryFrequency, t]);
+  }), [activeFrequency, t]);
 
   const winnerBarOptions = useMemo(() => ({
     ...VERTICAL_BAR_OPTIONS,
@@ -948,35 +975,55 @@ export const Stats = ({
               )}
             </section>
 
-            {/* Activity calendar */}
+            {/* Category radar */}
             <section className="stats-panel">
               <div className="panel-header-row">
                 <h3><BarChart3 size={18} /> {t('stats.categoryRadarTitle')}</h3>
               </div>
               <p className="panel-subtitle">{t('stats.categoryRadarHint')}</p>
+              <div className="radar-tab-group">
+                <button
+                  className={`radar-tab${categoryRadarTab === 'theme' ? ' active' : ''}`}
+                  onClick={() => setCategoryRadarTab('theme')}
+                >
+                  {t('stats.categoryTabTheme')}
+                </button>
+                <button
+                  className={`radar-tab${categoryRadarTab === 'mechanic' ? ' active' : ''}`}
+                  onClick={() => setCategoryRadarTab('mechanic')}
+                >
+                  {t('stats.categoryTabMechanic')}
+                </button>
+                <button
+                  className={`radar-tab${categoryRadarTab === 'type' ? ' active' : ''}`}
+                  onClick={() => setCategoryRadarTab('type')}
+                >
+                  {t('stats.categoryTabType')}
+                </button>
+              </div>
 
-              {categoryFrequency.length > 0 ? (
+              {activeFrequency.length > 0 ? (
                 <>
                   <div className="chart-wrapper chart-wrapper-radar">
                     <Radar data={categoryRadarData} options={categoryRadarOptions} />
                   </div>
                   <div className="leaderboard">
-                    {categoryFrequency.map((entry, rank) => (
-                      <div key={entry.category} className="leaderboard-item">
+                    {activeFrequency.map((entry, rank) => (
+                      <div key={entry.slug} className="leaderboard-item">
                         <span className="rank-badge">{rank + 1}</span>
                         <div className="leaderboard-info">
                           <span className="player-name">{entry.label}</span>
                           <span className="player-stat">{t('stats.matchesCount').replace('{count}', entry.count)}</span>
                         </div>
                         <div className="progress-bar">
-                          <div className="progress-fill" style={{ width: `${(entry.count / categoryFrequency[0].count) * 100}%` }} />
+                          <div className="progress-fill" style={{ width: `${(entry.count / activeFrequency[0].count) * 100}%` }} />
                         </div>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
-                <p className="empty-section">{t('stats.noCategoryData')}</p>
+                <p className="empty-section">{t('stats.noCategoryDataSession')}</p>
               )}
             </section>
 

@@ -7,6 +7,7 @@ import {
   sanitizeNotes,
   validateGameBackup,
 } from '../utils/sanitize';
+import { GAME_THEMES, GAME_MECHANICS, GAME_CATEGORIES } from '../utils/classifications';
 import { formatDate } from '../utils/dateFormat';
 
 const STORAGE_KEY = 'meeplemind_games';
@@ -56,6 +57,15 @@ const sanitizeGameEntry = (item) => {
     date: normalizeIsoDate(item.date),
     rating: sanitizeNumber(item.rating, 0, 5) ?? 0,
     notes: sanitizeNotes(item.notes || ''),
+    themes: Array.isArray(item.themes)
+      ? item.themes.filter((v) => GAME_THEMES.includes(v)).slice(0, 16)
+      : [],
+    mechanics: Array.isArray(item.mechanics)
+      ? item.mechanics.filter((v) => GAME_MECHANICS.includes(v)).slice(0, 16)
+      : [],
+    gameCategories: Array.isArray(item.gameCategories)
+      ? item.gameCategories.filter((v) => GAME_CATEGORIES.includes(v)).slice(0, 10)
+      : [],
     updatedAt: normalizeIsoDate(item.updatedAt || item.date),
   };
 };
@@ -149,6 +159,15 @@ export const useGames = () => {
         : new Date().toISOString(),
       rating: 0,
       notes: '',
+      themes: Array.isArray(gameData.themes)
+        ? gameData.themes.filter((v) => GAME_THEMES.includes(v)).slice(0, 16)
+        : [],
+      mechanics: Array.isArray(gameData.mechanics)
+        ? gameData.mechanics.filter((v) => GAME_MECHANICS.includes(v)).slice(0, 16)
+        : [],
+      gameCategories: Array.isArray(gameData.gameCategories)
+        ? gameData.gameCategories.filter((v) => GAME_CATEGORIES.includes(v)).slice(0, 10)
+        : [],
       updatedAt: new Date().toISOString(),
     };
     setGames((prevGames) => {
@@ -218,6 +237,21 @@ export const useGames = () => {
                 updates.notes !== undefined
                   ? sanitizeNotes(updates.notes)
                   : g.notes,
+              themes: updates.themes !== undefined
+                ? (Array.isArray(updates.themes)
+                    ? updates.themes.filter((v) => GAME_THEMES.includes(v)).slice(0, 16)
+                    : [])
+                : (g.themes || []),
+              mechanics: updates.mechanics !== undefined
+                ? (Array.isArray(updates.mechanics)
+                    ? updates.mechanics.filter((v) => GAME_MECHANICS.includes(v)).slice(0, 16)
+                    : [])
+                : (g.mechanics || []),
+              gameCategories: updates.gameCategories !== undefined
+                ? (Array.isArray(updates.gameCategories)
+                    ? updates.gameCategories.filter((v) => GAME_CATEGORIES.includes(v)).slice(0, 10)
+                    : [])
+                : (g.gameCategories || []),
               updatedAt: new Date().toISOString(),
             }
           : g

@@ -23,7 +23,19 @@ import {
 } from 'lucide-react';
 import { SideMenu } from './SideMenu';
 import { useLanguage } from '../hooks/useLanguage';
-import { GAME_CATEGORIES, GAME_MECHANICS, GAME_TYPES } from '../hooks/useLibrary';
+import {
+  GAME_CATEGORIES as LIB_GAME_CATEGORIES,
+  GAME_MECHANICS as LIB_GAME_MECHANICS,
+  GAME_TYPES,
+} from '../hooks/useLibrary';
+import {
+  GAME_THEMES,
+  GAME_MECHANICS as SESSION_GAME_MECHANICS,
+  GAME_CATEGORIES as SESSION_GAME_CATEGORIES,
+  THEME_LABEL_KEYS,
+  MECHANIC_LABEL_KEYS,
+  GAMETYPE_LABEL_KEYS,
+} from '../utils/classifications';
 import { sanitizeUrl } from '../utils/sanitize';
 import './Library.css';
 
@@ -120,13 +132,13 @@ const LEGACY_CATEGORY_LABEL_KEYS = {
 };
 
 const getCategoryMetaByValue = (value) =>
-  GAME_CATEGORIES.find((item) => item.value === value)
+  LIB_GAME_CATEGORIES.find((item) => item.value === value)
   || (LEGACY_CATEGORY_LABEL_KEYS[value]
     ? { value, label: LEGACY_CATEGORY_LABEL_KEYS[value] }
     : null);
 
 const getMechanicMetaByValue = (value) =>
-  GAME_MECHANICS.find((item) => item.value === value) || null;
+  LIB_GAME_MECHANICS.find((item) => item.value === value) || null;
 
 const getTypeMetaByValue = (value) =>
   GAME_TYPES.find((item) => item.value === value) || null;
@@ -144,6 +156,24 @@ const normalizeGameCategories = (game) => {
 const normalizeGameMechanics = (game) => {
   if (!Array.isArray(game?.mechanics)) return [];
   return game.mechanics.filter(Boolean);
+};
+
+const normalizeSessionThemes = (game) => {
+  if (!Array.isArray(game?.themes)) return [];
+  const whitelist = new Set(GAME_THEMES);
+  return game.themes.filter((value) => whitelist.has(value));
+};
+
+const normalizeSessionMechanics = (game) => {
+  if (!Array.isArray(game?.sessionMechanics)) return [];
+  const whitelist = new Set(SESSION_GAME_MECHANICS);
+  return game.sessionMechanics.filter((value) => whitelist.has(value));
+};
+
+const normalizeSessionGameCategories = (game) => {
+  if (!Array.isArray(game?.sessionGameCategories)) return [];
+  const whitelist = new Set(SESSION_GAME_CATEGORIES);
+  return game.sessionGameCategories.filter((value) => whitelist.has(value));
 };
 
 // ──────────────────────────────────────────────────
@@ -255,6 +285,9 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
   const [imgError, setImgError] = useState(false);
   const categories = normalizeGameCategories(game);
   const mechanics = normalizeGameMechanics(game);
+  const themes = normalizeSessionThemes(game);
+  const sessionMechanics = normalizeSessionMechanics(game);
+  const sessionGameCategories = normalizeSessionGameCategories(game);
   const typeMeta = getTypeMetaByValue(game.gameType || '');
   const displayName = game.nameLocal?.[language] || game.name;
   const displayDescription = game.descriptionLocal?.[language] || game.description;
@@ -338,6 +371,41 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
                   </span>
                 );
               })}
+            </div>
+          )}
+
+          {(themes.length > 0 || sessionMechanics.length > 0 || sessionGameCategories.length > 0) && (
+            <div className="lib-details-classifications">
+              {themes.length > 0 && (
+                <div className="lib-details-classification-row">
+                  <strong>{t('newgame.themesLabel')}</strong>
+                  <div className="lib-details-badges">
+                    {themes.map((value) => (
+                      <span key={`theme-${value}`} className="lib-badge">{t(THEME_LABEL_KEYS[value] || value)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {sessionMechanics.length > 0 && (
+                <div className="lib-details-classification-row">
+                  <strong>{t('newgame.mechanicsLabel')}</strong>
+                  <div className="lib-details-badges">
+                    {sessionMechanics.map((value) => (
+                      <span key={`session-mechanic-${value}`} className="lib-badge">{t(MECHANIC_LABEL_KEYS[value] || value)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {sessionGameCategories.length > 0 && (
+                <div className="lib-details-classification-row">
+                  <strong>{t('newgame.gameCategoriesLabel')}</strong>
+                  <div className="lib-details-badges">
+                    {sessionGameCategories.map((value) => (
+                      <span key={`session-category-${value}`} className="lib-badge">{t(GAMETYPE_LABEL_KEYS[value] || value)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -460,6 +528,9 @@ const createGameDraft = (game = null) => {
       categories: [],
       mechanics: [],
       gameType: '',
+      themes: [],
+      sessionMechanics: [],
+      sessionGameCategories: [],
       minPlayers: '',
       maxPlayers: '',
       description: '',
@@ -472,6 +543,9 @@ const createGameDraft = (game = null) => {
 
   const normalizedCategories = normalizeGameCategories(game);
   const normalizedMechanics = normalizeGameMechanics(game);
+  const normalizedThemes = normalizeSessionThemes(game);
+  const normalizedSessionMechanics = normalizeSessionMechanics(game);
+  const normalizedSessionGameCategories = normalizeSessionGameCategories(game);
 
   return {
     ...game,
@@ -479,6 +553,9 @@ const createGameDraft = (game = null) => {
     categories: normalizedCategories,
     mechanics: normalizedMechanics,
     gameType: game.gameType || '',
+    themes: normalizedThemes,
+    sessionMechanics: normalizedSessionMechanics,
+    sessionGameCategories: normalizedSessionGameCategories,
     minPlayers: game.minPlayers ?? '',
     maxPlayers: game.maxPlayers ?? '',
     description: game.description ?? '',
@@ -616,39 +693,45 @@ export const Library = ({
   const handleAddField = (key) => (e) =>
     setAddingGame((prev) => ({ ...prev, [key]: e.target.value }));
 
-  const toggleEditCategory = (value) => {
-    setEditingGame((prev) => {
-      const nextCategories = toggleArrayValue(prev.categories || [], value);
-      return {
-        ...prev,
-        categories: nextCategories,
-        category: nextCategories[0] || '',
-      };
-    });
-  };
-
-  const toggleAddCategory = (value) => {
-    setAddingGame((prev) => {
-      const nextCategories = toggleArrayValue(prev.categories || [], value);
-      return {
-        ...prev,
-        categories: nextCategories,
-        category: nextCategories[0] || '',
-      };
-    });
-  };
-
-  const toggleEditMechanic = (value) => {
+  const toggleEditTheme = (value) => {
     setEditingGame((prev) => ({
       ...prev,
-      mechanics: toggleArrayValue(prev.mechanics || [], value),
+      themes: toggleArrayValue(prev.themes || [], value),
     }));
   };
 
-  const toggleAddMechanic = (value) => {
+  const toggleAddTheme = (value) => {
     setAddingGame((prev) => ({
       ...prev,
-      mechanics: toggleArrayValue(prev.mechanics || [], value),
+      themes: toggleArrayValue(prev.themes || [], value),
+    }));
+  };
+
+  const toggleEditSessionMechanic = (value) => {
+    setEditingGame((prev) => ({
+      ...prev,
+      sessionMechanics: toggleArrayValue(prev.sessionMechanics || [], value),
+    }));
+  };
+
+  const toggleAddSessionMechanic = (value) => {
+    setAddingGame((prev) => ({
+      ...prev,
+      sessionMechanics: toggleArrayValue(prev.sessionMechanics || [], value),
+    }));
+  };
+
+  const toggleEditSessionGameCategory = (value) => {
+    setEditingGame((prev) => ({
+      ...prev,
+      sessionGameCategories: toggleArrayValue(prev.sessionGameCategories || [], value),
+    }));
+  };
+
+  const toggleAddSessionGameCategory = (value) => {
+    setAddingGame((prev) => ({
+      ...prev,
+      sessionGameCategories: toggleArrayValue(prev.sessionGameCategories || [], value),
     }));
   };
 
@@ -710,10 +793,9 @@ export const Library = ({
 
     onUpdate(editingGame.id, {
       name: editingGame.name,
-      category: editingGame.category,
-      categories: editingGame.categories ?? [],
-      mechanics: editingGame.mechanics ?? [],
-      gameType: editingGame.gameType ?? '',
+      themes: editingGame.themes ?? [],
+      sessionMechanics: editingGame.sessionMechanics ?? [],
+      sessionGameCategories: editingGame.sessionGameCategories ?? [],
       minPlayers: editingGame.minPlayers ? parseInt(editingGame.minPlayers, 10) : null,
       maxPlayers: editingGame.maxPlayers ? parseInt(editingGame.maxPlayers, 10) : null,
       owned: editingGame.owned,
@@ -784,10 +866,9 @@ export const Library = ({
 
     onAdd({
       name: addingGame.name,
-      category: addingGame.category,
-      categories: addingGame.categories ?? [],
-      mechanics: addingGame.mechanics ?? [],
-      gameType: addingGame.gameType ?? '',
+      themes: addingGame.themes ?? [],
+      sessionMechanics: addingGame.sessionMechanics ?? [],
+      sessionGameCategories: addingGame.sessionGameCategories ?? [],
       minPlayers: addingGame.minPlayers ? parseInt(addingGame.minPlayers, 10) : null,
       maxPlayers: addingGame.maxPlayers ? parseInt(addingGame.maxPlayers, 10) : null,
       description: addingGame.description,
@@ -901,6 +982,9 @@ export const Library = ({
       categories: [],
       mechanics: [],
       gameType: '',
+      themes: [],
+      sessionMechanics: [],
+      sessionGameCategories: [],
       coverUrl,
       owned: true,
       minPlayers: cachedDetails?.minPlayers ? parseInt(cachedDetails.minPlayers, 10) : null,
@@ -928,6 +1012,9 @@ export const Library = ({
       categories: [],
       mechanics: [],
       gameType: '',
+      themes: [],
+      sessionMechanics: [],
+      sessionGameCategories: [],
       minPlayers: null,
       maxPlayers: null,
       description: '',
@@ -1395,51 +1482,51 @@ export const Library = ({
               </div>
 
               <div className="form-group">
-                <label>{t('library.categories')}</label>
+                <label>{t('newgame.themesLabel')}</label>
                 <div className="lib-multi-grid">
-                  {GAME_CATEGORIES.map((cat) => (
+                  {GAME_THEMES.map((value) => (
                     <button
-                      key={`add-cat-${cat.value}`}
+                      key={`add-theme-${value}`}
                       type="button"
-                      className={`lib-tag-btn ${addingGame.categories?.includes(cat.value) ? 'selected' : ''}`}
-                      onClick={() => toggleAddCategory(cat.value)}
+                      className={`lib-tag-btn ${addingGame.themes?.includes(value) ? 'selected' : ''}`}
+                      onClick={() => toggleAddTheme(value)}
                     >
-                      {t(cat.label)}
+                      {t(THEME_LABEL_KEYS[value] || value)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="form-group">
-                <label>{t('library.mechanics')}</label>
+                <label>{t('newgame.mechanicsLabel')}</label>
                 <div className="lib-multi-grid">
-                  {GAME_MECHANICS.map((mechanic) => (
+                  {SESSION_GAME_MECHANICS.map((value) => (
                     <button
-                      key={`add-mechanic-${mechanic.value}`}
+                      key={`add-session-mechanic-${value}`}
                       type="button"
-                      className={`lib-tag-btn ${addingGame.mechanics?.includes(mechanic.value) ? 'selected' : ''}`}
-                      onClick={() => toggleAddMechanic(mechanic.value)}
+                      className={`lib-tag-btn ${addingGame.sessionMechanics?.includes(value) ? 'selected' : ''}`}
+                      onClick={() => toggleAddSessionMechanic(value)}
                     >
-                      {t(mechanic.label)}
+                      {t(MECHANIC_LABEL_KEYS[value] || value)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="add-game-type">{t('library.gameType')}</label>
-                <select
-                  id="add-game-type"
-                  value={addingGame.gameType ?? ''}
-                  onChange={handleAddField('gameType')}
-                >
-                  <option value="">{t('library.typeNone')}</option>
-                  {GAME_TYPES.map((typeOption) => (
-                    <option key={typeOption.value} value={typeOption.value}>
-                      {t(typeOption.label)}
-                    </option>
+                <label>{t('newgame.gameCategoriesLabel')}</label>
+                <div className="lib-multi-grid">
+                  {SESSION_GAME_CATEGORIES.map((value) => (
+                    <button
+                      key={`add-session-category-${value}`}
+                      type="button"
+                      className={`lib-tag-btn ${addingGame.sessionGameCategories?.includes(value) ? 'selected' : ''}`}
+                      onClick={() => toggleAddSessionGameCategory(value)}
+                    >
+                      {t(GAMETYPE_LABEL_KEYS[value] || value)}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               <div className="form-row">
@@ -1480,6 +1567,8 @@ export const Library = ({
                   rows={3}
                   className="lib-textarea"
                 />
+                <span className="lib-field-hint">{t('library.descriptionMaxHint')}</span>
+                <span className="lib-char-counter">{`${(addingGame.description ?? '').length}/500`}</span>
               </div>
 
               <div className="form-group">
@@ -1616,51 +1705,51 @@ export const Library = ({
               </div>
 
               <div className="form-group">
-                <label>{t('library.categories')}</label>
+                <label>{t('newgame.themesLabel')}</label>
                 <div className="lib-multi-grid">
-                  {GAME_CATEGORIES.map((cat) => (
+                  {GAME_THEMES.map((value) => (
                     <button
-                      key={`edit-cat-${cat.value}`}
+                      key={`edit-theme-${value}`}
                       type="button"
-                      className={`lib-tag-btn ${editingGame.categories?.includes(cat.value) ? 'selected' : ''}`}
-                      onClick={() => toggleEditCategory(cat.value)}
+                      className={`lib-tag-btn ${editingGame.themes?.includes(value) ? 'selected' : ''}`}
+                      onClick={() => toggleEditTheme(value)}
                     >
-                      {t(cat.label)}
+                      {t(THEME_LABEL_KEYS[value] || value)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="form-group">
-                <label>{t('library.mechanics')}</label>
+                <label>{t('newgame.mechanicsLabel')}</label>
                 <div className="lib-multi-grid">
-                  {GAME_MECHANICS.map((mechanic) => (
+                  {SESSION_GAME_MECHANICS.map((value) => (
                     <button
-                      key={`edit-mechanic-${mechanic.value}`}
+                      key={`edit-session-mechanic-${value}`}
                       type="button"
-                      className={`lib-tag-btn ${editingGame.mechanics?.includes(mechanic.value) ? 'selected' : ''}`}
-                      onClick={() => toggleEditMechanic(mechanic.value)}
+                      className={`lib-tag-btn ${editingGame.sessionMechanics?.includes(value) ? 'selected' : ''}`}
+                      onClick={() => toggleEditSessionMechanic(value)}
                     >
-                      {t(mechanic.label)}
+                      {t(MECHANIC_LABEL_KEYS[value] || value)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="edit-game-type">{t('library.gameType')}</label>
-                <select
-                  id="edit-game-type"
-                  value={editingGame.gameType ?? ''}
-                  onChange={handleEditField('gameType')}
-                >
-                  <option value="">{t('library.typeNone')}</option>
-                  {GAME_TYPES.map((typeOption) => (
-                    <option key={typeOption.value} value={typeOption.value}>
-                      {t(typeOption.label)}
-                    </option>
+                <label>{t('newgame.gameCategoriesLabel')}</label>
+                <div className="lib-multi-grid">
+                  {SESSION_GAME_CATEGORIES.map((value) => (
+                    <button
+                      key={`edit-session-category-${value}`}
+                      type="button"
+                      className={`lib-tag-btn ${editingGame.sessionGameCategories?.includes(value) ? 'selected' : ''}`}
+                      onClick={() => toggleEditSessionGameCategory(value)}
+                    >
+                      {t(GAMETYPE_LABEL_KEYS[value] || value)}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               <div className="form-row">
@@ -1701,6 +1790,8 @@ export const Library = ({
                   rows={3}
                   className="lib-textarea"
                 />
+                <span className="lib-field-hint">{t('library.descriptionMaxHint')}</span>
+                <span className="lib-char-counter">{`${(editingGame.description ?? '').length}/500`}</span>
               </div>
 
               {language !== 'en-US' && (
@@ -1737,6 +1828,8 @@ export const Library = ({
                       rows={3}
                       className="lib-textarea"
                     />
+                    <span className="lib-field-hint">{t('library.descriptionMaxHint')}</span>
+                    <span className="lib-char-counter">{`${(editingGame.descriptionLocal?.[language] ?? '').length}/500`}</span>
                   </div>
                 </>
               )}

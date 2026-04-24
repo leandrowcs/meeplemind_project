@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Star, X } from 'lucide-react';
 import { Button } from './Button';
+import { useLanguage } from '../hooks/useLanguage';
 import './GameDetailsModal.css';
 
 export const GameDetailsModal = ({ game, onClose, onSave }) => {
+  const { t } = useLanguage();
   const [rating, setRating] = useState(game.rating || 0);
   const [notes, setNotes] = useState(game.notes || '');
 
@@ -11,6 +13,10 @@ export const GameDetailsModal = ({ game, onClose, onSave }) => {
     onSave({ rating, notes });
     onClose();
   };
+
+  const ratingText = rating > 0
+    ? `${rating} ${rating > 1 ? t('gamedetails.ratingStars') : t('gamedetails.ratingStar')}`
+    : t('gamedetails.ratingNone');
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -21,30 +27,28 @@ export const GameDetailsModal = ({ game, onClose, onSave }) => {
 
         {/* Rating */}
         <div className="form-group">
-          <label>Avaliação da Partida</label>
+          <label>{t('gamedetails.ratingLabel')}</label>
           <div className="rating-selector">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
                 className={`star ${rating >= star ? 'active' : ''}`}
                 onClick={() => setRating(rating === star ? star - 1 : star)}
-                title={`${star} estrela${star > 1 ? 's' : ''}`}
+                title={`${star} ${star > 1 ? t('gamedetails.ratingStars') : t('gamedetails.ratingStar')}`}
               >
                 <Star size={16} fill={rating >= star ? 'currentColor' : 'none'} />
               </button>
             ))}
           </div>
-          <span className="rating-text">
-            {rating > 0 ? `${rating} estrela${rating > 1 ? 's' : ''}` : 'Sem avaliação'}
-          </span>
+          <span className="rating-text">{ratingText}</span>
         </div>
 
         {/* Notes */}
         <div className="form-group">
-          <label htmlFor="notes">Notas sobre a Partida</label>
+          <label htmlFor="notes">{t('gamedetails.notesLabel')}</label>
           <textarea
             id="notes"
-            placeholder="Ex: partida acirrada até o final, próxima vez em outro jogo..."
+            placeholder={t('gamedetails.notesPlaceholder')}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             maxLength="500"
@@ -56,17 +60,17 @@ export const GameDetailsModal = ({ game, onClose, onSave }) => {
         {/* Game Info */}
         <div className="game-info">
           <div className="info-row">
-            <span>Vencedor:</span>
+            <span>{t('gamedetails.infoWinner')}</span>
             <strong>{game.winner}</strong>
           </div>
           <div className="info-row">
-            <span>Jogadores:</span>
+            <span>{t('gamedetails.infoPlayers')}</span>
             <strong>{game.players.length}</strong>
           </div>
           {game.duration && (
             <div className="info-row">
-              <span>Duração:</span>
-              <strong>{game.duration} min</strong>
+              <span>{t('gamedetails.infoDuration')}</span>
+              <strong>{game.duration} {t('gamedetails.infoDurationMin')}</strong>
             </div>
           )}
         </div>
@@ -74,10 +78,10 @@ export const GameDetailsModal = ({ game, onClose, onSave }) => {
         {/* Actions */}
         <div className="modal-actions">
           <Button variant="secondary" onClick={onClose}>
-            Cancelar
+            {t('gamedetails.cancel')}
           </Button>
           <Button variant="accent" onClick={handleSave}>
-            Salvar Detalhes
+            {t('gamedetails.save')}
           </Button>
         </div>
       </div>

@@ -1,10 +1,18 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
-  BookOpen,
   Check,
   ChevronLeft,
   ChevronRight,
   Crown,
+  BookOpen,
+  Dice1,
+  Dice2,
+  Dice3,
+  Dice4,
+  Dice5,
+  Dice6,
+  Dices,
+  Gamepad,
   Handshake,
   Search,
   Skull,
@@ -15,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from './Button';
 import { useLanguage } from '../hooks/useLanguage';
+import { GAME_THEMES, GAME_MECHANICS, GAME_CATEGORIES } from '../utils/classifications';
 import './NewGame.css';
 
 const TOTAL_STEPS = 5;
@@ -65,7 +74,7 @@ const getDurationLabel = (minutes, t) => {
   return `${minutes}${t('newgame.minutesShort')}`;
 };
 
-export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPlayer, libraryGames = [] }) => {
+export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPlayer, libraryGames = [], libraryEntries = [] }) => {
   const { t } = useLanguage();
   const initialDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -81,6 +90,9 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
     duration: '',
     date: initialDate,
     ownGame: false,
+    themes: [],
+    mechanics: [],
+    gameCategories: [],
   }));
 
   const [suggestions, setSuggestions] = useState({
@@ -112,6 +124,36 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
     () => (Array.isArray(libraryGames) ? libraryGames : []),
     [libraryGames]
   );
+  const safeLibraryEntries = useMemo(
+    () => (Array.isArray(libraryEntries) ? libraryEntries : []),
+    [libraryEntries]
+  );
+
+  const classificationByGameName = useMemo(() => {
+    const themeSet = new Set(GAME_THEMES);
+    const mechanicSet = new Set(GAME_MECHANICS);
+    const gameCategorySet = new Set(GAME_CATEGORIES);
+    const map = new Map();
+
+    safeLibraryEntries.forEach((entry) => {
+      const key = (entry?.name || '').trim().toLowerCase();
+      if (!key) return;
+
+      map.set(key, {
+        themes: Array.isArray(entry?.themes)
+          ? entry.themes.filter((value) => themeSet.has(value)).slice(0, 16)
+          : [],
+        mechanics: Array.isArray(entry?.sessionMechanics)
+          ? entry.sessionMechanics.filter((value) => mechanicSet.has(value)).slice(0, 16)
+          : [],
+        gameCategories: Array.isArray(entry?.sessionGameCategories)
+          ? entry.sessionGameCategories.filter((value) => gameCategorySet.has(value)).slice(0, 10)
+          : [],
+      });
+    });
+
+    return map;
+  }, [safeLibraryEntries]);
 
   const steps = useMemo(
     () => [
@@ -189,7 +231,18 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
   const handleGameInputChange = (event) => {
     const value = event.target.value;
     setInputValues((prev) => ({ ...prev, game: value }));
-    setFormData((prev) => ({ ...prev, game: value }));
+    const inherited = classificationByGameName.get(value.trim().toLowerCase()) || {
+      themes: [],
+      mechanics: [],
+      gameCategories: [],
+    };
+    setFormData((prev) => ({
+      ...prev,
+      game: value,
+      themes: inherited.themes,
+      mechanics: inherited.mechanics,
+      gameCategories: inherited.gameCategories,
+    }));
     setBggSearch((prev) => ({ ...prev, error: '' }));
 
     if (!value.length) {
@@ -214,7 +267,18 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
   };
 
   const handleSelectGame = (gameName) => {
-    setFormData((prev) => ({ ...prev, game: gameName }));
+    const inherited = classificationByGameName.get(gameName.trim().toLowerCase()) || {
+      themes: [],
+      mechanics: [],
+      gameCategories: [],
+    };
+    setFormData((prev) => ({
+      ...prev,
+      game: gameName,
+      themes: inherited.themes,
+      mechanics: inherited.mechanics,
+      gameCategories: inherited.gameCategories,
+    }));
     setInputValues((prev) => ({ ...prev, game: gameName }));
     setSuggestions((prev) => ({ ...prev, games: [] }));
     setBggSearch((prev) => ({ ...prev, error: '' }));
@@ -389,6 +453,11 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
       return;
     }
 
+    const inherited = classificationByGameName.get(formData.game.trim().toLowerCase());
+    const themes = inherited?.themes ?? formData.themes ?? [];
+    const mechanics = inherited?.mechanics ?? formData.mechanics ?? [];
+    const gameCategories = inherited?.gameCategories ?? formData.gameCategories ?? [];
+
     onSave({
       game: formData.game,
       gameType: formData.gameType,
@@ -399,6 +468,9 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
       duration: formData.duration ? Number.parseInt(formData.duration, 10) : null,
       date: formData.date,
       ownGame: formData.ownGame,
+      themes,
+      mechanics,
+      gameCategories,
     });
 
     onNavigate('home');
@@ -428,7 +500,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                 >
                   {suggestions.gamesFromLib.has(gameName.toLowerCase()) && (
                     <span className="suggestion-lib-badge" title={t('newgame.fromLibrary')}>
-                      <BookOpen size={14} />
+                      <Gamepad size={14} />
                     </span>
                   )}
                   {gameName}
@@ -488,7 +560,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
                 className={`chip-btn ${formData.game === gameName ? 'selected' : ''}`}
                 onClick={() => handleSelectGame(gameName)}
               >
-                <BookOpen size={14} /> {gameName}
+                <Gamepad size={14} /> {gameName}
               </button>
             ))}
           </div>
@@ -505,7 +577,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
             onChange={(event) => setFormData((prev) => ({ ...prev, ownGame: event.target.checked }))}
             className="own-game-checkbox"
           />
-          <BookOpen size={15} />
+          <Gamepad size={15} />
           {t('newgame.ownGame')}
         </label>
       </div>
@@ -837,7 +909,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
         </section>
 
         <section className="wizard-card" data-step-index={stepIndex + 1}>
-          <h2>{currentStep.title}</h2>
+          <h2><Gamepad size={16} /> {currentStep.title}</h2>
           <p className="wizard-step-description">{currentStep.description}</p>
           <div key={`step-${stepIndex}`} className={`wizard-step-frame ${stepDirection}`}>
             {renderStepContent()}

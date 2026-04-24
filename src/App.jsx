@@ -214,6 +214,7 @@ function App() {
           uniquePlayers={getUniquePlayers()}
           mainPlayer={primaryPlayer}
           libraryGames={lib.getGameNames()}
+          libraryEntries={lib.library}
         />
       )}
       {currentPage === 'history' && (

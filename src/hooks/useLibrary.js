@@ -6,6 +6,11 @@ import {
   sanitizeUrl,
   validateLibraryBackup,
 } from '../utils/sanitize';
+import {
+  GAME_THEMES,
+  GAME_MECHANICS as SESSION_GAME_MECHANICS,
+  GAME_CATEGORIES as SESSION_GAME_CATEGORIES,
+} from '../utils/classifications';
 
 const LIBRARY_KEY = 'meeplemind_library';
 
@@ -63,6 +68,9 @@ const categoryWhitelist = new Set([
 ]);
 const mechanicWhitelist = new Set(GAME_MECHANICS.map((item) => item.value));
 const typeWhitelist = new Set(GAME_TYPES.map((item) => item.value));
+const themeWhitelist = new Set(GAME_THEMES);
+const sessionMechanicWhitelist = new Set(SESSION_GAME_MECHANICS);
+const sessionGameCategoryWhitelist = new Set(SESSION_GAME_CATEGORIES);
 
 const sanitizeLocalizedMap = (value, maxLength = 500) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
@@ -119,6 +127,15 @@ const normalizeType = (gameType) => {
   return typeWhitelist.has(clean) ? clean : '';
 };
 
+const normalizeThemes = (themes) =>
+  sanitizeStringArray(themes, themeWhitelist, 16, 60);
+
+const normalizeSessionMechanics = (mechanics) =>
+  sanitizeStringArray(mechanics, sessionMechanicWhitelist, 16, 60);
+
+const normalizeSessionGameCategories = (categories) =>
+  sanitizeStringArray(categories, sessionGameCategoryWhitelist, 10, 60);
+
 const sanitizeLibraryEntry = (entry) => {
   if (!entry || typeof entry !== 'object') return null;
   const cleanId = sanitizeText(String(entry.id || ''), 120);
@@ -137,6 +154,9 @@ const sanitizeLibraryEntry = (entry) => {
     categories,
     mechanics: normalizeMechanics(entry.mechanics),
     gameType: normalizeType(entry.gameType),
+    themes: normalizeThemes(entry.themes),
+    sessionMechanics: normalizeSessionMechanics(entry.sessionMechanics),
+    sessionGameCategories: normalizeSessionGameCategories(entry.sessionGameCategories),
     minPlayers: sanitizeNumber(entry.minPlayers, 1, 20),
     maxPlayers: sanitizeNumber(entry.maxPlayers, 1, 20),
     description: sanitizeText(String(entry.description || ''), 500),
@@ -195,6 +215,9 @@ export const useLibrary = () => {
       categories = [],
       mechanics = [],
       gameType = '',
+      themes = [],
+      sessionMechanics = [],
+      sessionGameCategories = [],
       minPlayers = null,
       maxPlayers = null,
       description = '',
@@ -214,6 +237,9 @@ export const useLibrary = () => {
         const normalizedCategories = normalizeCategories({ categories, category });
         const normalizedMechanics = normalizeMechanics(mechanics);
         const normalizedType = normalizeType(gameType);
+        const normalizedThemes = normalizeThemes(themes);
+        const normalizedSessionMechanics = normalizeSessionMechanics(sessionMechanics);
+        const normalizedSessionGameCategories = normalizeSessionGameCategories(sessionGameCategories);
 
         const entry = {
           id: uuidv4(),
@@ -222,6 +248,9 @@ export const useLibrary = () => {
           categories: normalizedCategories,
           mechanics: normalizedMechanics,
           gameType: normalizedType,
+          themes: normalizedThemes,
+          sessionMechanics: normalizedSessionMechanics,
+          sessionGameCategories: normalizedSessionGameCategories,
           minPlayers: sanitizeNumber(minPlayers, 1, 20),
           maxPlayers: sanitizeNumber(maxPlayers, 1, 20),
           description: sanitizeText(description, 500),
@@ -259,6 +288,9 @@ export const useLibrary = () => {
         categories: [],
         mechanics: [],
         gameType: '',
+        themes: [],
+        sessionMechanics: [],
+        sessionGameCategories: [],
         minPlayers: null,
         maxPlayers: null,
         nameLocal: {},
@@ -305,6 +337,21 @@ export const useLibrary = () => {
           ? normalizeType(updates.gameType)
           : normalizeType(g.gameType);
 
+        const hasThemesUpdate = updates.themes !== undefined;
+        const nextThemes = hasThemesUpdate
+          ? normalizeThemes(updates.themes)
+          : normalizeThemes(g.themes || []);
+
+        const hasSessionMechanicsUpdate = updates.sessionMechanics !== undefined;
+        const nextSessionMechanics = hasSessionMechanicsUpdate
+          ? normalizeSessionMechanics(updates.sessionMechanics)
+          : normalizeSessionMechanics(g.sessionMechanics || []);
+
+        const hasSessionGameCategoriesUpdate = updates.sessionGameCategories !== undefined;
+        const nextSessionGameCategories = hasSessionGameCategoriesUpdate
+          ? normalizeSessionGameCategories(updates.sessionGameCategories)
+          : normalizeSessionGameCategories(g.sessionGameCategories || []);
+
         const sanitizedName = updates.name !== undefined ? sanitizeText(updates.name) : '';
 
         return {
@@ -314,6 +361,9 @@ export const useLibrary = () => {
           categories: nextCategories,
           mechanics: nextMechanics,
           gameType: nextType,
+          themes: nextThemes,
+          sessionMechanics: nextSessionMechanics,
+          sessionGameCategories: nextSessionGameCategories,
           minPlayers:
             updates.minPlayers !== undefined
               ? sanitizeNumber(updates.minPlayers, 1, 20)

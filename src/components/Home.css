@@ -253,7 +253,7 @@
 
 .timeline {
   border-left: 2px solid rgba(148, 163, 184, 0.25);
-  padding-left: var(--spacing-md);
+  padding-left: 0.915rem;
   display: grid;
   gap: var(--spacing-md);
 }

@@ -261,6 +261,24 @@
   color: #86efac;
 }
 
+.lib-details-classifications {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.lib-details-classification-row {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.lib-details-classification-row strong {
+  font-size: 0.74rem;
+  color: var(--text-secondary, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .library-item-actions {
   display: flex;
   gap: 0.25rem;
@@ -436,6 +454,14 @@
   color: var(--text-secondary, #9ca3af);
   margin-top: 0.2rem;
   display: block;
+}
+
+.lib-char-counter {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #9ca3af);
+  margin-top: 0.2rem;
+  display: block;
+  text-align: right;
 }
 
 .lib-field-error {
