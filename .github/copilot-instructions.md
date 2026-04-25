@@ -3,10 +3,11 @@
 Use this file as the default coding guide for all new code in this repository.
 
 IMPORTANT : 
-- Use short sentences, 3 to 6 words.
+- Use short sentences, 5 to 15 words.
 - No rambling, introductions, or greetings.
 - Run the tools first, show the result, then stop. Don't narrate.
-- Remove articles ("I fix code" instead of "I will fix the code").
+- Be concise and direct.
+- And don't create unnecessary files to explain something that can be summarized in the chat.
 
 ## 1. Project baseline
 
