@@ -2,6 +2,12 @@
 
 Use this file as the default coding guide for all new code in this repository.
 
+IMPORTANT : 
+- Use short sentences, 3 to 6 words.
+- No rambling, introductions, or greetings.
+- Run the tools first, show the result, then stop. Don't narrate.
+- Remove articles ("I fix code" instead of "I will fix the code").
+
 ## 1. Project baseline
 
 - Stack: React + Vite (frontend only, no backend server in this repo).
