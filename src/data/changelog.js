@@ -44,7 +44,7 @@ export const CHANGELOG_BY_LANGUAGE = {
     ],
   },
   'fr-CA': {
-    title: 'Nouveautes',
+    title: 'Nouveautés',
     items: [
       'v2.5.6: Les paramètres expliquent maintenant quelles données la connexion Google utilise (profil de base + appData Drive) et pourquoi une reconnexion périodique est nécessaire après expiration du jeton.',
       'v2.5.5: La Bibliothèque permet désormais la classification des jeux (Thèmes, Mécaniques et Type pour les sessions) dans les formulaires d\'ajout/édition. Nouvelle Partie revient à 5 étapes et hérite de cette classification lors du choix du jeu à l\'étape 1. Les statistiques affichent un radar par Thèmes, Mécaniques et Type.',
