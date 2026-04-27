@@ -37,29 +37,66 @@ const clearLegacyFirebaseAuthCache = () => {
 
 clearLegacyFirebaseAuthCache();
 export const firebaseAuth = getAuth(app);
-const ANON_AUTH_DISABLED_KEY = 'meeplemind-firebase-anon-auth-disabled';
+const ANON_AUTH_STATE_KEY = 'meeplemind-firebase-anon-auth-state';
+const ANON_AUTH_LEGACY_DISABLED_KEY = 'meeplemind-firebase-anon-auth-disabled';
+const ANON_AUTH_RETRY_COOLDOWN_MS = 2 * 60 * 1000;
 
-const loadAnonymousAuthState = () => {
+const loadAnonymousAuthBlockedUntil = () => {
   try {
-    return localStorage.getItem(ANON_AUTH_DISABLED_KEY) === 'true';
+    // Legacy migration: older versions persisted a permanent disable flag.
+    // Remove it to avoid blocking new manual retries forever.
+    if (localStorage.getItem(ANON_AUTH_LEGACY_DISABLED_KEY) === 'true') {
+      localStorage.removeItem(ANON_AUTH_LEGACY_DISABLED_KEY);
+    }
+
+    const raw = localStorage.getItem(ANON_AUTH_STATE_KEY);
+    if (!raw) return 0;
+
+    const parsed = JSON.parse(raw);
+    const blockedUntil = Number(parsed?.blockedUntil || 0);
+
+    if (!Number.isFinite(blockedUntil) || blockedUntil <= Date.now()) {
+      localStorage.removeItem(ANON_AUTH_STATE_KEY);
+      return 0;
+    }
+
+    return blockedUntil;
   } catch {
-    return false;
+    return 0;
   }
 };
 
-const persistAnonymousAuthState = (isDisabled) => {
+const persistAnonymousAuthBlockedUntil = (blockedUntil) => {
   try {
-    if (isDisabled) {
-      localStorage.setItem(ANON_AUTH_DISABLED_KEY, 'true');
+    if (blockedUntil > Date.now()) {
+      localStorage.setItem(
+        ANON_AUTH_STATE_KEY,
+        JSON.stringify({ blockedUntil })
+      );
     } else {
-      localStorage.removeItem(ANON_AUTH_DISABLED_KEY);
+      localStorage.removeItem(ANON_AUTH_STATE_KEY);
     }
   } catch {
     return;
   }
 };
 
-let isAnonymousAuthUnavailable = loadAnonymousAuthState();
+let anonymousAuthBlockedUntil = loadAnonymousAuthBlockedUntil();
+
+const isAnonymousAuthTemporarilyBlocked = () =>
+  anonymousAuthBlockedUntil > Date.now();
+
+const createAnonymousAuthUnavailableError = (cause) => {
+  const error = new Error('anonymous-auth-unavailable');
+  if (cause) {
+    try {
+      error.cause = cause;
+    } catch {
+      // No-op: keep compatibility on runtimes without writable Error.cause.
+    }
+  }
+  return error;
+};
 
 const isAnonymousSignInUnsupported = (err) => {
   const code = String(err?.code || '').toLowerCase();
@@ -69,6 +106,8 @@ const isAnonymousSignInUnsupported = (err) => {
     code === 'auth/admin-restricted-operation' ||
     code === 'auth/app-not-authorized' ||
     code === 'auth/invalid-api-key' ||
+    message.includes('admin_restricted_operation') ||
+    message.includes('admin-restricted-operation') ||
     message.includes('operation_not_allowed') ||
     message.includes('configuration_not_found')
   );
@@ -89,9 +128,14 @@ const _unsubCleanup = onAuthStateChanged(firebaseAuth, async (user) => {
  * Ensures Firebase Auth is signed in (anonymously, persisted per browser).
  * Returns the Firebase UID. Safe to call on every Firestore operation.
  */
-export const ensureFirebaseUser = async () => {
-  if (isAnonymousAuthUnavailable) {
-    throw new Error('anonymous-auth-unavailable');
+export const ensureFirebaseUser = async ({ forceRetry = false } = {}) => {
+  if (!forceRetry && isAnonymousAuthTemporarilyBlocked()) {
+    throw createAnonymousAuthUnavailableError();
+  }
+
+  if (forceRetry && anonymousAuthBlockedUntil > 0) {
+    anonymousAuthBlockedUntil = 0;
+    persistAnonymousAuthBlockedUntil(0);
   }
 
   const current = firebaseAuth.currentUser;
@@ -103,15 +147,16 @@ export const ensureFirebaseUser = async () => {
 
   try {
     const result = await signInAnonymously(firebaseAuth);
-    if (isAnonymousAuthUnavailable) {
-      isAnonymousAuthUnavailable = false;
-      persistAnonymousAuthState(false);
+    if (anonymousAuthBlockedUntil > 0) {
+      anonymousAuthBlockedUntil = 0;
+      persistAnonymousAuthBlockedUntil(0);
     }
     return result.user.uid;
   } catch (err) {
     if (isAnonymousSignInUnsupported(err)) {
-      isAnonymousAuthUnavailable = true;
-      persistAnonymousAuthState(true);
+      anonymousAuthBlockedUntil = Date.now() + ANON_AUTH_RETRY_COOLDOWN_MS;
+      persistAnonymousAuthBlockedUntil(anonymousAuthBlockedUntil);
+      throw createAnonymousAuthUnavailableError(err);
     }
     throw err;
   }

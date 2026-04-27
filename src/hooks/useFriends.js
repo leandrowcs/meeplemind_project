@@ -214,9 +214,9 @@ export const useFriends = (auth, games, library) => {
    * Ensures Firebase Auth is signed in (anonymously, stable per browser).
    * Returns the Firebase UID.
    */
-  const ensureFirebaseAuth = useCallback(async () => {
+  const ensureFirebaseAuth = useCallback(async (options = {}) => {
     if (!auth.isSignedIn) throw new Error('not-signed-in');
-    return ensureFirebaseUser();
+    return ensureFirebaseUser(options);
   }, [auth.isSignedIn]);
 
   /**
@@ -274,14 +274,21 @@ export const useFriends = (auth, games, library) => {
         }
         return true;
       } catch (err) {
-        console.error('Failed to update public profile sharing state:', err);
+        if (err?.message !== 'anonymous-auth-unavailable') {
+          console.error('Failed to update public profile sharing state:', err);
+        }
         if (value) {
           setIsPublicState(false);
           try {
             localStorage.setItem(PUBLIC_KEY, 'false');
           } catch {}
-          setPublicShareError('publish-failed');
+        } else {
+          setIsPublicState(true);
+          try {
+            localStorage.setItem(PUBLIC_KEY, 'true');
+          } catch {}
         }
+        setPublicShareError('publish-failed');
         return false;
       }
     },

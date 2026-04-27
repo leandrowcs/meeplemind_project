@@ -2,6 +2,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.0.8: Correção do erro de popup bloqueado ao reconectar com Google. O diálogo de reconexão agora aparece como banner no app, permitindo que o clique no botão ative o popup do Google corretamente.',
+      'v3.0.7: Ajustado compartilhamento público para evitar novas tentativas forçadas de auth anônima quando o Firebase bloqueia sign-up. Erro esperado agora é tratado sem spam no console e o toggle volta ao estado anterior se a desativação falhar.',
+      'v3.0.6: Corrigido erro `anonymous-auth-unavailable` no compartilhamento público. O bloqueio legado de auth anônima foi migrado para cooldown curto e o clique manual no toggle agora força nova tentativa de autenticação.',
       'v3.0.5: Corrigimos persistência da capa enviada por upload para sincronização entre dispositivos com validação consistente de formatos suportados. O botão de compartilhar perfil público ganhou destravamento defensivo para permitir nova tentativa após falha e agora registra erro no console.',
       'v3.0.4: Melhoramos a confiabilidade da conexão Google e sincronização: aviso de reconexão aparece ao abrir o app quando havia conta conectada sem token ativo, sync do Drive ganhou retry automático para falhas 503 e o toggle de perfil público agora tem timeout para evitar travamento após erro.',
       'v3.0.3: Corrigida sincronização da Biblioteca entre dispositivos para evitar sobrescrita antes do carregamento inicial do Drive. Capas enviadas por upload agora aparecem corretamente no celular após sync.',
@@ -29,6 +32,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.0.8: Fixed Google reconnect popup being blocked by the browser. The reconnect prompt is now a non-blocking in-app banner, so clicking Reconnect directly triggers the Google OAuth popup as required.',
+      'v3.0.7: Public sharing now avoids forced anonymous-auth retries when Firebase blocks sign-up. Expected auth errors no longer spam the console, and the toggle rolls back if disabling fails.',
+      'v3.0.6: Fixed `anonymous-auth-unavailable` during public profile sharing. Legacy anonymous-auth lock now uses a short cooldown, and manual toggle clicks now force a fresh auth retry.',
       'v3.0.5: Fixed uploaded cover persistence for cross-device sync with consistent validation of supported image formats. The public profile share toggle now has a defensive unlock so users can retry after failures, and errors are logged to the console.',
       'v3.0.4: Improved Google connection and sync reliability: reconnect notice now appears on app open when a previously linked account has no active token, Drive sync now retries automatically on 503 failures, and the public profile toggle has a timeout guard to avoid getting stuck after errors.',
       'v3.0.3: Fixed Library cross-device sync to avoid stale overwrite before the initial Drive load. Uploaded cover images now appear correctly on mobile after sync.',
@@ -56,6 +62,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.0.8: Correction du popup Google bloqué lors de la reconnexion. L\'invite de reconnexion est maintenant une bannière dans l\'app, le clic sur le bouton déclenche directement le popup OAuth Google comme requis.',
+      'v3.0.7: Le partage public évite maintenant les nouvelles tentatives forcées d\'authentification anonyme quand Firebase bloque l\'inscription. Les erreurs attendues ne saturent plus la console et le basculeur revient à l\'état précédent si la désactivation échoue.',
+      'v3.0.6: Correction de l\'erreur `anonymous-auth-unavailable` pendant le partage public du profil. Le verrouillage hérité d\'authentification anonyme utilise maintenant un court délai de refroidissement, et un clic manuel sur le basculeur force une nouvelle tentative d\'authentification.',
       'v3.0.5: Correction de la persistance des couvertures envoyées par upload pour la synchronisation entre appareils avec validation cohérente des formats pris en charge. Le basculeur de partage public du profil inclut maintenant un déverrouillage défensif pour permettre une nouvelle tentative après échec, et les erreurs sont journalisées dans la console.',
       'v3.0.4: Amélioration de la fiabilité de la connexion Google et de la synchronisation : un avis de reconnexion apparaît à l\'ouverture si un compte déjà lié n\'a plus de jeton actif, la sync Drive réessaie automatiquement après les erreurs 503, et le basculeur de profil public utilise un timeout pour éviter de rester bloqué après échec.',
       'v3.0.3: Correction de la synchronisation Bibliothèque entre appareils pour éviter un écrasement avant le chargement initial depuis Drive. Les couvertures envoyées par upload apparaissent maintenant correctement sur mobile après sync.',

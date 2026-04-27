@@ -436,6 +436,8 @@ export const translations = {
     'auth.syncing': 'Sincronizando...',
     'auth.reloginPrompt': 'Sua conexão com Google expirou. Deseja fazer login novamente agora?',
     'auth.reloginLaterHint': 'Você pode entrar novamente a qualquer momento pelo menu lateral ou nas configurações.',
+    'auth.reloginBannerButton': 'Reconectar',
+    'auth.reloginBannerDismiss': 'Agora não',
 
     // NewGame
     'newgame.addPlayer': 'Adicionar Jogador',
@@ -1090,6 +1092,8 @@ export const translations = {
     'auth.syncing': 'Syncing...',
     'auth.reloginPrompt': 'Your Google connection has expired. Do you want to sign in again now?',
     'auth.reloginLaterHint': 'You can sign in again anytime from the side menu or settings.',
+    'auth.reloginBannerButton': 'Reconnect',
+    'auth.reloginBannerDismiss': 'Not now',
 
     // NewGame
     'newgame.addPlayer': 'Add Player',
@@ -1749,6 +1753,8 @@ export const translations = {
     'auth.syncing': 'Synchronisation...',
     'auth.reloginPrompt': 'Votre connexion Google a expiré. Voulez-vous vous reconnecter maintenant?',
     'auth.reloginLaterHint': 'Vous pouvez vous reconnecter à tout moment via le menu latéral ou les paramètres.',
+    'auth.reloginBannerButton': 'Se reconnecter',
+    'auth.reloginBannerDismiss': 'Pas maintenant',
 
     // NewGame
     'newgame.addPlayer': 'Ajouter un Joueur',

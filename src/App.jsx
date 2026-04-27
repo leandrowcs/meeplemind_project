@@ -88,24 +88,6 @@ function App() {
     setPrimaryPlayer(googleName);
   }, [auth.isSignedIn, auth.user?.name, primaryPlayer]);
 
-  useEffect(() => {
-    if (isAuthLoading || !needsReloginPrompt) return;
-
-    const wantsReloginNow = window.confirm(t('auth.reloginPrompt'));
-    if (wantsReloginNow) {
-      signInGoogle(true);
-    } else {
-      window.alert(t('auth.reloginLaterHint'));
-    }
-    acknowledgeReloginPrompt();
-  }, [
-    isAuthLoading,
-    needsReloginPrompt,
-    acknowledgeReloginPrompt,
-    signInGoogle,
-    t,
-  ]);
-
   const stats = getStats();
 
   useEffect(() => {
@@ -239,6 +221,30 @@ function App() {
 
   return (
     <div className="app">
+      {needsReloginPrompt && !isAuthLoading && (
+        <div className="relogin-banner" role="alert">
+          <p className="relogin-banner-message">{t('auth.reloginPrompt')}</p>
+          <div className="relogin-banner-actions">
+            <button
+              type="button"
+              className="relogin-banner-btn relogin-banner-btn--primary"
+              onClick={() => {
+                signInGoogle(true);
+                acknowledgeReloginPrompt();
+              }}
+            >
+              {t('auth.reloginBannerButton')}
+            </button>
+            <button
+              type="button"
+              className="relogin-banner-btn relogin-banner-btn--dismiss"
+              onClick={acknowledgeReloginPrompt}
+            >
+              {t('auth.reloginBannerDismiss')}
+            </button>
+          </div>
+        </div>
+      )}
       {currentPage === 'home' && (
         <Home
           onNavigate={navigateTo}

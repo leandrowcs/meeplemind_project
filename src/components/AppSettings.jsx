@@ -199,12 +199,9 @@ export const AppSettings = ({
     }, SHARE_TOGGLE_MAX_WAIT_MS);
 
     try {
-      const updated = await setProfilePublic(nextValue);
-      if (!updated) {
-        console.error('Public profile share toggle failed');
-      }
-    } catch (err) {
-      console.error('Error while toggling public profile share:', err);
+      await setProfilePublic(nextValue);
+    } catch {
+      // The hook owns error state and rollback handling for this flow.
     } finally {
       if (shareToggleGuardRef.current) {
         clearTimeout(shareToggleGuardRef.current);
