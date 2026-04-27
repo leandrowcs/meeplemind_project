@@ -2,8 +2,12 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.0.5: Corrigimos persistência da capa enviada por upload para sincronização entre dispositivos com validação consistente de formatos suportados. O botão de compartilhar perfil público ganhou destravamento defensivo para permitir nova tentativa após falha e agora registra erro no console.',
+      'v3.0.4: Melhoramos a confiabilidade da conexão Google e sincronização: aviso de reconexão aparece ao abrir o app quando havia conta conectada sem token ativo, sync do Drive ganhou retry automático para falhas 503 e o toggle de perfil público agora tem timeout para evitar travamento após erro.',
+      'v3.0.3: Corrigida sincronização da Biblioteca entre dispositivos para evitar sobrescrita antes do carregamento inicial do Drive. Capas enviadas por upload agora aparecem corretamente no celular após sync.',
+      'v3.0.2: Corrigida validação de sessão Google expirada com diálogo de re-login. Perfil público agora exibe erro e desativa automaticamente se falhar. Amigos ganhou alternância lista/grade com última sincronização. Estatísticas ganhou nova aba Amigos com comparações e gráficos.',
       'v3.0.1: Amigos ganhou página dedicada no menu de navegação inferior (5º item). Removido da seção de Perfil.',
-      'v3.0.0: Amigos: busque amigos por e-mail, veja estatísticas de amigos e compartilhe seu perfil publicamente nas Configurações.',,
+      'v3.0.0: Amigos: busque amigos por e-mail, veja estatísticas de amigos e compartilhe seu perfil publicamente nas Configurações.',
       'v2.5.5: Biblioteca agora permite classificar jogos (Temática, Mecânicas e Tipo para sessões) na adição/edição. Nova Partida voltou para 5 etapas e herda essa classificação ao selecionar o jogo no passo 1. Estatísticas exibem radar por Temática, Mecânicas e Tipo.',
       'v2.5.4: Card de maior rival agora exibe todos os empatados (critério: mais partidas + mais vitórias contra o usuário). Biblioteca ganhou upload de capa por arquivo + validação de URL. Perfil exibe badge de conta Google conectada. Reestruturação visual dos mini-stats do perfil.',
       'v2.5.3: Welcome ganhou seleção de idioma por bandeiras no rodapé, texto de apresentação mais claro, logo maior e botão Google centralizado.',
@@ -25,8 +29,12 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.0.5: Fixed uploaded cover persistence for cross-device sync with consistent validation of supported image formats. The public profile share toggle now has a defensive unlock so users can retry after failures, and errors are logged to the console.',
+      'v3.0.4: Improved Google connection and sync reliability: reconnect notice now appears on app open when a previously linked account has no active token, Drive sync now retries automatically on 503 failures, and the public profile toggle has a timeout guard to avoid getting stuck after errors.',
+      'v3.0.3: Fixed Library cross-device sync to avoid stale overwrite before the initial Drive load. Uploaded cover images now appear correctly on mobile after sync.',
+      'v3.0.2: Fixed expired Google session validation with a relogin dialog. Public profile sharing now shows an error and automatically turns off on failure. Friends now has list/grid switching with last sync date. Statistics now includes a new Friends tab with comparisons and charts.',
       'v3.0.1: Friends now has a dedicated page in the bottom navigation (5th item). Removed from the Profile section.',
-      'v3.0.0: Friends: search friends by email, view their stats, and share your profile publicly in Settings.',,
+      'v3.0.0: Friends: search friends by email, view their stats, and share your profile publicly in Settings.',
       'v2.5.5: Library now supports game classification (Themes, Mechanics, and Session Type) in add/edit forms. New Game is back to 5 steps and inherits these classifications when the game is selected in step 1. Stats now shows a radar chart for Themes, Mechanics, and Type.',
       'v2.5.4: Top rival card now shows all tied rivals (ranked by most games together, then most wins against you). Library gained cover image upload + URL validation. Profile displays a Google connected badge. Profile mini-stats visuals were restructured.',
       'v2.5.3: Welcome now includes bottom flag language selection, clearer product intro copy, a larger logo, and centered Google sign-in button content.',
@@ -48,8 +56,12 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.0.5: Correction de la persistance des couvertures envoyées par upload pour la synchronisation entre appareils avec validation cohérente des formats pris en charge. Le basculeur de partage public du profil inclut maintenant un déverrouillage défensif pour permettre une nouvelle tentative après échec, et les erreurs sont journalisées dans la console.',
+      'v3.0.4: Amélioration de la fiabilité de la connexion Google et de la synchronisation : un avis de reconnexion apparaît à l\'ouverture si un compte déjà lié n\'a plus de jeton actif, la sync Drive réessaie automatiquement après les erreurs 503, et le basculeur de profil public utilise un timeout pour éviter de rester bloqué après échec.',
+      'v3.0.3: Correction de la synchronisation Bibliothèque entre appareils pour éviter un écrasement avant le chargement initial depuis Drive. Les couvertures envoyées par upload apparaissent maintenant correctement sur mobile après sync.',
+      'v3.0.2: Correction de la validation de session Google expirée avec dialogue de reconnexion. Le partage public du profil affiche maintenant une erreur et se désactive automatiquement en cas d\'échec. Amis ajoute la vue liste/grille avec date de dernière synchronisation. Statistiques inclut un nouvel onglet Amis avec comparaisons et graphiques.',
       'v3.0.1: Amis a maintenant une page dédiée dans la navigation inférieure (5e élément). Retiré de la section Profil.',
-      'v3.0.0: Amis : recherchez des amis par courriel, consultez leurs statistiques et partagez votre profil publiquement dans Paramètres.',,
+      'v3.0.0: Amis : recherchez des amis par courriel, consultez leurs statistiques et partagez votre profil publiquement dans Paramètres.',
       'v2.5.5: La Bibliothèque permet désormais la classification des jeux (Thèmes, Mécaniques et Type pour les sessions) dans les formulaires d\'ajout/édition. Nouvelle Partie revient à 5 étapes et hérite de cette classification lors du choix du jeu à l\'étape 1. Les statistiques affichent un radar par Thèmes, Mécaniques et Type.',
       'v2.5.4: La carte du grand rival affiche désormais tous les ex-æquo (critère : plus de parties ensemble, puis plus de victoires contre vous). La bibliothèque propose l\'upload de couverture par fichier + validation d\'URL. Le profil affiche un badge de compte Google connecté. Restructuration visuelle des mini-stats du profil.',
       'v2.5.3: L\'écran de bienvenue ajoute le sélecteur de langue par drapeaux en bas, un texte de présentation plus clair, un logo agrandi et un bouton Google visuellement centré.',

@@ -1,10 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const SCOPES =
   'https://www.googleapis.com/auth/drive.appdata openid email profile';
 const USER_KEY = 'meeplemind_google_user';
 const TOKEN_KEY = 'meeplemind_google_token';
+
+const clearSavedToken = () => {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {}
+};
 
 /**
  * Manages Google OAuth 2.0 token-based authentication using
@@ -23,6 +29,45 @@ export const useGoogleAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [tokenClient, setTokenClient] = useState(null);
   const [error, setError] = useState(null);
+  const [needsReloginPrompt, setNeedsReloginPrompt] = useState(false);
+  const expirationTimerRef = useRef(null);
+
+  const clearTokenSession = useCallback((preserveUser = false) => {
+    if (expirationTimerRef.current) {
+      clearTimeout(expirationTimerRef.current);
+      expirationTimerRef.current = null;
+    }
+    setAccessToken(null);
+    setIsSignedIn(false);
+    clearSavedToken();
+    if (!preserveUser) {
+      setUser(null);
+      localStorage.removeItem(USER_KEY);
+    }
+  }, []);
+
+  const applyTokenSession = useCallback((token, expiresInSeconds = 3600) => {
+    const ttl = Math.max(60, (expiresInSeconds || 3600) - 60) * 1000;
+    const expiresAt = Date.now() + ttl;
+
+    if (expirationTimerRef.current) {
+      clearTimeout(expirationTimerRef.current);
+      expirationTimerRef.current = null;
+    }
+
+    setAccessToken(token);
+    setIsSignedIn(true);
+    setNeedsReloginPrompt(false);
+
+    try {
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({ token, expiresAt }));
+    } catch {}
+
+    expirationTimerRef.current = setTimeout(() => {
+      clearTokenSession(true);
+      setNeedsReloginPrompt(true);
+    }, ttl);
+  }, [clearTokenSession]);
 
   useEffect(() => {
     if (!CLIENT_ID) {
@@ -31,10 +76,15 @@ export const useGoogleAuth = () => {
     }
 
     const init = () => {
+      let hasCachedUser = false;
+
       // Restore cached display info
       try {
         const saved = localStorage.getItem(USER_KEY);
-        if (saved) setUser(JSON.parse(saved));
+        if (saved) {
+          setUser(JSON.parse(saved));
+          hasCachedUser = true;
+        }
       } catch {}
 
       // Restore access token if still valid
@@ -44,19 +94,22 @@ export const useGoogleAuth = () => {
           const { token, expiresAt } = JSON.parse(savedToken);
           const remaining = expiresAt - Date.now();
           if (remaining > 60_000) {
-            setAccessToken(token);
-            setIsSignedIn(true);
-            setTimeout(() => {
-              setAccessToken(null);
-              setIsSignedIn(false);
-              localStorage.removeItem(TOKEN_KEY);
-            }, remaining);
+            applyTokenSession(token, Math.floor(remaining / 1000));
           } else {
-            localStorage.removeItem(TOKEN_KEY);
+            clearSavedToken();
+            if (localStorage.getItem(USER_KEY)) {
+              setNeedsReloginPrompt(true);
+            }
           }
+        } else if (hasCachedUser) {
+          // User was previously connected, but OAuth token is no longer present.
+          setNeedsReloginPrompt(true);
         }
       } catch {
-        localStorage.removeItem(TOKEN_KEY);
+        clearSavedToken();
+        if (localStorage.getItem(USER_KEY)) {
+          setNeedsReloginPrompt(true);
+        }
       }
 
       try {
@@ -69,21 +122,7 @@ export const useGoogleAuth = () => {
               return;
             }
             setError(null);
-            setAccessToken(response.access_token);
-            setIsSignedIn(true);
-            // Invalidate token 60 s before actual expiry to force re-auth
-            const ttl = ((response.expires_in || 3600) - 60) * 1000;
-            try {
-              localStorage.setItem(TOKEN_KEY, JSON.stringify({
-                token: response.access_token,
-                expiresAt: Date.now() + ttl,
-              }));
-            } catch {}
-            setTimeout(() => {
-              setAccessToken(null);
-              setIsSignedIn(false);
-              localStorage.removeItem(TOKEN_KEY);
-            }, ttl);
+            applyTokenSession(response.access_token, response.expires_in || 3600);
           },
         });
         setTokenClient(client);
@@ -108,7 +147,12 @@ export const useGoogleAuth = () => {
         setIsLoading(false);
       }
     }
-  }, []);
+    return () => {
+      if (expirationTimerRef.current) {
+        clearTimeout(expirationTimerRef.current);
+      }
+    };
+  }, [applyTokenSession]);
 
   // Fetch user display info after receiving an access token
   useEffect(() => {
@@ -116,8 +160,15 @@ export const useGoogleAuth = () => {
     fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (r.status === 401) {
+          throw new Error('token-expired');
+        }
+        if (!r.ok) return null;
+        return r.json();
+      })
       .then((data) => {
+        if (!data) return;
         const info = {
           name: data.name,
           email: data.email,
@@ -126,24 +177,30 @@ export const useGoogleAuth = () => {
         setUser(info);
         localStorage.setItem(USER_KEY, JSON.stringify(info));
       })
-      .catch(() => {});
-  }, [accessToken]);
+      .catch((err) => {
+        if (String(err?.message || '').includes('token-expired')) {
+          clearTokenSession(true);
+          setNeedsReloginPrompt(true);
+        }
+      });
+  }, [accessToken, clearTokenSession]);
 
-  const signIn = useCallback(() => {
+  const signIn = useCallback((forcePrompt = false) => {
     if (!tokenClient) return;
-    tokenClient.requestAccessToken({ prompt: '' });
+    tokenClient.requestAccessToken({ prompt: forcePrompt ? 'consent' : '' });
   }, [tokenClient]);
 
   const signOut = useCallback(() => {
     if (accessToken) {
       window.google?.accounts.oauth2.revoke(accessToken, () => {});
     }
-    setIsSignedIn(false);
-    setAccessToken(null);
-    setUser(null);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(TOKEN_KEY);
-  }, [accessToken]);
+    setNeedsReloginPrompt(false);
+    clearTokenSession(false);
+  }, [accessToken, clearTokenSession]);
+
+  const acknowledgeReloginPrompt = useCallback(() => {
+    setNeedsReloginPrompt(false);
+  }, []);
 
   return {
     isSignedIn,
@@ -151,8 +208,10 @@ export const useGoogleAuth = () => {
     accessToken,
     isLoading,
     error,
+    needsReloginPrompt,
     signIn,
     signOut,
+    acknowledgeReloginPrompt,
     /** True when VITE_GOOGLE_CLIENT_ID is set in the environment */
     isConfigured: Boolean(CLIENT_ID),
   };

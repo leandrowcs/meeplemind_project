@@ -1,6 +1,6 @@
 import { X, UserRound, Dices, Trophy, Handshake, Flame, Sparkles, BookOpen } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
-import { formatDate } from '../utils/dateFormat';
+import { formatDate as formatDateValue } from '../utils/dateFormat';
 import './FriendStatsModal.css';
 
 const StatRow = ({ label, value }) => (
@@ -16,7 +16,7 @@ export const FriendStatsModal = ({ friend, stats, isLoading, onClose }) => {
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     try {
-      return formatDate(dateStr, language);
+      return formatDateValue(dateStr, language);
     } catch {
       return dateStr;
     }

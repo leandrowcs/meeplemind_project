@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   BarChart3,
@@ -158,6 +158,103 @@ const makeRadarOptions = (matchesLabel) => ({
 const sortByCountAndName = (a, b) => {
   if (b[1] !== a[1]) return b[1] - a[1];
   return a[0].localeCompare(b[0]);
+};
+
+const toTimestamp = (value) => {
+  const ts = new Date(value).getTime();
+  return Number.isFinite(ts) ? ts : null;
+};
+
+const buildPlayerSnapshot = (playerName, games, library, displayName, photoUrl) => {
+  const normalizedName = (playerName || '').trim();
+  const playerGames = games.filter((game) =>
+    Array.isArray(game.players) && game.players.includes(normalizedName)
+  );
+
+  const competitiveGames = playerGames.filter(
+    (game) => (game.gameType || 'competitive') === 'competitive'
+  );
+  const coopGames = playerGames.filter((game) => game.gameType === 'cooperative');
+
+  const totalGames = playerGames.length;
+  const totalWins =
+    competitiveGames.filter((game) => game.winner === normalizedName).length +
+    coopGames.filter((game) => game.coopResult === 'win').length;
+
+  const competitiveWinRate =
+    competitiveGames.length > 0
+      ? Math.round(
+          (competitiveGames.filter((game) => game.winner === normalizedName).length /
+            competitiveGames.length) *
+            100
+        )
+      : 0;
+
+  const coopSuccessRate =
+    coopGames.length > 0
+      ? Math.round(
+          (coopGames.filter((game) => game.coopResult === 'win').length / coopGames.length) *
+            100
+        )
+      : 0;
+
+  const uniquePlayedGames = new Set(
+    playerGames.map((game) => game.game).filter(Boolean)
+  ).size;
+
+  const sortedCompetitive = competitiveGames
+    .filter((game) => toTimestamp(game.date) !== null)
+    .slice()
+    .sort((a, b) => toTimestamp(a.date) - toTimestamp(b.date));
+
+  let longestStreak = 0;
+  let currentStreak = 0;
+  sortedCompetitive.forEach((game) => {
+    if (game.winner === normalizedName) {
+      currentStreak += 1;
+      longestStreak = Math.max(longestStreak, currentStreak);
+    } else {
+      currentStreak = 0;
+    }
+  });
+
+  const playsByGame = {};
+  playerGames.forEach((game) => {
+    if (!game.game) return;
+    playsByGame[game.game] = (playsByGame[game.game] || 0) + 1;
+  });
+
+  const topGame =
+    Object.entries(playsByGame).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+  const totalLibrary = Array.isArray(library) ? library.length : 0;
+  const xp =
+    totalLibrary * 25 +
+    totalGames * 20 +
+    totalWins * 35 +
+    uniquePlayedGames * 18 +
+    longestStreak * 45;
+  const level = Math.max(1, Math.floor(xp / 500) + 1);
+
+  const lastGameDate = playerGames
+    .filter((game) => toTimestamp(game.date) !== null)
+    .sort((a, b) => toTimestamp(b.date) - toTimestamp(a.date))[0]?.date || null;
+
+  return {
+    displayName: displayName || normalizedName,
+    photoUrl: photoUrl || '/user_icon.png',
+    totalGames,
+    totalWins,
+    competitiveWinRate,
+    coopSuccessRate,
+    uniquePlayedGames,
+    longestStreak,
+    topGame,
+    totalLibrary,
+    level,
+    xp,
+    updatedAt: lastGameDate,
+  };
 };
 
 const RivalCard = ({ title, subtitle, icon, items, primaryPlayer, emptyMessage }) => {
@@ -330,6 +427,7 @@ export const Stats = ({
   onNavigate,
   games,
   library = [],
+  friends,
   stats,
   primaryPlayer,
   exportToCSV,
@@ -349,10 +447,76 @@ export const Stats = ({
   const [selectedGameName, setSelectedGameName] = useState(null);
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
   const [categoryRadarTab, setCategoryRadarTab] = useState('theme');
+  const [friendsSnapshots, setFriendsSnapshots] = useState([]);
+  const [isLoadingFriendsTab, setIsLoadingFriendsTab] = useState(false);
+  const [friendsTabError, setFriendsTabError] = useState(null);
 
   const safeGames = Array.isArray(games) ? games : [];
   const safeLibrary = Array.isArray(library) ? library : [];
+  const friendList = Array.isArray(friends?.friends) ? friends.friends : [];
+  const getFriendStatsFn = friends?.getFriendStats;
   const coverByGame = useMemo(() => buildLibraryCoverMap(safeLibrary), [safeLibrary]);
+
+  useEffect(() => {
+    if (activeTab !== 'friends') return;
+    if (!friendList.length) {
+      setFriendsSnapshots([]);
+      setFriendsTabError(null);
+      return;
+    }
+    if (!getFriendStatsFn) {
+      setFriendsSnapshots([]);
+      setFriendsTabError('load-failed');
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadFriendsSnapshots = async () => {
+      setIsLoadingFriendsTab(true);
+      setFriendsTabError(null);
+      try {
+        const rows = await Promise.all(
+          friendList.map(async (friend) => {
+            const snapshot = await getFriendStatsFn(friend.uid);
+            return { friend, snapshot };
+          })
+        );
+
+        if (isCancelled) return;
+
+        const next = rows
+          .filter((row) => row.snapshot && row.snapshot.isPublic)
+          .map((row) => ({
+            uid: row.friend.uid,
+            displayName:
+              row.snapshot.displayName || row.friend.displayName || t('stats.notAvailable'),
+            photoUrl: row.snapshot.photoUrl || row.friend.photoUrl || '/user_icon.png',
+            totalGames: Number(row.snapshot.totalGames) || 0,
+            totalWins: Number(row.snapshot.totalWins) || 0,
+            competitiveWinRate: Number(row.snapshot.competitiveWinRate) || 0,
+            coopSuccessRate: Number(row.snapshot.coopSuccessRate) || 0,
+            level: Number(row.snapshot.level) || 1,
+            xp: Number(row.snapshot.xp) || 0,
+            updatedAt: row.snapshot.updatedAt || row.friend.lastUpdatedAt || null,
+          }));
+
+        setFriendsSnapshots(next);
+      } catch {
+        if (isCancelled) return;
+        setFriendsSnapshots([]);
+        setFriendsTabError('load-failed');
+      } finally {
+        if (!isCancelled) setIsLoadingFriendsTab(false);
+      }
+    };
+
+    loadFriendsSnapshots();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeTab, friendList, getFriendStatsFn, t]);
 
   const sortedGames = useMemo(
     () => [...safeGames].sort((a, b) => new Date(b.date) - new Date(a.date)),
@@ -710,6 +874,112 @@ export const Stats = ({
       ? gameCatFrequency
       : themeFrequency;
 
+  const localPlayerSnapshot = useMemo(
+    () =>
+      buildPlayerSnapshot(
+        primaryPlayer,
+        sortedGames,
+        safeLibrary,
+        displayPlayerName || primaryPlayer,
+        googlePhotoUrl || auth?.user?.picture || '/user_icon.png'
+      ),
+    [
+      primaryPlayer,
+      sortedGames,
+      safeLibrary,
+      displayPlayerName,
+      googlePhotoUrl,
+      auth?.user?.picture,
+    ]
+  );
+
+  const friendsComparisonRows = useMemo(
+    () => [
+      {
+        uid: 'me',
+        ...localPlayerSnapshot,
+        isYou: true,
+      },
+      ...friendsSnapshots.map((snapshot) => ({
+        ...snapshot,
+        isYou: false,
+      })),
+    ],
+    [localPlayerSnapshot, friendsSnapshots]
+  );
+
+  const hasComparableFriendsData = friendsComparisonRows.length > 1;
+
+  const friendsTotalGamesData = useMemo(
+    () => ({
+      labels: friendsComparisonRows.map((row) =>
+        row.isYou ? `${row.displayName} (${t('stats.you')})` : row.displayName
+      ),
+      datasets: [
+        {
+          data: friendsComparisonRows.map((row) => row.totalGames),
+          backgroundColor: friendsComparisonRows.map((row) =>
+            row.isYou ? '#60a5fa' : '#f59e0b'
+          ),
+          borderRadius: 8,
+          maxBarThickness: 44,
+        },
+      ],
+    }),
+    [friendsComparisonRows, t]
+  );
+
+  const friendsWinRateData = useMemo(
+    () => ({
+      labels: friendsComparisonRows.map((row) =>
+        row.isYou ? `${row.displayName} (${t('stats.you')})` : row.displayName
+      ),
+      datasets: [
+        {
+          data: friendsComparisonRows.map((row) => row.competitiveWinRate),
+          backgroundColor: friendsComparisonRows.map((row) =>
+            row.isYou ? '#38bdf8' : '#34d399'
+          ),
+          borderRadius: 8,
+        },
+      ],
+    }),
+    [friendsComparisonRows, t]
+  );
+
+  const friendsXpData = useMemo(
+    () => ({
+      labels: friendsComparisonRows.map((row) =>
+        row.isYou ? `${row.displayName} (${t('stats.you')})` : row.displayName
+      ),
+      datasets: [
+        {
+          data: friendsComparisonRows.map((row) => row.xp),
+          backgroundColor: friendsComparisonRows.map((row) =>
+            row.isYou ? '#8b5cf6' : '#f97316'
+          ),
+          borderRadius: 8,
+        },
+      ],
+    }),
+    [friendsComparisonRows, t]
+  );
+
+  const friendsRanking = useMemo(
+    () =>
+      [...friendsComparisonRows].sort((a, b) => {
+        if (b.totalWins !== a.totalWins) return b.totalWins - a.totalWins;
+        if (b.totalGames !== a.totalGames) return b.totalGames - a.totalGames;
+        return a.displayName.localeCompare(b.displayName);
+      }),
+    [friendsComparisonRows]
+  );
+
+  const friendsXpMax = Math.max(
+    100,
+    ...friendsComparisonRows.map((row) => row.xp || 0)
+  );
+
   const winnerBarData = useMemo(() => ({
     labels: winnerCounts.map(([name]) => name),
     datasets: [
@@ -811,12 +1081,25 @@ export const Stats = ({
   }, [teamPlayers]);
 
   const userRateOptions = useMemo(() => horizontalBarOptions(100), []);
+  const friendsWinRateOptions = useMemo(() => horizontalBarOptions(100), []);
+  const friendsXpOptions = useMemo(
+    () => horizontalBarOptions(Math.ceil(friendsXpMax + friendsXpMax * 0.1)),
+    [friendsXpMax]
+  );
   const categoryRadarOptions = useMemo(
     () => makeRadarOptions(t('stats.matchesByCategory')),
     [t]
   );
 
   const chartHeight = (count, minimum = 180) => Math.max(minimum, count * 36);
+  const formatSnapshotDate = (value) => {
+    if (!value) return t('stats.notAvailable');
+    try {
+      return formatDate(value, language);
+    } catch {
+      return String(value);
+    }
+  };
 
   return (
     <>
@@ -1070,6 +1353,9 @@ export const Stats = ({
               <button className={`tab-btn ${activeTab === 'rivalry' ? 'active' : ''}`} onClick={() => setActiveTab('rivalry')}>
                 {t('stats.rivalry')}
               </button>
+              <button className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => setActiveTab('friends')}>
+                {t('stats.friends')}
+              </button>
             </div>
 
             {activeTab === 'competitive' && (
@@ -1308,6 +1594,116 @@ export const Stats = ({
                   primaryPlayer={primaryPlayer}
                   emptyMessage={t('stats.rivalCarrascoEmpty')}
                 />
+              </div>
+            )}
+
+            {activeTab === 'friends' && (
+              <div className="stats-grid">
+                <section className="stats-panel full-width-panel">
+                  <div className="panel-header-row">
+                    <h3><Users size={18} /> {t('stats.friends')}</h3>
+                  </div>
+                  <p className="panel-subtitle">{t('stats.friendsTabHint')}</p>
+
+                  {!friendList.length ? (
+                    <p className="empty-section">{t('stats.friendsNeedFriends')}</p>
+                  ) : isLoadingFriendsTab ? (
+                    <p className="empty-section">{t('friends.loading')}</p>
+                  ) : friendsTabError ? (
+                    <p className="empty-section">{t('stats.friendsLoadError')}</p>
+                  ) : !hasComparableFriendsData ? (
+                    <p className="empty-section">{t('stats.friendsNoData')}</p>
+                  ) : null}
+                </section>
+
+                {!isLoadingFriendsTab &&
+                  !friendsTabError &&
+                  hasComparableFriendsData && (
+                    <>
+                      <section className="stats-panel">
+                        <div className="panel-header-row">
+                          <h3><BarChart3 size={18} /> {t('stats.friendsTotalGames')}</h3>
+                        </div>
+                        <div
+                          className="chart-wrapper"
+                          style={{
+                            height: chartHeight(friendsComparisonRows.length, 200),
+                          }}
+                        >
+                          <Bar data={friendsTotalGamesData} options={VERTICAL_BAR_OPTIONS} />
+                        </div>
+                      </section>
+
+                      <section className="stats-panel">
+                        <div className="panel-header-row">
+                          <h3><ShieldCheck size={18} /> {t('stats.friendsWinRate')}</h3>
+                        </div>
+                        <div
+                          className="chart-wrapper"
+                          style={{
+                            height: chartHeight(friendsComparisonRows.length, 180),
+                          }}
+                        >
+                          <Bar data={friendsWinRateData} options={friendsWinRateOptions} />
+                        </div>
+                      </section>
+
+                      <section className="stats-panel">
+                        <div className="panel-header-row">
+                          <h3><Flame size={18} /> {t('stats.friendsXp')}</h3>
+                        </div>
+                        <div
+                          className="chart-wrapper"
+                          style={{
+                            height: chartHeight(friendsComparisonRows.length, 180),
+                          }}
+                        >
+                          <Bar data={friendsXpData} options={friendsXpOptions} />
+                        </div>
+                      </section>
+
+                      <section className="stats-panel full-width-panel">
+                        <div className="panel-header-row">
+                          <h3><Trophy size={18} /> {t('stats.friendsRanking')}</h3>
+                        </div>
+                        <div className="leaderboard">
+                          {friendsRanking.map((entry, index) => (
+                            <div key={entry.uid} className="leaderboard-item leaderboard-player-item">
+                              <span className="rank-badge">{index + 1}</span>
+                              <img
+                                src={entry.photoUrl || '/user_icon.png'}
+                                alt={entry.displayName}
+                                className="stats-player-avatar"
+                                referrerPolicy="no-referrer"
+                                onError={(event) => {
+                                  event.currentTarget.src = '/user_icon.png';
+                                }}
+                              />
+
+                              <div className="leaderboard-info">
+                                <span className="player-name">
+                                  {entry.isYou
+                                    ? `${entry.displayName} (${t('stats.you')})`
+                                    : entry.displayName}
+                                </span>
+                                <span className="player-stat">
+                                  {`${t('stats.winsCount').replace('{count}', entry.totalWins)} | ${t('stats.matchesCount').replace('{count}', entry.totalGames)}`}
+                                </span>
+                                <span className="player-stat">
+                                  {t('stats.friendsLastSync').replace(
+                                    '{date}',
+                                    formatSnapshotDate(entry.updatedAt)
+                                  )}
+                                </span>
+                              </div>
+
+                              <strong className="rate-badge">{entry.competitiveWinRate}%</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    </>
+                  )}
               </div>
             )}
           </div>

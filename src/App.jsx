@@ -5,6 +5,7 @@ import { useLibrary } from './hooks/useLibrary';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
 import { useGoogleDrive } from './hooks/useGoogleDrive';
 import { useFriends } from './hooks/useFriends';
+import { useLanguage } from './hooks/useLanguage';
 import { Home } from './components/Home';
 import { NewGame } from './components/NewGame';
 import { History } from './components/History';
@@ -26,11 +27,13 @@ function getPageFromHash() {
 const PRIMARY_PLAYER_KEY = 'meeplemind-primary-player';
 
 function App() {
+  const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(getPageFromHash);
   const [primaryPlayer, setPrimaryPlayer] = useState(
     () => localStorage.getItem(PRIMARY_PLAYER_KEY) || null
   );
   const [syncStatus, setSyncStatus] = useState('idle'); // 'idle' | 'syncing' | 'synced' | 'error'
+  const [hasLoadedDriveData, setHasLoadedDriveData] = useState(false);
   const syncTimer = useRef(null);
 
   const {
@@ -55,6 +58,12 @@ function App() {
   const drive = useGoogleDrive(auth.accessToken);
   const friends = useFriends(auth, games, lib.library);
   const displayPlayerName = auth.isSignedIn && auth.user?.name ? auth.user.name : primaryPlayer;
+  const {
+    isLoading: isAuthLoading,
+    needsReloginPrompt,
+    acknowledgeReloginPrompt,
+    signIn: signInGoogle,
+  } = auth;
 
   const navigateTo = useCallback((page) => {
     const target = VALID_PAGES.has(page) ? page : 'home';
@@ -79,12 +88,38 @@ function App() {
     setPrimaryPlayer(googleName);
   }, [auth.isSignedIn, auth.user?.name, primaryPlayer]);
 
+  useEffect(() => {
+    if (isAuthLoading || !needsReloginPrompt) return;
+
+    const wantsReloginNow = window.confirm(t('auth.reloginPrompt'));
+    if (wantsReloginNow) {
+      signInGoogle(true);
+    } else {
+      window.alert(t('auth.reloginLaterHint'));
+    }
+    acknowledgeReloginPrompt();
+  }, [
+    isAuthLoading,
+    needsReloginPrompt,
+    acknowledgeReloginPrompt,
+    signInGoogle,
+    t,
+  ]);
+
   const stats = getStats();
+
+  useEffect(() => {
+    if (!auth.isSignedIn) {
+      setHasLoadedDriveData(false);
+      setSyncStatus('idle');
+    }
+  }, [auth.isSignedIn]);
 
   // ── Google Drive: load data on sign-in ────────────────────────────────────
   useEffect(() => {
     if (!auth.isSignedIn) return;
     const load = async () => {
+      setHasLoadedDriveData(false);
       setSyncStatus('syncing');
       try {
         const [driveGames, driveLibrary] = await Promise.all([
@@ -96,6 +131,8 @@ function App() {
         setSyncStatus('synced');
       } catch {
         setSyncStatus('error');
+      } finally {
+        setHasLoadedDriveData(true);
       }
     };
     load();
@@ -104,22 +141,35 @@ function App() {
 
   // ── Google Drive: debounced auto-save on data changes ─────────────────────
   const scheduleSyncToDrive = useCallback(() => {
-    if (!auth.isSignedIn || isLoading || lib.isLoading) return;
+    if (!auth.isSignedIn || !hasLoadedDriveData || isLoading || lib.isLoading) return;
     clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
       setSyncStatus('syncing');
       try {
-        await Promise.all([
+        const [gamesSaved, librarySaved] = await Promise.all([
           drive.saveGames(games),
           drive.saveLibrary(lib.library),
         ]);
+
+        if (!gamesSaved || !librarySaved) {
+          throw new Error('Failed to persist data to Google Drive');
+        }
+
         setSyncStatus('synced');
         if (friends.isPublic) friends.publishProfile();
       } catch {
         setSyncStatus('error');
+
+        // Retry automatically after transient network/service failures.
+        if (auth.isSignedIn) {
+          clearTimeout(syncTimer.current);
+          syncTimer.current = setTimeout(() => {
+            scheduleSyncToDrive();
+          }, 15000);
+        }
       }
     }, 5000);
-  }, [auth.isSignedIn, drive, games, lib.library, lib.isLoading, isLoading]);
+  }, [auth.isSignedIn, hasLoadedDriveData, drive, games, lib.library, lib.isLoading, isLoading, friends]);
 
   useEffect(() => {
     scheduleSyncToDrive();
@@ -243,6 +293,7 @@ function App() {
           onNavigate={navigateTo}
           games={games}
           library={lib.library}
+          friends={friends}
           stats={stats}
           primaryPlayer={primaryPlayer}
           exportToCSV={handleExportToCSV}
@@ -318,6 +369,7 @@ function App() {
           auth={auth}
           syncStatus={syncStatus}
           isPublic={friends.isPublic}
+          publicShareError={friends.publicShareError}
           setProfilePublic={friends.setProfilePublic}
         />
       )}

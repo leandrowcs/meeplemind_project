@@ -36,7 +36,7 @@ import {
   MECHANIC_LABEL_KEYS,
   GAMETYPE_LABEL_KEYS,
 } from '../utils/classifications';
-import { sanitizeUrl } from '../utils/sanitize';
+import { sanitizeImageSource } from '../utils/sanitize';
 import './Library.css';
 
 // ──────────────────────────────────────────────────
@@ -50,6 +50,14 @@ const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
 // Em desenvolvimento: usa proxy do Vite (/bggapi → boardgamegeek.com/xmlapi2)
 // Em produção: chama a API diretamente (requer CORS habilitado no servidor de hospedagem)
 const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
+const SUPPORTED_COVER_UPLOAD_MIME_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/gif',
+  'image/bmp',
+]);
 
 function bggUrl(path) {
   return BGG_PROXY_BASE + path;
@@ -784,11 +792,10 @@ export const Library = ({
     if (!editingGame?.name?.trim()) return;
 
     const rawCover = editingGame.coverUrl ?? '';
-    if (rawCover && !rawCover.startsWith('data:')) {
-      if (!sanitizeUrl(rawCover)) {
-        setEditCoverError(t('library.coverUrlInvalid'));
-        return;
-      }
+    const safeCover = sanitizeImageSource(rawCover);
+    if (rawCover && !safeCover) {
+      setEditCoverError(t('library.coverUrlInvalid'));
+      return;
     }
 
     onUpdate(editingGame.id, {
@@ -800,7 +807,7 @@ export const Library = ({
       maxPlayers: editingGame.maxPlayers ? parseInt(editingGame.maxPlayers, 10) : null,
       owned: editingGame.owned,
       description: editingGame.description,
-      coverUrl: editingGame.coverUrl,
+      coverUrl: safeCover,
       nameLocal: editingGame.nameLocal ?? {},
       descriptionLocal: editingGame.descriptionLocal ?? {},
     });
@@ -811,8 +818,8 @@ export const Library = ({
   const handleAddCoverUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setAddCoverError(t('library.coverUrlInvalid'));
+    if (!SUPPORTED_COVER_UPLOAD_MIME_TYPES.has(String(file.type || '').toLowerCase())) {
+      setAddCoverError(t('library.coverUploadUnsupported'));
       e.target.value = '';
       return;
     }
@@ -823,7 +830,13 @@ export const Library = ({
     }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setAddingGame((prev) => ({ ...prev, coverUrl: ev.target.result }));
+      const result = String(ev.target?.result || '');
+      const safeCover = sanitizeImageSource(result);
+      if (!safeCover) {
+        setAddCoverError(t('library.coverUploadUnsupported'));
+        return;
+      }
+      setAddingGame((prev) => ({ ...prev, coverUrl: safeCover }));
       setAddCoverError('');
     };
     reader.readAsDataURL(file);
@@ -833,8 +846,8 @@ export const Library = ({
   const handleEditCoverUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setEditCoverError(t('library.coverUrlInvalid'));
+    if (!SUPPORTED_COVER_UPLOAD_MIME_TYPES.has(String(file.type || '').toLowerCase())) {
+      setEditCoverError(t('library.coverUploadUnsupported'));
       e.target.value = '';
       return;
     }
@@ -845,7 +858,13 @@ export const Library = ({
     }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setEditingGame((prev) => ({ ...prev, coverUrl: ev.target.result }));
+      const result = String(ev.target?.result || '');
+      const safeCover = sanitizeImageSource(result);
+      if (!safeCover) {
+        setEditCoverError(t('library.coverUploadUnsupported'));
+        return;
+      }
+      setEditingGame((prev) => ({ ...prev, coverUrl: safeCover }));
       setEditCoverError('');
     };
     reader.readAsDataURL(file);
@@ -857,11 +876,10 @@ export const Library = ({
     if (!addingGame?.name?.trim()) return;
 
     const rawCover = addingGame.coverUrl ?? '';
-    if (rawCover && !rawCover.startsWith('data:')) {
-      if (!sanitizeUrl(rawCover)) {
-        setAddCoverError(t('library.coverUrlInvalid'));
-        return;
-      }
+    const safeCover = sanitizeImageSource(rawCover);
+    if (rawCover && !safeCover) {
+      setAddCoverError(t('library.coverUrlInvalid'));
+      return;
     }
 
     onAdd({
@@ -872,7 +890,7 @@ export const Library = ({
       minPlayers: addingGame.minPlayers ? parseInt(addingGame.minPlayers, 10) : null,
       maxPlayers: addingGame.maxPlayers ? parseInt(addingGame.maxPlayers, 10) : null,
       description: addingGame.description,
-      coverUrl: addingGame.coverUrl,
+      coverUrl: safeCover,
       owned: addingGame.owned,
     });
 
@@ -1602,7 +1620,7 @@ export const Library = ({
                   <input
                     ref={addCoverInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/bmp"
                     className="lib-cover-file-input"
                     onChange={handleAddCoverUpload}
                   />
@@ -1865,7 +1883,7 @@ export const Library = ({
                   <input
                     ref={editCoverInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/bmp"
                     className="lib-cover-file-input"
                     onChange={handleEditCoverUpload}
                   />

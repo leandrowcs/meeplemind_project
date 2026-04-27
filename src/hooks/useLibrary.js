@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   sanitizeText,
   sanitizeNumber,
-  sanitizeUrl,
+  sanitizeImageSource,
   validateLibraryBackup,
 } from '../utils/sanitize';
 import {
@@ -160,7 +160,7 @@ const sanitizeLibraryEntry = (entry) => {
     minPlayers: sanitizeNumber(entry.minPlayers, 1, 20),
     maxPlayers: sanitizeNumber(entry.maxPlayers, 1, 20),
     description: sanitizeText(String(entry.description || ''), 500),
-    coverUrl: sanitizeUrl(String(entry.coverUrl || ''), 1000),
+    coverUrl: sanitizeImageSource(String(entry.coverUrl || '')),
     owned: Boolean(entry.owned),
     nameLocal: sanitizeLocalizedMap(entry.nameLocal, 120),
     descriptionLocal: sanitizeLocalizedMap(entry.descriptionLocal, 500),
@@ -254,7 +254,7 @@ export const useLibrary = () => {
           minPlayers: sanitizeNumber(minPlayers, 1, 20),
           maxPlayers: sanitizeNumber(maxPlayers, 1, 20),
           description: sanitizeText(description, 500),
-          coverUrl: sanitizeUrl(coverUrl, 1000),
+          coverUrl: sanitizeImageSource(coverUrl),
           owned: Boolean(owned),
           nameLocal: {},
           descriptionLocal: {},
@@ -378,7 +378,7 @@ export const useLibrary = () => {
               : g.description ?? '',
           coverUrl:
             updates.coverUrl !== undefined
-              ? sanitizeUrl(updates.coverUrl, 1000)
+              ? sanitizeImageSource(updates.coverUrl)
               : g.coverUrl ?? '',
           owned: updates.owned !== undefined ? updates.owned : g.owned,
           nameLocal:

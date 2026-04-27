@@ -170,7 +170,7 @@
 
 .stats-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--spacing-xs);
 }
 
@@ -758,6 +758,19 @@
   grid-template-columns: 30px 30px 1fr minmax(100px, 140px) auto;
 }
 
+.leaderboard-player-item {
+  grid-template-columns: 30px 36px 1fr auto;
+}
+
+.stats-player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(2, 6, 23, 0.72);
+}
+
 /* ── Activity calendar ──────────────────────────────── */
 .activity-calendar {
   display: grid;
@@ -858,6 +871,11 @@
 
   .leaderboard-item.with-cover {
     grid-template-columns: 26px 26px 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .leaderboard-player-item {
+    grid-template-columns: 26px 30px 1fr;
     grid-template-rows: auto auto;
   }
 

@@ -2,7 +2,9 @@ const MAX_NAME_LENGTH = 100;
 const MAX_PLAYER_LENGTH = 50;
 const MAX_NOTES_LENGTH = 500;
 const MAX_URL_LENGTH = 1000;
+const MAX_IMAGE_SRC_LENGTH = 4 * 1024 * 1024;
 const SAFE_URL_PROTOCOLS = new Set(['http:', 'https:']);
+const SAFE_DATA_IMAGE_PREFIX = /^data:image\/(png|jpe?g|webp|gif|bmp);base64,/i;
 
 /**
  * Strip HTML tags and prevent XSS injection in text inputs.
@@ -55,6 +57,26 @@ export const sanitizeUrl = (value, maxLength = MAX_URL_LENGTH) => {
   } catch {
     return '';
   }
+};
+
+/**
+ * Accepts either:
+ * - absolute http/https image URLs
+ * - base64 data URLs for a safe raster image subset
+ */
+export const sanitizeImageSource = (value, maxLength = MAX_IMAGE_SRC_LENGTH) => {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim().slice(0, maxLength);
+  if (!trimmed) return '';
+
+  if (trimmed.startsWith('data:')) {
+    if (!SAFE_DATA_IMAGE_PREFIX.test(trimmed)) return '';
+    const base64 = trimmed.split(',')[1] || '';
+    if (!base64 || /[^A-Za-z0-9+/=]/.test(base64)) return '';
+    return trimmed;
+  }
+
+  return sanitizeUrl(trimmed, maxLength);
 };
 
 /**

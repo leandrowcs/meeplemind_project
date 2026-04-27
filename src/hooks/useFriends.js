@@ -15,6 +15,21 @@ const FRIENDS_KEY = 'meeplemind-friends';
 const PUBLIC_KEY = 'meeplemind-profile-public';
 const CACHE_KEY = 'meeplemind-friend-cache';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const NETWORK_TIMEOUT_MS = 12000;
+
+const withTimeout = (promise, timeoutMs = NETWORK_TIMEOUT_MS) =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timeout')), timeoutMs);
+    promise
+      .then((result) => {
+        clearTimeout(timer);
+        resolve(result);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
 
 const loadFriendsFromStorage = () => {
   try {
@@ -188,6 +203,9 @@ export const useFriends = (auth, games, library) => {
   const [isPublic, setIsPublicState] = useState(
     () => localStorage.getItem(PUBLIC_KEY) === 'true'
   );
+  const [publicShareError, setPublicShareError] = useState(null);
+  const [friendSnapshots, setFriendSnapshots] = useState({});
+  const [isRefreshingFriends, setIsRefreshingFriends] = useState(false);
   const [searchResult, setSearchResult] = useState(null); // null | 'not-found' | { uid, ...snap }
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState(null);
@@ -211,7 +229,8 @@ export const useFriends = (auth, games, library) => {
       const uid = await ensureFirebaseAuth();
       const snapshot = buildSnapshot(auth.user, games, library);
       await setDoc(doc(db, 'users', uid), snapshot, { merge: true });
-    } catch {
+    } catch (err) {
+      console.error('Failed to publish public profile snapshot:', err);
       // Non-blocking — sync failure does not surface to user
     }
   }, [auth.isSignedIn, auth.user, ensureFirebaseAuth, games, library]);
@@ -221,25 +240,49 @@ export const useFriends = (auth, games, library) => {
    */
   const setProfilePublic = useCallback(
     async (value) => {
+      setPublicShareError(null);
       setIsPublicState(value);
       try {
         localStorage.setItem(PUBLIC_KEY, String(value));
       } catch {}
-      if (!auth.isSignedIn || !auth.user) return;
+
+      if (!auth.isSignedIn || !auth.user) {
+        if (value) {
+          setIsPublicState(false);
+          try {
+            localStorage.setItem(PUBLIC_KEY, 'false');
+          } catch {}
+          setPublicShareError('publish-failed');
+          return false;
+        }
+        return true;
+      }
+
       try {
-        const uid = await ensureFirebaseAuth();
+        const uid = await withTimeout(ensureFirebaseAuth());
         if (value) {
           const snapshot = buildSnapshot(auth.user, games, library);
-          await setDoc(doc(db, 'users', uid), snapshot, { merge: true });
+          await withTimeout(setDoc(doc(db, 'users', uid), snapshot, { merge: true }));
         } else {
-          await setDoc(
-            doc(db, 'users', uid),
-            { isPublic: false },
-            { merge: true }
+          await withTimeout(
+            setDoc(
+              doc(db, 'users', uid),
+              { isPublic: false },
+              { merge: true }
+            )
           );
         }
-      } catch {
-        // Non-blocking
+        return true;
+      } catch (err) {
+        console.error('Failed to update public profile sharing state:', err);
+        if (value) {
+          setIsPublicState(false);
+          try {
+            localStorage.setItem(PUBLIC_KEY, 'false');
+          } catch {}
+          setPublicShareError('publish-failed');
+        }
+        return false;
       }
     },
     [auth.isSignedIn, auth.user, ensureFirebaseAuth, games, library]
@@ -294,6 +337,7 @@ export const useFriends = (auth, games, library) => {
             displayName: friendData.displayName || '',
             email: friendData.email || '',
             photoUrl: friendData.photoUrl || '',
+            lastUpdatedAt: friendData.updatedAt || null,
             addedAt: new Date().toISOString(),
           },
         ];
@@ -342,9 +386,55 @@ export const useFriends = (auth, games, library) => {
     [ensureFirebaseAuth]
   );
 
+  const refreshFriendsData = useCallback(async () => {
+    if (!friends.length) {
+      setFriendSnapshots({});
+      return {};
+    }
+
+    setIsRefreshingFriends(true);
+    try {
+      const entries = await Promise.all(
+        friends.map(async (friend) => {
+          const data = await getFriendStats(friend.uid);
+          return [friend.uid, data];
+        })
+      );
+
+      const nextSnapshots = {};
+      entries.forEach(([uid, data]) => {
+        if (data) nextSnapshots[uid] = data;
+      });
+
+      setFriendSnapshots(nextSnapshots);
+
+      setFriends((prev) => {
+        const next = prev.map((friend) => {
+          const data = nextSnapshots[friend.uid];
+          if (!data) return friend;
+          return {
+            ...friend,
+            displayName: data.displayName || friend.displayName,
+            photoUrl: data.photoUrl || friend.photoUrl,
+            lastUpdatedAt: data.updatedAt || friend.lastUpdatedAt || null,
+          };
+        });
+        saveFriendsToStorage(next);
+        return next;
+      });
+
+      return nextSnapshots;
+    } finally {
+      setIsRefreshingFriends(false);
+    }
+  }, [friends, getFriendStats]);
+
   return {
     friends,
     isPublic,
+    publicShareError,
+    friendSnapshots,
+    isRefreshingFriends,
     searchResult,
     isSearching,
     searchError,
@@ -354,6 +444,7 @@ export const useFriends = (auth, games, library) => {
     addFriend,
     removeFriend,
     getFriendStats,
+    refreshFriendsData,
     setSearchResult,
   };
 };

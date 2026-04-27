@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   DatabaseBackup,
   ExternalLink,
@@ -17,6 +17,7 @@ const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
 const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
 const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
 const BGG_SITE_URL = 'https://boardgamegeek.com';
+const SHARE_TOGGLE_MAX_WAIT_MS = 15000;
 
 const LANGUAGES = [
   { code: 'pt-BR', labelKey: 'settings.languageOptionPtBr', flag: '🇧🇷' },
@@ -103,12 +104,24 @@ export const AppSettings = ({
   auth,
   syncStatus,
   isPublic,
+  publicShareError,
   setProfilePublic,
 }) => {
   const { language, changeLanguage, t } = useLanguage();
   const importInputRef = useRef(null);
+  const shareToggleGuardRef = useRef(null);
   const [bggSyncState, setBggSyncState] = useState('idle');
+  const [isUpdatingPublicShare, setIsUpdatingPublicShare] = useState(false);
   const browserLanguage = getPreferredBrowserLanguage();
+
+  useEffect(
+    () => () => {
+      if (shareToggleGuardRef.current) {
+        clearTimeout(shareToggleGuardRef.current);
+      }
+    },
+    []
+  );
 
   const selectedLanguage = LANGUAGES.find((item) => item.code === language);
   const currentLanguageLabel = selectedLanguage
@@ -169,6 +182,35 @@ export const AppSettings = ({
       setBggSyncState('success');
     } catch {
       setBggSyncState('error');
+    }
+  };
+
+  const handleShareToggle = async (event) => {
+    const nextValue = event.target.checked;
+    if (!setProfilePublic || isUpdatingPublicShare) return;
+
+    setIsUpdatingPublicShare(true);
+    if (shareToggleGuardRef.current) {
+      clearTimeout(shareToggleGuardRef.current);
+    }
+    // Defensive unlock in case a promise hangs indefinitely.
+    shareToggleGuardRef.current = setTimeout(() => {
+      setIsUpdatingPublicShare(false);
+    }, SHARE_TOGGLE_MAX_WAIT_MS);
+
+    try {
+      const updated = await setProfilePublic(nextValue);
+      if (!updated) {
+        console.error('Public profile share toggle failed');
+      }
+    } catch (err) {
+      console.error('Error while toggling public profile share:', err);
+    } finally {
+      if (shareToggleGuardRef.current) {
+        clearTimeout(shareToggleGuardRef.current);
+        shareToggleGuardRef.current = null;
+      }
+      setIsUpdatingPublicShare(false);
     }
   };
 
@@ -237,11 +279,15 @@ export const AppSettings = ({
                         type="checkbox"
                         className="settings-share-checkbox"
                         checked={Boolean(isPublic)}
-                        onChange={(e) => setProfilePublic?.(e.target.checked)}
+                        onChange={handleShareToggle}
+                        disabled={isUpdatingPublicShare}
                         aria-label={t('friends.shareProfile')}
                       />
                       <span className="settings-share-switch" aria-hidden="true" />
                     </label>
+                    {publicShareError && (
+                      <p className="settings-share-error">{t('friends.shareProfileError')}</p>
+                    )}
                   </div>
                 )}
               </div>

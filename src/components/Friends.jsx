@@ -49,6 +49,8 @@ export const Friends = ({
         ) : (
           <FriendsList
             friends={friends.friends}
+            friendSnapshots={friends.friendSnapshots}
+            isRefreshingFriends={friends.isRefreshingFriends}
             searchResult={friends.searchResult}
             isSearching={friends.isSearching}
             searchError={friends.searchError}
@@ -56,6 +58,7 @@ export const Friends = ({
             addFriend={friends.addFriend}
             removeFriend={friends.removeFriend}
             getFriendStats={friends.getFriendStats}
+            refreshFriendsData={friends.refreshFriendsData}
             setSearchResult={friends.setSearchResult}
           />
         )}
