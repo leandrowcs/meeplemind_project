@@ -1,0 +1,115 @@
+.friends-container {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--spacing-md) var(--spacing-md) 5.5rem;
+  position: relative;
+}
+
+.friends-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 5%, rgba(82, 115, 255, 0.2), transparent 35%),
+    radial-gradient(circle at 85% 15%, rgba(255, 147, 78, 0.14), transparent 38%),
+    radial-gradient(circle at 50% 100%, rgba(111, 99, 255, 0.16), transparent 40%);
+}
+
+.friends-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.friends-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.friends-title-wrap h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.friends-title-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: linear-gradient(140deg, rgba(79, 125, 255, 0.2), rgba(240, 138, 47, 0.2));
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #c5d6ff;
+}
+
+.friends-content {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.friends-login-required {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.friends-login-icon {
+  opacity: 0.4;
+}
+
+.friends-container .bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 560px;
+  margin: 0 auto;
+  background: rgba(10, 16, 34, 0.9);
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+  border-left: 1px solid rgba(148, 163, 184, 0.25);
+  border-right: 1px solid rgba(148, 163, 184, 0.25);
+  backdrop-filter: blur(10px);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 0.4rem;
+  z-index: 980;
+}
+
+.friends-container .bottom-nav-item {
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: 0.25rem;
+}
+
+.friends-container .bottom-nav-item.active {
+  background: rgba(37, 99, 235, 0.22);
+  color: #bfdbfe;
+}
+
+.friends-container .bottom-nav-item span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.friends-container .bottom-nav-item small {
+  font-size: 0.82rem;
+}

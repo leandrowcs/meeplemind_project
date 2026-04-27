@@ -12,6 +12,12 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.history-header-modern h1 {
+    margin: 0;
+    font-size: 2rem;
 }
 
 .history-title-wrap {
@@ -415,7 +421,7 @@
   border-right: 1px solid rgba(148, 163, 184, 0.25);
   backdrop-filter: blur(10px);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 0.4rem;
   z-index: 980;
 }
@@ -448,10 +454,6 @@
 }
 
 @media (max-width: 640px) {
-  .history-title-wrap h1 {
-    font-size: 1.55rem;
-  }
-
   .history-card-title-wrap h3 {
     max-width: 220px;
   }

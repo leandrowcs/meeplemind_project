@@ -102,6 +102,8 @@ export const AppSettings = ({
   clearAllData,
   auth,
   syncStatus,
+  isPublic,
+  setProfilePublic,
 }) => {
   const { language, changeLanguage, t } = useLanguage();
   const importInputRef = useRef(null);
@@ -222,6 +224,26 @@ export const AppSettings = ({
             {isGoogleConfigured ? (
               <div className="settings-google-auth">
                 <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
+
+                {isGoogleConnected && (
+                  <div className="settings-share-toggle">
+                    <label className="settings-share-label" htmlFor="settings-share-profile">
+                      <span className="settings-share-text">
+                        <strong>{t('friends.shareProfile')}</strong>
+                        <span className="settings-card-note">{t('friends.shareProfileHint')}</span>
+                      </span>
+                      <input
+                        id="settings-share-profile"
+                        type="checkbox"
+                        className="settings-share-checkbox"
+                        checked={Boolean(isPublic)}
+                        onChange={(e) => setProfilePublic?.(e.target.checked)}
+                        aria-label={t('friends.shareProfile')}
+                      />
+                      <span className="settings-share-switch" aria-hidden="true" />
+                    </label>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="settings-google-hint">{t('settings.googleConnectionHint')}</p>

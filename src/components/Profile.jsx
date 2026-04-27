@@ -22,6 +22,7 @@ import {
   Trophy,
   Upload,
   UserRound,
+  Users,
   X,
   Medal,
   Star,
@@ -135,6 +136,7 @@ export const Profile = ({
   clearAllData,
   auth,
   syncStatus,
+  friends,
 }) => {
   const { language, t } = useLanguage();
   const tr = useCallback((pt, en, fr) => {
@@ -1121,6 +1123,7 @@ export const Profile = ({
               {t('profile.viewAllGames')}
             </Button>
           </section>
+
         </div>
 
         <nav className="bottom-nav" aria-label="Main navigation">
@@ -1135,6 +1138,10 @@ export const Profile = ({
           <button className="bottom-nav-item" onClick={() => onNavigate('library')}>
             <span><BookOpen size={18} /></span>
             <small>{t('home.library')}</small>
+          </button>
+          <button className="bottom-nav-item" onClick={() => onNavigate('friends')}>
+            <span><Users size={18} /></span>
+            <small>{t('home.friends')}</small>
           </button>
           <button className="bottom-nav-item active" onClick={() => onNavigate('profile')}>
             <span><UserRound size={18} /></span>

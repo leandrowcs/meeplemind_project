@@ -1,0 +1,231 @@
+.friends-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.friends-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #c5d6ff;
+  margin: 0 0 0.25rem;
+}
+
+/* Search row */
+.friends-search-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.friends-email-input {
+  flex: 1;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.friends-email-input::placeholder {
+  color: #64748b;
+}
+
+.friends-email-input:focus {
+  border-color: rgba(79, 125, 255, 0.5);
+}
+
+.friends-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(79, 125, 255, 0.3);
+  background: rgba(79, 125, 255, 0.12);
+  color: #a5b4ff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.friends-search-btn:hover:not(:disabled) {
+  background: rgba(79, 125, 255, 0.22);
+  border-color: rgba(79, 125, 255, 0.5);
+}
+
+.friends-search-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Feedback */
+.friends-feedback {
+  font-size: 0.8rem;
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+}
+
+.friends-feedback.not-found {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.07);
+}
+
+.friends-feedback.error {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* Search result card */
+.friends-search-result {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(79, 125, 255, 0.25);
+  background: rgba(79, 125, 255, 0.07);
+  flex-wrap: wrap;
+}
+
+.friends-result-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friends-result-email {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-basis: 100%;
+  margin-top: -0.25rem;
+}
+
+.friends-already-added {
+  font-size: 0.75rem;
+  color: #4ade80;
+}
+
+.friends-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.friends-add-btn:hover {
+  background: rgba(74, 222, 128, 0.2);
+}
+
+/* Avatar */
+.friends-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #0f172a;
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.friends-empty {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Friends list */
+.friends-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.friends-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.4);
+  transition: border-color 0.15s;
+}
+
+.friends-item:hover {
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.friends-item-name {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.friends-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.07);
+  color: #94a3b8;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.friends-view-btn:hover {
+  background: rgba(79, 125, 255, 0.12);
+  color: #a5b4ff;
+  border-color: rgba(79, 125, 255, 0.3);
+}
+
+.friends-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: transparent;
+  color: #f87171;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.friends-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}

@@ -672,7 +672,7 @@
   border-right: 1px solid rgba(148, 163, 184, 0.25);
   backdrop-filter: blur(10px);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 0.4rem;
   z-index: 980;
 }

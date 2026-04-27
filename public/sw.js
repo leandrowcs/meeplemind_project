@@ -1,6 +1,6 @@
 // NOTE: Increment this version on every production build to ensure
 // users always get the latest version of the app.
-const CACHE_NAME = 'meeplemind-v3';
+const CACHE_NAME = 'meeplemind-v4';
 
 // Install: pre-cache only the app shell HTML
 self.addEventListener('install', (event) => {

@@ -36,6 +36,15 @@ export default defineConfig({
     },
   },
 
+  // Pre-bundle Firebase to avoid Vite 504 "Outdated Optimize Dep" errors
+  optimizeDeps: {
+    include: [
+      'firebase/app',
+      'firebase/firestore',
+      'firebase/auth',
+    ],
+  },
+
   // Build configuration
   build: {
     outDir: 'dist',

@@ -3,7 +3,7 @@
   "description": "A simple web app to register and track board game matches with friends",
   "author": "Leandro Wanderley",
   "private": true,
-  "version": "2.5.5",
+  "version": "3.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,6 +19,7 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
     "chart.js": "^4.5.1",
+    "firebase": "^12.12.1",
     "lucide-react": "^1.8.0",
     "react": "^19.2.4",
     "react-chartjs-2": "^5.3.1",

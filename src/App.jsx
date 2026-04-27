@@ -4,6 +4,7 @@ import { useGames } from './hooks/useGames';
 import { useLibrary } from './hooks/useLibrary';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
 import { useGoogleDrive } from './hooks/useGoogleDrive';
+import { useFriends } from './hooks/useFriends';
 import { Home } from './components/Home';
 import { NewGame } from './components/NewGame';
 import { History } from './components/History';
@@ -11,10 +12,11 @@ import { Stats } from './components/Stats';
 import { Profile } from './components/Profile';
 import { Library } from './components/Library';
 import { AppSettings } from './components/AppSettings';
+import { Friends } from './components/Friends';
 import { OnboardingModal } from './components/OnboardingModal';
 import './App.css';
 
-const VALID_PAGES = new Set(['home', 'newgame', 'history', 'stats', 'profile', 'library', 'settings']);
+const VALID_PAGES = new Set(['home', 'newgame', 'history', 'stats', 'profile', 'library', 'settings', 'friends']);
 
 function getPageFromHash() {
   const hash = window.location.hash.replace(/^#/, '');
@@ -51,6 +53,7 @@ function App() {
   const lib = useLibrary();
   const auth = useGoogleAuth();
   const drive = useGoogleDrive(auth.accessToken);
+  const friends = useFriends(auth, games, lib.library);
   const displayPlayerName = auth.isSignedIn && auth.user?.name ? auth.user.name : primaryPlayer;
 
   const navigateTo = useCallback((page) => {
@@ -111,6 +114,7 @@ function App() {
           drive.saveLibrary(lib.library),
         ]);
         setSyncStatus('synced');
+        if (friends.isPublic) friends.publishProfile();
       } catch {
         setSyncStatus('error');
       }
@@ -266,6 +270,21 @@ function App() {
           clearAllData={handleClearAllData}
           auth={auth}
           syncStatus={syncStatus}
+          friends={friends}
+        />
+      )}
+      {currentPage === 'friends' && (
+        <Friends
+          onNavigate={navigateTo}
+          auth={auth}
+          friends={friends}
+          displayPlayerName={displayPlayerName}
+          googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
+          syncStatus={syncStatus}
+          exportToCSV={handleExportToCSV}
+          exportToJSON={handleExportToJSON}
+          importFromJSON={handleImportFromJSON}
+          clearAllData={handleClearAllData}
         />
       )}
       {currentPage === 'library' && (
@@ -298,6 +317,8 @@ function App() {
           clearAllData={handleClearAllData}
           auth={auth}
           syncStatus={syncStatus}
+          isPublic={friends.isPublic}
+          setProfilePublic={friends.setProfilePublic}
         />
       )}
     </div>

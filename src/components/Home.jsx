@@ -506,6 +506,10 @@ export const Home = ({
             <span><BookOpen size={18} /></span>
             <small>{t('home.library')}</small>
           </button>
+          <button className="bottom-nav-item" onClick={() => onNavigate('friends')}>
+            <span><Users size={18} /></span>
+            <small>{t('home.friends')}</small>
+          </button>
           <button className="bottom-nav-item bottom-nav-item--profile" onClick={() => onNavigate('profile')}>
             <span><UserRound size={18} /></span>
             <small>{t('home.profile')}</small>

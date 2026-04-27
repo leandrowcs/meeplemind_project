@@ -365,9 +365,84 @@
 }
 
 .settings-google-auth {
-  display: inline-flex;
-  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
+
+.settings-share-toggle {
+  margin-top: 0.25rem;
+}
+
+.settings-share-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-share-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.settings-share-text strong {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+
+/* Hide native checkbox; custom switch is rendered via sibling */
+.settings-share-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.settings-share-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.settings-share-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #94a3b8;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.settings-share-checkbox:checked ~ .settings-share-switch {
+  background: rgba(79, 125, 255, 0.5);
+  border-color: rgba(79, 125, 255, 0.6);
+}
+
+.settings-share-checkbox:checked ~ .settings-share-switch::after {
+  transform: translateX(18px);
+  background: #a5b4ff;
+}
+
+.settings-share-checkbox:focus-visible ~ .settings-share-switch {
+  outline: 2px solid #a5b4ff;
+  outline-offset: 2px;
+}
+
+
 
 .settings-google-hint {
   margin: 0;
