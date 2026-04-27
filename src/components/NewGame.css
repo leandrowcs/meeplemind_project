@@ -432,12 +432,17 @@
 
 .game-type-label {
   font-weight: 700;
+  color: var(--color-accent);
 }
 
 .game-type-desc {
   font-size: 0.78rem;
   color: #cbd5e1;
   text-align: center;
+}
+
+.game-type-icon {
+  color: var(--color-accent);
 }
 
 .result-block {

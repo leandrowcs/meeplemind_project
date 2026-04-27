@@ -1086,7 +1086,7 @@ export const Stats = ({
                       <div className="chart-wrapper" style={{ height: chartHeight(winnerCounts.length, 200) }}>
                         <Bar data={winnerBarData} options={winnerBarOptions} />
                       </div>
-                      <div className="leaderboard">
+                      <div className="leaderboard leaderboard-list">
                         {winnerCounts.map(([player, wins], rank) => (
                           <button
                             key={player}
@@ -1258,7 +1258,7 @@ export const Stats = ({
                       <div className="chart-wrapper" style={{ height: chartHeight(teamPlayers.length, 180) }}>
                         <Bar data={teamBarData} options={teamBarOptions} />
                       </div>
-                      <div className="leaderboard">
+                      <div className="leaderboard leaderboard-list">
                         {teamPlayers.map((entry, index) => (
                           <button key={entry.name} className="leaderboard-item clickable" onClick={() => setSelectedTeamPlayer(entry.name)}>
                             <span className="rank-badge">{index + 1}</span>

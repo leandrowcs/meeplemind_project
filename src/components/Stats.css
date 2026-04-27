@@ -331,6 +331,10 @@
   border-color: rgba(129, 140, 248, 0.75);
 }
 
+.leaderboard-list{
+  display: none;
+}
+
 .rank-badge {
   width: 26px;
   height: 26px;

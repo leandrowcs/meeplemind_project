@@ -216,6 +216,9 @@ export const AppSettings = ({
               </strong>
             </p>
 
+            <p className="settings-card-note">{t('settings.googleConnectionInfo')}</p>
+            <p className="settings-card-note rules">{t('settings.googleConnectionSession')}</p>
+
             {isGoogleConfigured ? (
               <div className="settings-google-auth">
                 <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
