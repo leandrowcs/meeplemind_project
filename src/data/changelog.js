@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v2.5.6: Configurações agora explicam quais dados a conexão Google acessa (perfil básico + appData do Drive) e por que a reconexão periódica é necessária após expiração do token.',
       'v2.5.5: Biblioteca agora permite classificar jogos (Temática, Mecânicas e Tipo para sessões) na adição/edição. Nova Partida voltou para 5 etapas e herda essa classificação ao selecionar o jogo no passo 1. Estatísticas exibem radar por Temática, Mecânicas e Tipo.',
       'v2.5.4: Card de maior rival agora exibe todos os empatados (critério: mais partidas + mais vitórias contra o usuário). Biblioteca ganhou upload de capa por arquivo + validação de URL. Perfil exibe badge de conta Google conectada. Reestruturação visual dos mini-stats do perfil.',
       'v2.5.3: Welcome ganhou seleção de idioma por bandeiras no rodapé, texto de apresentação mais claro, logo maior e botão Google centralizado.',
@@ -23,6 +24,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v2.5.6: Settings now explain which data the Google connection accesses (basic profile + Drive appData) and why periodic reconnection is required after token expiration.',
       'v2.5.5: Library now supports game classification (Themes, Mechanics, and Session Type) in add/edit forms. New Game is back to 5 steps and inherits these classifications when the game is selected in step 1. Stats now shows a radar chart for Themes, Mechanics, and Type.',
       'v2.5.4: Top rival card now shows all tied rivals (ranked by most games together, then most wins against you). Library gained cover image upload + URL validation. Profile displays a Google connected badge. Profile mini-stats visuals were restructured.',
       'v2.5.3: Welcome now includes bottom flag language selection, clearer product intro copy, a larger logo, and centered Google sign-in button content.',
@@ -44,6 +46,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v2.5.6: Les paramètres expliquent maintenant quelles données la connexion Google utilise (profil de base + appData Drive) et pourquoi une reconnexion périodique est nécessaire après expiration du jeton.',
       'v2.5.5: La Bibliothèque permet désormais la classification des jeux (Thèmes, Mécaniques et Type pour les sessions) dans les formulaires d\'ajout/édition. Nouvelle Partie revient à 5 étapes et hérite de cette classification lors du choix du jeu à l\'étape 1. Les statistiques affichent un radar par Thèmes, Mécaniques et Type.',
       'v2.5.4: La carte du grand rival affiche désormais tous les ex-æquo (critère : plus de parties ensemble, puis plus de victoires contre vous). La bibliothèque propose l\'upload de couverture par fichier + validation d\'URL. Le profil affiche un badge de compte Google connecté. Restructuration visuelle des mini-stats du profil.',
       'v2.5.3: L\'écran de bienvenue ajoute le sélecteur de langue par drapeaux en bas, un texte de présentation plus clair, un logo agrandi et un bouton Google visuellement centré.',

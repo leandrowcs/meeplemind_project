@@ -223,6 +223,8 @@ export const AppSettings = ({
             ) : (
               <p className="settings-google-hint">{t('settings.googleConnectionHint')}</p>
             )}
+            <p className="settings-google-info">{t('settings.googleConnectionAccessInfo')}</p>
+            <p className="settings-google-info">{t('settings.googleConnectionDurationInfo')}</p>
           </div>
         </section>
 

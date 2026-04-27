@@ -367,6 +367,13 @@
   font-size: 0.8rem;
 }
 
+.settings-google-info {
+  margin: 0;
+  color: #a7b4cb;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .settings-profile-avatar {
   width: 38px;
   height: 38px;
