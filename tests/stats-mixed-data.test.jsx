@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Stats } from '../components/Stats';
@@ -23,16 +23,16 @@ const mockT = (key) => {
   return translations[key] || key;
 };
 
-jest.mock('../hooks/useLanguage', () => ({
+vi.mock('../hooks/useLanguage', () => ({
   useLanguage: () => ({
     language: 'pt-BR',
-    changeLanguage: jest.fn(),
+    changeLanguage: vi.fn(),
     t: mockT,
   }),
 }));
 
 describe('Stats Component - Mixed Data', () => {
-  const mockOnNavigate = jest.fn();
+  const mockOnNavigate = vi.fn();
   
   const stats = {
     totalGames: 5,

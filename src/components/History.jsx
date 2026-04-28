@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ArchiveX,
   BarChart3,
@@ -52,12 +52,13 @@ export const History = ({
   const [modalGame, setModalGame] = useState(null);
   const [expandedGameId, setExpandedGameId] = useState(null);
 
-  const safeGames = Array.isArray(games) ? games : [];
+  const safeGames = useMemo(() => (Array.isArray(games) ? games : []), [games]);
   const coverByGame = useMemo(() => buildLibraryCoverMap(library), [library]);
 
-  useEffect(() => {
+  const handleTypeFilterChange = (type) => {
+    setGameTypeFilter(type);
     setSelectedFilter('');
-  }, [gameTypeFilter]);
+  };
 
   const filteredGames = useMemo(() => {
     return safeGames
@@ -169,7 +170,7 @@ export const History = ({
                       <button
                         key={type}
                         className={`history-filter-btn ${gameTypeFilter === type ? 'active' : ''}`}
-                        onClick={() => setGameTypeFilter(type)}
+                        onClick={() => handleTypeFilterChange(type)}
                         type="button"
                       >
                         {t(`history.filter${type.charAt(0).toUpperCase()}${type.slice(1)}`)}

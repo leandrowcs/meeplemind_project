@@ -651,7 +651,7 @@ export const Library = ({
       if (game?.name) entries.set(game.name.toLowerCase(), game);
     });
     return entries;
-  }, [library, t]);
+  }, [library]);
 
   const libraryNamesLower = useMemo(
     () => new Set(Array.from(libraryByNameLower.keys())),
@@ -673,7 +673,7 @@ export const Library = ({
         const labelB = b.label ? t(b.label) : b.value;
         return labelA.localeCompare(labelB);
       });
-  }, [library]);
+  }, [library, t]);
 
   const filteredLibrary = useMemo(() => {
     if (categoryFilter === 'all') return library;

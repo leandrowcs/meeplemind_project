@@ -264,15 +264,15 @@ export const Home = ({
   const currentCarouselIndex = recentGames.length === 0 ? 0 : Math.min(carouselIndex, recentGames.length - 1);
   const currentGame = recentGames[currentCarouselIndex] || null;
 
-  const nextSlide = useCallback(() => {
+  const nextSlide = () => {
     if (recentGames.length <= 1) return;
     setCarouselIndex((prev) => (prev + 1) % recentGames.length);
-  }, [recentGames.length]);
+  };
 
-  const prevSlide = useCallback(() => {
+  const prevSlide = () => {
     if (recentGames.length <= 1) return;
     setCarouselIndex((prev) => (prev - 1 + recentGames.length) % recentGames.length);
-  }, [recentGames.length]);
+  };
 
   const onCarouselTouchStart = useCallback((event) => {
     if (event.touches.length !== 1) return;
@@ -284,7 +284,7 @@ export const Home = ({
     };
   }, []);
 
-  const onCarouselTouchEnd = useCallback((event) => {
+  const onCarouselTouchEnd = (event) => {
     if (recentGames.length <= 1 || event.changedTouches.length !== 1) return;
 
     const start = carouselTouchStartRef.current;
@@ -303,7 +303,7 @@ export const Home = ({
     }
 
     prevSlide();
-  }, [nextSlide, prevSlide, recentGames.length]);
+  };
 
   useEffect(() => {
     if (recentGames.length <= 1) {

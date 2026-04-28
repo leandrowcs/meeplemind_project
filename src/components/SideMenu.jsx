@@ -34,6 +34,7 @@ export const SideMenu = ({
   openFrom = 'right',
   notifications = [],
   pendingNotificationsCount = 0,
+  hasLoadedNotifications = false,
   isLoadingNotifications = false,
   notificationsError = null,
   onRefreshNotifications,
@@ -51,6 +52,7 @@ export const SideMenu = ({
   const pendingNotifications = (Array.isArray(notifications) ? notifications : []).filter(
     (item) => item.status === 'pending'
   );
+  const shouldShowNotificationsLoading = isLoadingNotifications && !hasLoadedNotifications;
   const unreadCount = Number.isFinite(pendingNotificationsCount)
     ? pendingNotificationsCount
     : pendingNotifications.length;
@@ -94,7 +96,7 @@ export const SideMenu = ({
     try {
       await action(notification.id);
       if (onRefreshNotifications) {
-        await onRefreshNotifications();
+        await onRefreshNotifications({ silent: true });
       }
     } finally {
       setProcessingNotificationId('');
@@ -107,7 +109,7 @@ export const SideMenu = ({
     try {
       await onDismissNotification(notificationId);
       if (onRefreshNotifications) {
-        await onRefreshNotifications();
+        await onRefreshNotifications({ silent: true });
       }
     } finally {
       setProcessingNotificationId('');
@@ -188,7 +190,7 @@ export const SideMenu = ({
 
           <div className="menu-section">
             <h4 className="section-title"><Bell size={14} /> {t('menu.notifications')}</h4>
-            {isLoadingNotifications ? (
+            {shouldShowNotificationsLoading ? (
               <p className="menu-notification-empty">{t('menu.notificationsLoading')}</p>
             ) : notificationsError ? (
               <p className="menu-notification-empty error">{t('menu.notificationsLoadError')}</p>

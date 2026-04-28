@@ -34,29 +34,26 @@ const detectPreferredLanguage = () => {
   return DEFAULT_LANGUAGE;
 };
 
-export const useLanguage = () => {
-  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Initialize language from localStorage or browser preference
-  useEffect(() => {
+const getInitialLanguage = () => {
+  try {
     const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-
     if (savedLanguage && SUPPORTED_LANGUAGES.includes(savedLanguage)) {
-      setLanguage(savedLanguage);
-    } else {
-      setLanguage(detectPreferredLanguage());
+      return savedLanguage;
     }
+  } catch {
+    // Ignore localStorage read failures.
+  }
 
-    setIsInitialized(true);
-  }, []);
+  return detectPreferredLanguage();
+};
+
+export const useLanguage = () => {
+  const [language, setLanguage] = useState(getInitialLanguage);
 
   // Sync document.title whenever language changes
   useEffect(() => {
-    if (isInitialized) {
-      updateDocumentTitle(language);
-    }
-  }, [language, isInitialized]);
+    updateDocumentTitle(language);
+  }, [language]);
 
   const changeLanguage = useCallback((newLanguage) => {
     if (SUPPORTED_LANGUAGES.includes(newLanguage)) {
@@ -81,7 +78,7 @@ export const useLanguage = () => {
     language,
     changeLanguage,
     t,
-    isInitialized,
+    isInitialized: true,
     supportedLanguages: SUPPORTED_LANGUAGES,
   };
 };

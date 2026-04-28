@@ -76,7 +76,9 @@ const loadFriendsFromStorage = () => {
 const saveFriendsToStorage = (list) => {
   try {
     localStorage.setItem(FRIENDS_KEY, JSON.stringify(list));
-  } catch {}
+  } catch {
+    // Ignore localStorage write failures.
+  }
 };
 
 const loadCache = () => {
@@ -92,7 +94,9 @@ const loadCache = () => {
 const saveCache = (cacheObj) => {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObj));
-  } catch {}
+  } catch {
+    // Ignore localStorage write failures.
+  }
 };
 
 const loadNotificationsFromStorage = () => {
@@ -109,7 +113,9 @@ const loadNotificationsFromStorage = () => {
 const saveNotificationsToStorage = (notifications) => {
   try {
     localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
-  } catch {}
+  } catch {
+    // Ignore localStorage write failures.
+  }
 };
 
 const sanitizeStringArray = (list, maxItems, allowedValues = null) => {
@@ -411,6 +417,9 @@ export const useFriends = (auth, games, library) => {
     sanitizeNotificationsList(loadNotificationsFromStorage())
   );
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [hasLoadedNotifications, setHasLoadedNotifications] = useState(
+    () => loadNotificationsFromStorage().length > 0
+  );
   const [notificationsError, setNotificationsError] = useState(null);
 
   /**
@@ -485,14 +494,19 @@ export const useFriends = (auth, games, library) => {
     }
   }, []);
 
-  const refreshNotifications = useCallback(async () => {
+  const refreshNotifications = useCallback(async (options = {}) => {
+    const { silent = false } = options;
+
     if (!auth.isSignedIn) {
       setNotificationsError(null);
       setIsLoadingNotifications(false);
+      setHasLoadedNotifications(true);
       return persistNotifications([]);
     }
 
-    setIsLoadingNotifications(true);
+    if (!silent) {
+      setIsLoadingNotifications(true);
+    }
     setNotificationsError(null);
 
     try {
@@ -501,31 +515,37 @@ export const useFriends = (auth, games, library) => {
       const next = sanitizeNotificationsList(snap.data()?.notifications);
       return persistNotifications(next);
     } catch {
-      setNotificationsError('load-failed');
-      return notifications;
+      if (!silent) {
+        setNotificationsError('load-failed');
+      }
+      return [];
     } finally {
-      setIsLoadingNotifications(false);
+      setHasLoadedNotifications(true);
+      if (!silent) {
+        setIsLoadingNotifications(false);
+      }
     }
-  }, [auth.isSignedIn, ensureFirebaseAuth, notifications, persistNotifications]);
+  }, [auth.isSignedIn, ensureFirebaseAuth, persistNotifications]);
 
   useEffect(() => {
     if (!auth.isSignedIn) {
       persistNotifications([]);
       setNotificationsError(null);
+      setHasLoadedNotifications(true);
       return undefined;
     }
 
     let isCancelled = false;
 
-    const load = async () => {
+    const load = async (options = {}) => {
       if (isCancelled) return;
-      await refreshNotifications();
+      await refreshNotifications(options);
     };
 
-    load();
+    load({ silent: false });
 
     const poll = window.setInterval(() => {
-      load();
+      load({ silent: true });
     }, NOTIFICATION_POLL_MS);
 
     return () => {
@@ -584,14 +604,18 @@ export const useFriends = (auth, games, library) => {
       setIsPublicState(value);
       try {
         localStorage.setItem(PUBLIC_KEY, String(value));
-      } catch {}
+      } catch {
+        // Ignore localStorage write failures.
+      }
 
       if (!auth.isSignedIn || !auth.user) {
         if (value) {
           setIsPublicState(false);
           try {
             localStorage.setItem(PUBLIC_KEY, 'false');
-          } catch {}
+          } catch {
+            // Ignore localStorage write failures.
+          }
           setPublicShareError('publish-failed');
           return false;
         }
@@ -621,12 +645,16 @@ export const useFriends = (auth, games, library) => {
           setIsPublicState(false);
           try {
             localStorage.setItem(PUBLIC_KEY, 'false');
-          } catch {}
+          } catch {
+            // Ignore localStorage write failures.
+          }
         } else {
           setIsPublicState(true);
           try {
             localStorage.setItem(PUBLIC_KEY, 'true');
-          } catch {}
+          } catch {
+            // Ignore localStorage write failures.
+          }
         }
         setPublicShareError('publish-failed');
         return false;
@@ -1023,6 +1051,7 @@ export const useFriends = (auth, games, library) => {
     notifications,
     pendingNotifications,
     pendingNotificationsCount: pendingNotifications.length,
+    hasLoadedNotifications,
     isLoadingNotifications,
     notificationsError,
     publishProfile,

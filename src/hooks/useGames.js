@@ -140,7 +140,11 @@ export const useGames = () => {
   // Immediately persist to localStorage for mobile reliability
   // (effects may not run before the browser kills the page on mobile)
   const persistGames = (gamesArr) => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(gamesArr)); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(gamesArr));
+    } catch {
+      // Ignore localStorage write failures.
+    }
   };
 
   const addGame = useCallback((gameData) => {

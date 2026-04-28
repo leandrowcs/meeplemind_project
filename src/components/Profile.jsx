@@ -136,7 +136,6 @@ export const Profile = ({
   clearAllData,
   auth,
   syncStatus,
-  friends,
   sideMenuNotifications = {},
 }) => {
   const { language, t } = useLanguage();
@@ -779,7 +778,7 @@ export const Profile = ({
     }
 
     return pickStableRandomItems(pool, 3, insightSeed);
-  }, [allPlayerGames, competitiveGames, insightSeed, library, playerStats, primaryPlayer, t, tr]);
+  }, [allPlayerGames, insightSeed, library, playerStats, primaryPlayer, t, tr]);
 
   return (
     <>

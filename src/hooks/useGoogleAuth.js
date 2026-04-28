@@ -9,7 +9,9 @@ const TOKEN_KEY = 'meeplemind_google_token';
 const clearSavedToken = () => {
   try {
     localStorage.removeItem(TOKEN_KEY);
-  } catch {}
+  } catch {
+    // Ignore localStorage write failures.
+  }
 };
 
 /**
@@ -61,7 +63,9 @@ export const useGoogleAuth = () => {
 
     try {
       localStorage.setItem(TOKEN_KEY, JSON.stringify({ token, expiresAt }));
-    } catch {}
+    } catch {
+      // Ignore localStorage write failures.
+    }
 
     expirationTimerRef.current = setTimeout(() => {
       clearTokenSession(true);
@@ -85,7 +89,9 @@ export const useGoogleAuth = () => {
           setUser(JSON.parse(saved));
           hasCachedUser = true;
         }
-      } catch {}
+      } catch {
+        // Ignore malformed cached user data.
+      }
 
       // Restore access token if still valid
       try {
@@ -126,7 +132,7 @@ export const useGoogleAuth = () => {
           },
         });
         setTokenClient(client);
-      } catch (err) {
+      } catch {
         setError('google-init-failed');
       } finally {
         setIsLoading(false);

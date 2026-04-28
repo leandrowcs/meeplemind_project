@@ -420,7 +420,7 @@ const ModalShell = ({ title, onClose, children }) => {  return (
   );
 };
 
-const GameCoverBadge = ({ coverUrl, gameName }) => (
+const GameCoverBadge = ({ coverUrl }) => (
   <span className={`game-cover-badge${coverUrl ? ' has-cover' : ''}`} aria-hidden="true">
     {coverUrl ? (
       <img src={coverUrl} alt="" loading="lazy" />
@@ -461,9 +461,12 @@ export const Stats = ({
   const [selectedFriendUids, setSelectedFriendUids] = useState([]);
   const [isFriendSelectorOpen, setIsFriendSelectorOpen] = useState(false);
 
-  const safeGames = Array.isArray(games) ? games : [];
-  const safeLibrary = Array.isArray(library) ? library : [];
-  const friendList = Array.isArray(friends?.friends) ? friends.friends : [];
+  const safeGames = useMemo(() => (Array.isArray(games) ? games : []), [games]);
+  const safeLibrary = useMemo(() => (Array.isArray(library) ? library : []), [library]);
+  const friendList = useMemo(
+    () => (Array.isArray(friends?.friends) ? friends.friends : []),
+    [friends]
+  );
   const getFriendStatsFn = friends?.getFriendStats;
   const coverByGame = useMemo(() => buildLibraryCoverMap(safeLibrary), [safeLibrary]);
 
@@ -700,11 +703,6 @@ export const Stats = ({
     if (max === 0) return [];
     return rivalryEntries.filter((r) => r.theirWins === max).sort((a, b) => a.name.localeCompare(b.name));
   }, [rivalryEntries]);
-
-  const searchableGames = useMemo(() => {
-    const names = new Set(sortedGames.map((g) => g.game).filter(Boolean));
-    return [...names].sort((a, b) => a.localeCompare(b));
-  }, [sortedGames]);
 
   const last30DaysCount = useMemo(() => {
     const now = new Date();

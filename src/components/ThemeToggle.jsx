@@ -1,14 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import './ThemeToggle.css';
 
 export const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
+  const [isDark, setIsDark] = useState(() => {
     const theme = localStorage.getItem('meeplemind-theme') || 'dark';
-    setIsDark(theme === 'dark');
-  }, []);
+    return theme === 'dark';
+  });
 
   const toggleTheme = () => {
     const newTheme = isDark ? 'light' : 'dark';

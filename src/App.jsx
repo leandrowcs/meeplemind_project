@@ -290,6 +290,7 @@ function App() {
   const sideMenuNotifications = {
     notifications: friends.pendingNotifications,
     pendingNotificationsCount: friends.pendingNotificationsCount,
+    hasLoadedNotifications: friends.hasLoadedNotifications,
     isLoadingNotifications: friends.isLoadingNotifications,
     notificationsError: friends.notificationsError,
     onRefreshNotifications: friends.refreshNotifications,
