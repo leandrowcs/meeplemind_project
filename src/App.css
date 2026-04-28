@@ -15,11 +15,53 @@
 }
 
 .loading-icon {
-  font-size: 3rem;
+  color: var(--color-accent);
   animation: bounce 0.6s ease-in-out infinite;
 }
 
-.loading-screen p {
+.loading-icon--startup {
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  animation: startupPulse 1.2s ease-in-out infinite;
+}
+
+.loading-icon--startup svg {
+  animation: iconSwapIn 0.35s ease;
+}
+
+.loading-icon-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.loading-icon-chip {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: rgba(148, 163, 184, 0.14);
+  opacity: 0.45;
+  transform: scale(0.92);
+  transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease, background 0.25s ease;
+}
+
+.loading-icon-chip.active {
+  color: var(--color-accent);
+  background: rgba(245, 158, 11, 0.22);
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+.loading-brand {
   font-size: 1.5rem;
   color: var(--color-accent);
   font-weight: 700;
@@ -31,6 +73,26 @@
   }
   50% {
     transform: translateY(-10px);
+  }
+}
+
+@keyframes startupPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes iconSwapIn {
+  0% {
+    opacity: 0;
+    transform: rotate(-8deg) scale(0.75);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
   }
 }
 

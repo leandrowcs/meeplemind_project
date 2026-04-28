@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Dices } from 'lucide-react';
+import {
+  ChessKnight,
+  Dices,
+  Gamepad2,
+  Joystick,
+  Swords,
+} from 'lucide-react';
 import { useGames } from './hooks/useGames';
 import { useLibrary } from './hooks/useLibrary';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
@@ -25,6 +31,9 @@ function getPageFromHash() {
 }
 
 const PRIMARY_PLAYER_KEY = 'meeplemind-primary-player';
+const STARTUP_LOADING_MAX_MS = 4000;
+const STARTUP_LOADING_STEP_MS = 480;
+const STARTUP_LOADING_ICONS = [Dices, Gamepad2, Joystick, Swords, ChessKnight];
 
 const toLocalDateInput = (value) => {
   const parsed = new Date(value);
@@ -58,6 +67,8 @@ function App() {
   const [primaryPlayer, setPrimaryPlayer] = useState(
     () => localStorage.getItem(PRIMARY_PLAYER_KEY) || null
   );
+  const [showStartupLoading, setShowStartupLoading] = useState(true);
+  const [startupIconIndex, setStartupIconIndex] = useState(0);
   const [syncStatus, setSyncStatus] = useState('idle'); // 'idle' | 'syncing' | 'synced' | 'error'
   const [hasLoadedDriveData, setHasLoadedDriveData] = useState(false);
   const syncTimer = useRef(null);
@@ -101,6 +112,21 @@ function App() {
     const onHashChange = () => setCurrentPage(getPageFromHash());
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  useEffect(() => {
+    const iconSwapTimer = setInterval(() => {
+      setStartupIconIndex((current) => (current + 1) % STARTUP_LOADING_ICONS.length);
+    }, STARTUP_LOADING_STEP_MS);
+
+    const hideTimer = setTimeout(() => {
+      setShowStartupLoading(false);
+    }, STARTUP_LOADING_MAX_MS);
+
+    return () => {
+      clearInterval(iconSwapTimer);
+      clearTimeout(hideTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -325,12 +351,37 @@ function App() {
     window.location.hash = 'home';
   }, [clearAllData, lib]);
 
+  const ActiveStartupIcon = STARTUP_LOADING_ICONS[startupIconIndex] || Dices;
+
   // ── Render guards ─────────────────────────────────────────────────────────
+  if (showStartupLoading) {
+    return (
+      <div className="loading-screen loading-screen--startup" role="status" aria-live="polite">
+        <span className="loading-icon loading-icon--startup" aria-hidden="true">
+          <ActiveStartupIcon size={42} />
+        </span>
+
+        <div className="loading-icon-track" aria-hidden="true">
+          {STARTUP_LOADING_ICONS.map((Icon, index) => (
+            <span
+              key={`startup-icon-${index}`}
+              className={`loading-icon-chip ${index === startupIconIndex ? 'active' : ''}`}
+            >
+              <Icon size={16} />
+            </span>
+          ))}
+        </div>
+
+        <p className="loading-brand">MeepleMind</p>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
-      <div className="loading-screen">
+      <div className="loading-screen" role="status" aria-live="polite">
         <span className="loading-icon"><Dices size={24} /></span>
-        <p>MeepleMind</p>
+        <p className="loading-brand">MeepleMind</p>
       </div>
     );
   }
