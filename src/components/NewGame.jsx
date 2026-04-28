@@ -74,7 +74,16 @@ const getDurationLabel = (minutes, t) => {
   return `${minutes}${t('newgame.minutesShort')}`;
 };
 
-export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPlayer, libraryGames = [], libraryEntries = [] }) => {
+export const NewGame = ({
+  onNavigate,
+  onSave,
+  uniqueGames,
+  uniquePlayers,
+  mainPlayer,
+  friendsList = [],
+  libraryGames = [],
+  libraryEntries = [],
+}) => {
   const { t } = useLanguage();
   const initialDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -105,6 +114,7 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
     game: '',
     newPlayer: '',
   });
+  const [friendByPlayerKey, setFriendByPlayerKey] = useState({});
 
   const [bggSearch, setBggSearch] = useState({
     loading: false,
@@ -123,6 +133,10 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
   const safeLibraryGames = useMemo(
     () => (Array.isArray(libraryGames) ? libraryGames : []),
     [libraryGames]
+  );
+  const safeFriendsList = useMemo(
+    () => (Array.isArray(friendsList) ? friendsList : []),
+    [friendsList]
   );
   const safeLibraryEntries = useMemo(
     () => (Array.isArray(libraryEntries) ? libraryEntries : []),
@@ -215,10 +229,33 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
   }, [inputValues.game, safeLibraryGames]);
 
   const knownPlayersToSuggest = useMemo(() => {
+    const selectedKeys = new Set(
+      formData.players.map((player) => player.trim().toLowerCase())
+    );
+
     return safeUniquePlayers
-      .filter((player) => !formData.players.includes(player))
+      .filter((player) => !selectedKeys.has(player.trim().toLowerCase()))
       .slice(0, 24);
   }, [safeUniquePlayers, formData.players]);
+
+  const friendPlayersToSuggest = useMemo(() => {
+    const selectedKeys = new Set(
+      formData.players.map((player) => player.trim().toLowerCase())
+    );
+
+    return safeFriendsList
+      .map((friend) => ({
+        ...friend,
+        displayName: (friend?.displayName || '').trim(),
+      }))
+      .filter(
+        (friend) =>
+          friend.uid &&
+          friend.displayName &&
+          !selectedKeys.has(friend.displayName.toLowerCase())
+      )
+      .slice(0, 24);
+  }, [safeFriendsList, formData.players]);
 
   const formatTemplate = useCallback((key, replacements = {}) => {
     let text = t(key);
@@ -316,22 +353,59 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
       return;
     }
 
-    const filtered = safeUniquePlayers.filter(
-      (player) => player.toLowerCase().includes(value.toLowerCase())
-        && !formData.players.includes(player)
-    );
+    const pool = [
+      ...safeFriendsList
+        .map((friend) => (friend?.displayName || '').trim())
+        .filter(Boolean),
+      ...safeUniquePlayers,
+    ];
+
+    const seen = new Set();
+    const filtered = pool.filter((player) => {
+      const key = player.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return (
+        key.includes(value.toLowerCase()) &&
+        !formData.players.some((selected) => selected.toLowerCase() === key)
+      );
+    });
+
     setSuggestions((prev) => ({ ...prev, players: filtered }));
   };
 
-  const handleAddPlayer = (playerName = null) => {
+  const handleAddPlayer = (playerName = null, options = {}) => {
     const nextPlayer = (playerName || inputValues.newPlayer).trim();
-    if (!nextPlayer || formData.players.includes(nextPlayer)) return;
+    if (!nextPlayer) return;
+
+    const alreadyAdded = formData.players.some(
+      (player) => player.trim().toLowerCase() === nextPlayer.toLowerCase()
+    );
+    if (alreadyAdded) return;
+
+    const normalizedKey = nextPlayer.toLowerCase();
+    const matchedFriend =
+      options.friendUid ||
+      safeFriendsList.find(
+        (friend) =>
+          (friend?.displayName || '').trim().toLowerCase() === normalizedKey
+      )?.uid ||
+      '';
 
     setFormData((prev) => ({
       ...prev,
       players: [...prev.players, nextPlayer],
       points: [...prev.points, 0],
     }));
+    setFriendByPlayerKey((prev) => {
+      const next = { ...prev };
+      if (matchedFriend) {
+        next[normalizedKey] = String(matchedFriend);
+      } else {
+        delete next[normalizedKey];
+      }
+      return next;
+    });
     setInputValues((prev) => ({ ...prev, newPlayer: '' }));
     setSuggestions((prev) => ({ ...prev, players: [] }));
   };
@@ -340,12 +414,19 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
     const player = formData.players[index];
     if (!player || player === mainPlayer) return;
 
+    const normalizedKey = player.trim().toLowerCase();
+
     setFormData((prev) => ({
       ...prev,
       players: prev.players.filter((_, idx) => idx !== index),
       points: prev.points.filter((_, idx) => idx !== index),
       winner: prev.winner === player ? '' : prev.winner,
     }));
+    setFriendByPlayerKey((prev) => {
+      const next = { ...prev };
+      delete next[normalizedKey];
+      return next;
+    });
   };
 
   const handlePointChange = (index, value) => {
@@ -471,6 +552,13 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
       themes,
       mechanics,
       gameCategories,
+      invitedFriendUids: [
+        ...new Set(
+          Object.values(friendByPlayerKey)
+            .map((uid) => String(uid || '').trim())
+            .filter(Boolean)
+        ),
+      ],
     });
 
     onNavigate('home');
@@ -587,6 +675,26 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
   const renderStepPlayers = () => (
     <>
       <div className="chip-group">
+        <p className="chip-group-title">{t('newgame.friendsListPlayers')}</p>
+        {friendPlayersToSuggest.length > 0 ? (
+          <div className="chip-grid">
+            {friendPlayersToSuggest.map((friend) => (
+              <button
+                key={friend.uid}
+                type="button"
+                className="chip-btn"
+                onClick={() => handleAddPlayer(friend.displayName, { friendUid: friend.uid })}
+              >
+                {friend.displayName}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="form-message">{t('newgame.noFriendsSuggested')}</p>
+        )}
+      </div>
+
+      <div className="chip-group">
         <p className="chip-group-title">{t('newgame.playersPlayedWithYou')}</p>
         {knownPlayersToSuggest.length > 0 ? (
           <div className="chip-grid">
@@ -655,6 +763,9 @@ export const NewGame = ({ onNavigate, onSave, uniqueGames, uniquePlayers, mainPl
               <div className="player-name-wrap">
                 <span className="player-name">
                   {playerName}
+                  {friendByPlayerKey[playerName.trim().toLowerCase()] && (
+                    <span className="friend-badge">{t('newgame.friendBadge')}</span>
+                  )}
                   {playerName === mainPlayer && (
                     <span className="you-badge">{t('newgame.you')}</span>
                   )}

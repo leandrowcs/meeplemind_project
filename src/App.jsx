@@ -26,6 +26,32 @@ function getPageFromHash() {
 
 const PRIMARY_PLAYER_KEY = 'meeplemind-primary-player';
 
+const toLocalDateInput = (value) => {
+  const parsed = new Date(value);
+  if (!Number.isFinite(parsed.getTime())) {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const dedupePlayers = (players) => {
+  const seen = new Set();
+  return (Array.isArray(players) ? players : [])
+    .map((name) => String(name || '').trim())
+    .filter(Boolean)
+    .filter((name) => {
+      const key = name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 20);
+};
+
 function App() {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(getPageFromHash);
@@ -162,13 +188,115 @@ function App() {
   const handleAddGame = useCallback(
     (gameData) => {
       const saved = addGame(gameData);
+
+      const invitedFriendUids = Array.isArray(gameData.invitedFriendUids)
+        ? [...new Set(gameData.invitedFriendUids.map((uid) => String(uid || '').trim()).filter(Boolean))]
+        : [];
+
+      if (invitedFriendUids.length > 0) {
+        friends.notifyFriendsOfGame(saved, invitedFriendUids);
+      }
+
       if (gameData.ownGame) {
         lib.ensureInLibrary(gameData.game);
       }
+
       return saved;
     },
-    [addGame, lib]
+    [addGame, friends, lib]
   );
+
+  const handleAcceptFriendNotification = useCallback(
+    async (notificationId) => {
+      if (!friends.acceptFriendNotification) return false;
+      return friends.acceptFriendNotification(notificationId);
+    },
+    [friends]
+  );
+
+  const handleAcceptGameInviteNotification = useCallback(
+    async (notificationId) => {
+      if (!friends.acceptGameInviteNotification) return false;
+
+      const invitePayload = await friends.acceptGameInviteNotification(notificationId);
+      if (!invitePayload) return false;
+
+      const targetName = String(invitePayload.targetName || '').trim();
+      let players = dedupePlayers(invitePayload.players);
+
+      if (primaryPlayer) {
+        if (!players.some((name) => name === primaryPlayer) && targetName) {
+          const index = players.findIndex((name) => name === targetName);
+          if (index >= 0) {
+            players[index] = primaryPlayer;
+          }
+        }
+
+        if (!players.some((name) => name === primaryPlayer)) {
+          players = dedupePlayers([...players, primaryPlayer]);
+        }
+      }
+
+      if (players.length < 2) return false;
+
+      const points = Array.isArray(invitePayload.points)
+        ? invitePayload.points.slice(0, players.length).map((value) => Number(value) || 0)
+        : [];
+      while (points.length < players.length) {
+        points.push(0);
+      }
+
+      let winner = invitePayload.winner || null;
+      if (winner && targetName && winner === targetName && primaryPlayer) {
+        winner = primaryPlayer;
+      }
+
+      const parsedDuration = Number(invitePayload.duration);
+
+      const saved = addGame({
+        game: invitePayload.game,
+        gameType: invitePayload.gameType,
+        players,
+        points,
+        winner,
+        coopResult: invitePayload.coopResult,
+        duration: Number.isFinite(parsedDuration) && parsedDuration > 0 ? parsedDuration : null,
+        date: toLocalDateInput(invitePayload.date),
+        ownGame: Boolean(invitePayload.ownGame),
+        themes: Array.isArray(invitePayload.themes) ? invitePayload.themes : [],
+        mechanics: Array.isArray(invitePayload.mechanics) ? invitePayload.mechanics : [],
+        gameCategories: Array.isArray(invitePayload.gameCategories)
+          ? invitePayload.gameCategories
+          : [],
+      });
+
+      if (invitePayload.ownGame) {
+        lib.ensureInLibrary(invitePayload.game);
+      }
+
+      return Boolean(saved);
+    },
+    [addGame, friends, lib, primaryPlayer]
+  );
+
+  const handleDismissNotification = useCallback(
+    async (notificationId) => {
+      if (!friends.dismissNotification) return;
+      await friends.dismissNotification(notificationId);
+    },
+    [friends]
+  );
+
+  const sideMenuNotifications = {
+    notifications: friends.pendingNotifications,
+    pendingNotificationsCount: friends.pendingNotificationsCount,
+    isLoadingNotifications: friends.isLoadingNotifications,
+    notificationsError: friends.notificationsError,
+    onRefreshNotifications: friends.refreshNotifications,
+    onAcceptFriendNotification: handleAcceptFriendNotification,
+    onAcceptGameInviteNotification: handleAcceptGameInviteNotification,
+    onDismissNotification: handleDismissNotification,
+  };
 
   const handleExportToCSV = useCallback((language = 'pt-BR') => {
     exportToCSV(lib.library, language);
@@ -264,6 +392,7 @@ function App() {
           games={games}
           library={lib.library}
           googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
+          sideMenuNotifications={sideMenuNotifications}
         />
       )}
       {currentPage === 'newgame' && (
@@ -273,6 +402,7 @@ function App() {
           uniqueGames={getUniqueGames()}
           uniquePlayers={getUniquePlayers()}
           mainPlayer={primaryPlayer}
+          friendsList={friends.friends}
           libraryGames={lib.getGameNames()}
           libraryEntries={lib.library}
         />
@@ -292,6 +422,7 @@ function App() {
           syncStatus={syncStatus}
           displayPlayerName={displayPlayerName}
           googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
+          sideMenuNotifications={sideMenuNotifications}
         />
       )}
       {currentPage === 'stats' && (
@@ -310,6 +441,7 @@ function App() {
           syncStatus={syncStatus}
           displayPlayerName={displayPlayerName}
           googlePhotoUrl={auth.isSignedIn ? auth.user?.picture : ''}
+          sideMenuNotifications={sideMenuNotifications}
         />
       )}
       {currentPage === 'profile' && (
@@ -328,6 +460,7 @@ function App() {
           auth={auth}
           syncStatus={syncStatus}
           friends={friends}
+          sideMenuNotifications={sideMenuNotifications}
         />
       )}
       {currentPage === 'friends' && (
@@ -342,6 +475,7 @@ function App() {
           exportToJSON={handleExportToJSON}
           importFromJSON={handleImportFromJSON}
           clearAllData={handleClearAllData}
+          sideMenuNotifications={sideMenuNotifications}
         />
       )}
       {currentPage === 'library' && (
@@ -361,6 +495,7 @@ function App() {
           clearAllData={handleClearAllData}
           auth={auth}
           syncStatus={syncStatus}
+          sideMenuNotifications={sideMenuNotifications}
         />
       )}
       {currentPage === 'settings' && (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   BarChart3,
@@ -49,6 +49,8 @@ import './Stats.css';
 ChartJS.register(CategoryScale, LinearScale, RadialLinearScale, BarElement, ArcElement, LineElement, PointElement, Filler, Tooltip, Legend);
 
 const CHART_COLORS = ['#4f7dff', '#f08a2f', '#8f7cff', '#2fbf8f', '#f4bf34', '#f97373', '#2dd4bf', '#60a5fa', '#c084fc', '#fb7185'];
+const MAX_FRIENDS_COMPARISON = 10;
+const MAX_EXTERNAL_FRIENDS_COMPARISON = MAX_FRIENDS_COMPARISON - 1;
 
 
 const VERTICAL_BAR_OPTIONS = {
@@ -177,8 +179,11 @@ const buildPlayerSnapshot = (playerName, games, library, displayName, photoUrl) 
   const coopGames = playerGames.filter((game) => game.gameType === 'cooperative');
 
   const totalGames = playerGames.length;
+  const competitiveWins = competitiveGames.filter(
+    (game) => game.winner === normalizedName
+  ).length;
   const totalWins =
-    competitiveGames.filter((game) => game.winner === normalizedName).length +
+    competitiveWins +
     coopGames.filter((game) => game.coopResult === 'win').length;
 
   const competitiveWinRate =
@@ -245,6 +250,8 @@ const buildPlayerSnapshot = (playerName, games, library, displayName, photoUrl) 
     photoUrl: photoUrl || '/user_icon.png',
     totalGames,
     totalWins,
+    competitiveWins,
+    competitiveGames: competitiveGames.length,
     competitiveWinRate,
     coopSuccessRate,
     uniquePlayedGames,
@@ -438,6 +445,7 @@ export const Stats = ({
   syncStatus,
   displayPlayerName,
   googlePhotoUrl,
+  sideMenuNotifications = {},
 }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('competitive');
@@ -450,6 +458,8 @@ export const Stats = ({
   const [friendsSnapshots, setFriendsSnapshots] = useState([]);
   const [isLoadingFriendsTab, setIsLoadingFriendsTab] = useState(false);
   const [friendsTabError, setFriendsTabError] = useState(null);
+  const [selectedFriendUids, setSelectedFriendUids] = useState([]);
+  const [isFriendSelectorOpen, setIsFriendSelectorOpen] = useState(false);
 
   const safeGames = Array.isArray(games) ? games : [];
   const safeLibrary = Array.isArray(library) ? library : [];
@@ -494,6 +504,8 @@ export const Stats = ({
             photoUrl: row.snapshot.photoUrl || row.friend.photoUrl || '/user_icon.png',
             totalGames: Number(row.snapshot.totalGames) || 0,
             totalWins: Number(row.snapshot.totalWins) || 0,
+            competitiveWins: Number(row.snapshot.competitiveWins) || 0,
+            competitiveGames: Number(row.snapshot.competitiveGames) || 0,
             competitiveWinRate: Number(row.snapshot.competitiveWinRate) || 0,
             coopSuccessRate: Number(row.snapshot.coopSuccessRate) || 0,
             level: Number(row.snapshot.level) || 1,
@@ -517,6 +529,31 @@ export const Stats = ({
       isCancelled = true;
     };
   }, [activeTab, friendList, getFriendStatsFn, t]);
+
+  useEffect(() => {
+    if (!friendsSnapshots.length) {
+      setSelectedFriendUids([]);
+      return;
+    }
+
+    if (friendsSnapshots.length <= MAX_EXTERNAL_FRIENDS_COMPARISON) {
+      setSelectedFriendUids(friendsSnapshots.map((entry) => entry.uid));
+      return;
+    }
+
+    setSelectedFriendUids((previous) => {
+      const available = new Set(friendsSnapshots.map((entry) => entry.uid));
+      const validPrevious = previous
+        .filter((uid) => available.has(uid))
+        .slice(0, MAX_EXTERNAL_FRIENDS_COMPARISON);
+
+      if (validPrevious.length) return validPrevious;
+
+      return friendsSnapshots
+        .slice(0, MAX_EXTERNAL_FRIENDS_COMPARISON)
+        .map((entry) => entry.uid);
+    });
+  }, [friendsSnapshots]);
 
   const sortedGames = useMemo(
     () => [...safeGames].sort((a, b) => new Date(b.date) - new Date(a.date)),
@@ -893,6 +930,18 @@ export const Stats = ({
     ]
   );
 
+  const activeFriendSnapshots = useMemo(() => {
+    if (friendsSnapshots.length <= MAX_EXTERNAL_FRIENDS_COMPARISON) {
+      return friendsSnapshots;
+    }
+
+    const selectedSet = new Set(selectedFriendUids);
+
+    return friendsSnapshots
+      .filter((snapshot) => selectedSet.has(snapshot.uid))
+      .slice(0, MAX_EXTERNAL_FRIENDS_COMPARISON);
+  }, [friendsSnapshots, selectedFriendUids]);
+
   const friendsComparisonRows = useMemo(
     () => [
       {
@@ -900,13 +949,17 @@ export const Stats = ({
         ...localPlayerSnapshot,
         isYou: true,
       },
-      ...friendsSnapshots.map((snapshot) => ({
+      ...activeFriendSnapshots.map((snapshot) => ({
         ...snapshot,
         isYou: false,
       })),
     ],
-    [localPlayerSnapshot, friendsSnapshots]
+    [activeFriendSnapshots, localPlayerSnapshot]
   );
+
+  const hasExceededFriendsLimit =
+    friendsSnapshots.length > MAX_EXTERNAL_FRIENDS_COMPARISON;
+  const selectedFriendsCount = activeFriendSnapshots.length;
 
   const hasComparableFriendsData = friendsComparisonRows.length > 1;
 
@@ -1091,6 +1144,28 @@ export const Stats = ({
     [t]
   );
 
+  const toggleComparisonFriend = useCallback((uid) => {
+    setSelectedFriendUids((previous) => {
+      if (previous.includes(uid)) {
+        return previous.filter((id) => id !== uid);
+      }
+
+      if (previous.length >= MAX_EXTERNAL_FRIENDS_COMPARISON) {
+        return previous;
+      }
+
+      return [...previous, uid];
+    });
+  }, []);
+
+  const formatTemplate = useCallback((key, replacements = {}) => {
+    let text = t(key);
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+      text = text.replaceAll(`{${placeholder}}`, String(value));
+    });
+    return text;
+  }, [t]);
+
   const chartHeight = (count, minimum = 180) => Math.max(minimum, count * 36);
   const formatSnapshotDate = (value) => {
     if (!value) return t('stats.notAvailable');
@@ -1120,6 +1195,7 @@ export const Stats = ({
             compact
             userName={displayPlayerName || primaryPlayer}
             userPhotoUrl={googlePhotoUrl}
+            {...sideMenuNotifications}
           />
         </header>
 
@@ -1605,6 +1681,27 @@ export const Stats = ({
                   </div>
                   <p className="panel-subtitle">{t('stats.friendsTabHint')}</p>
 
+                  {hasExceededFriendsLimit && (
+                    <div className="friends-selection-row">
+                      <p className="panel-subtitle">
+                        {formatTemplate('stats.friendsLimitHint', {
+                          max: MAX_FRIENDS_COMPARISON,
+                        })}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setIsFriendSelectorOpen(true)}
+                      >
+                        <Users size={14} />
+                        {formatTemplate('stats.friendsSelectButton', {
+                          selected: selectedFriendsCount,
+                          max: MAX_EXTERNAL_FRIENDS_COMPARISON,
+                        })}
+                      </Button>
+                    </div>
+                  )}
+
                   {!friendList.length ? (
                     <p className="empty-section">{t('stats.friendsNeedFriends')}</p>
                   ) : isLoadingFriendsTab ? (
@@ -1638,6 +1735,7 @@ export const Stats = ({
                         <div className="panel-header-row">
                           <h3><ShieldCheck size={18} /> {t('stats.friendsWinRate')}</h3>
                         </div>
+                        <p className="panel-subtitle">{t('stats.friendsWinRateHint')}</p>
                         <div
                           className="chart-wrapper"
                           style={{
@@ -1645,6 +1743,20 @@ export const Stats = ({
                           }}
                         >
                           <Bar data={friendsWinRateData} options={friendsWinRateOptions} />
+                        </div>
+                        <div className="stats-inline-list">
+                          {friendsComparisonRows.map((entry) => (
+                            <p key={`winrate-${entry.uid}`} className="stats-inline-item">
+                              {formatTemplate('stats.friendsCompetitiveSample', {
+                                name: entry.isYou
+                                  ? `${entry.displayName} (${t('stats.you')})`
+                                  : entry.displayName,
+                                rate: entry.competitiveWinRate,
+                                wins: entry.competitiveWins,
+                                games: entry.competitiveGames,
+                              })}
+                            </p>
+                          ))}
                         </div>
                       </section>
 
@@ -1666,6 +1778,7 @@ export const Stats = ({
                         <div className="panel-header-row">
                           <h3><Trophy size={18} /> {t('stats.friendsRanking')}</h3>
                         </div>
+                        <p className="panel-subtitle">{t('stats.friendsRankingHint')}</p>
                         <div className="leaderboard">
                           {friendsRanking.map((entry, index) => (
                             <div key={entry.uid} className="leaderboard-item leaderboard-player-item">
@@ -1688,6 +1801,13 @@ export const Stats = ({
                                 </span>
                                 <span className="player-stat">
                                   {`${t('stats.winsCount').replace('{count}', entry.totalWins)} | ${t('stats.matchesCount').replace('{count}', entry.totalGames)}`}
+                                </span>
+                                <span className="player-stat">
+                                  {formatTemplate('stats.friendsRankingRateDetail', {
+                                    rate: entry.competitiveWinRate,
+                                    wins: entry.competitiveWins,
+                                    games: entry.competitiveGames,
+                                  })}
                                 </span>
                                 <span className="player-stat">
                                   {t('stats.friendsLastSync').replace(
@@ -1732,6 +1852,73 @@ export const Stats = ({
           </button>
         </nav>
       </div>
+
+      {isFriendSelectorOpen && (
+        <ModalShell
+          title={t('stats.friendsSelectModalTitle')}
+          onClose={() => setIsFriendSelectorOpen(false)}
+        >
+          <p className="panel-subtitle">
+            {formatTemplate('stats.friendsSelectModalHint', {
+              total: MAX_FRIENDS_COMPARISON,
+              max: MAX_EXTERNAL_FRIENDS_COMPARISON,
+            })}
+          </p>
+
+          <div className="stats-modal-list friends-select-list">
+            {friendsSnapshots.map((entry) => {
+              const isSelected = selectedFriendUids.includes(entry.uid);
+              const reachedLimit =
+                !isSelected &&
+                selectedFriendUids.length >= MAX_EXTERNAL_FRIENDS_COMPARISON;
+
+              return (
+                <article
+                  key={`friend-select-${entry.uid}`}
+                  className={`stats-modal-item selectable ${isSelected ? 'selected' : ''}`}
+                >
+                  <label className="stats-checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleComparisonFriend(entry.uid)}
+                      disabled={reachedLimit}
+                    />
+                    <img
+                      src={entry.photoUrl || '/user_icon.png'}
+                      alt={entry.displayName}
+                      className="stats-player-avatar"
+                      referrerPolicy="no-referrer"
+                      onError={(event) => {
+                        event.currentTarget.src = '/user_icon.png';
+                      }}
+                    />
+                    <div className="stats-checkbox-meta">
+                      <strong>{entry.displayName}</strong>
+                      <small>
+                        {formatTemplate('stats.friendsCompetitiveSampleTiny', {
+                          rate: entry.competitiveWinRate,
+                          games: entry.competitiveGames,
+                        })}
+                      </small>
+                    </div>
+                  </label>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="friends-select-footer">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsFriendSelectorOpen(false)}
+            >
+              {t('common.close')}
+            </Button>
+          </div>
+        </ModalShell>
+      )}
 
       {selectedWinner && (
         <ModalShell title={t('stats.winsOf').replace('{name}', selectedWinner)} onClose={() => setSelectedWinner(null)}>

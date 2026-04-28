@@ -601,6 +601,7 @@ export const Library = ({
   clearAllData,
   auth,
   syncStatus,
+  sideMenuNotifications = {},
 }) => {
   const { language, t } = useLanguage();
   const [addingGame, setAddingGame] = useState(null);
@@ -1085,6 +1086,7 @@ export const Library = ({
               openFrom="right"
               userName={displayPlayerName || primaryPlayer}
               userPhotoUrl={googlePhotoUrl}
+              {...sideMenuNotifications}
             />
           </div>
         </header>

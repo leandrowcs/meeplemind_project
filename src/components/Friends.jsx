@@ -15,6 +15,7 @@ export const Friends = ({
   exportToJSON,
   importFromJSON,
   clearAllData,
+  sideMenuNotifications = {},
 }) => {
   const { t } = useLanguage();
 
@@ -37,6 +38,7 @@ export const Friends = ({
           openFrom="right"
           userName={displayPlayerName}
           userPhotoUrl={googlePhotoUrl}
+          {...sideMenuNotifications}
         />
       </header>
 

@@ -224,7 +224,7 @@
 }
 
 .summary-tile strong {
-  font-size: 1.35rem;
+  font-size: var(--font-size-md);
   line-height: 1.1;
 }
 

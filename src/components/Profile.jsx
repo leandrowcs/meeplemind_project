@@ -137,6 +137,7 @@ export const Profile = ({
   auth,
   syncStatus,
   friends,
+  sideMenuNotifications = {},
 }) => {
   const { language, t } = useLanguage();
   const tr = useCallback((pt, en, fr) => {
@@ -798,6 +799,7 @@ export const Profile = ({
               openFrom="right"
               userName={displayPlayerName || primaryPlayer}
               userPhotoUrl={googlePhotoUrl}
+              {...sideMenuNotifications}
             />
           </div>
           <div className="profile-avatar-block">

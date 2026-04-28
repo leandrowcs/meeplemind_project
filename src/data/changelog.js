@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.0.9: Amigos agora gera notificações no menu lateral para adicionar de volta e para registrar partidas em que você foi marcado. Estatísticas de Amigos limita comparação a 10 participantes (incluindo você) com seletor de amigos quando necessário. Cards de taxa competitiva e ranking geral ganharam textos explicativos e detalhamento de percentual com quantidade de partidas.',
       'v3.0.8: Correção do erro de popup bloqueado ao reconectar com Google. O diálogo de reconexão agora aparece como banner no app, permitindo que o clique no botão ative o popup do Google corretamente.',
       'v3.0.7: Ajustado compartilhamento público para evitar novas tentativas forçadas de auth anônima quando o Firebase bloqueia sign-up. Erro esperado agora é tratado sem spam no console e o toggle volta ao estado anterior se a desativação falhar.',
       'v3.0.6: Corrigido erro `anonymous-auth-unavailable` no compartilhamento público. O bloqueio legado de auth anônima foi migrado para cooldown curto e o clique manual no toggle agora força nova tentativa de autenticação.',
@@ -32,6 +33,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.0.9: Friends now trigger side-menu notifications to add back and to register games where you were tagged. Friends stats comparison is now capped at 10 participants (including you), with a friend selector modal when needed. Competitive rate and overall ranking cards now include clearer criteria plus percentage + sample-size details.',
       'v3.0.8: Fixed Google reconnect popup being blocked by the browser. The reconnect prompt is now a non-blocking in-app banner, so clicking Reconnect directly triggers the Google OAuth popup as required.',
       'v3.0.7: Public sharing now avoids forced anonymous-auth retries when Firebase blocks sign-up. Expected auth errors no longer spam the console, and the toggle rolls back if disabling fails.',
       'v3.0.6: Fixed `anonymous-auth-unavailable` during public profile sharing. Legacy anonymous-auth lock now uses a short cooldown, and manual toggle clicks now force a fresh auth retry.',
@@ -62,6 +64,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.0.9: Les amis génèrent maintenant des notifications dans le menu latéral pour ajouter en retour et pour enregistrer une partie où vous avez été ajouté. La comparaison Amis dans Statistiques est limitée à 10 participants (vous inclus) avec un sélecteur d\'amis au besoin. Les cartes de taux compétitif et de classement général affichent maintenant des explications et le détail pourcentage + nombre de parties.',
       'v3.0.8: Correction du popup Google bloqué lors de la reconnexion. L\'invite de reconnexion est maintenant une bannière dans l\'app, le clic sur le bouton déclenche directement le popup OAuth Google comme requis.',
       'v3.0.7: Le partage public évite maintenant les nouvelles tentatives forcées d\'authentification anonyme quand Firebase bloque l\'inscription. Les erreurs attendues ne saturent plus la console et le basculeur revient à l\'état précédent si la désactivation échoue.',
       'v3.0.6: Correction de l\'erreur `anonymous-auth-unavailable` pendant le partage public du profil. Le verrouillage hérité d\'authentification anonyme utilise maintenant un court délai de refroidissement, et un clic manuel sur le basculeur force une nouvelle tentative d\'authentification.',

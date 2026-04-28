@@ -11,8 +11,24 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+const REQUIRED_FIREBASE_KEYS = ['apiKey', 'authDomain', 'projectId', 'appId'];
+
+const isValidFirebaseValue = (value) => {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim();
+  if (!normalized) return false;
+
+  // Ignore common placeholder values from templates/.env.example.
+  return !/^(changeme|your[_-]?|replace[_-]?)/i.test(normalized);
+};
+
+const hasValidFirebaseConfig = REQUIRED_FIREBASE_KEYS.every((key) =>
+  isValidFirebaseValue(firebaseConfig[key])
+);
+
+let db = null;
+let firebaseAuth = null;
+let firebaseInitError = null;
 
 const clearLegacyFirebaseAuthCache = () => {
   try {
@@ -35,8 +51,22 @@ const clearLegacyFirebaseAuthCache = () => {
   }
 };
 
-clearLegacyFirebaseAuthCache();
-export const firebaseAuth = getAuth(app);
+if (hasValidFirebaseConfig) {
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    clearLegacyFirebaseAuthCache();
+    firebaseAuth = getAuth(app);
+  } catch (err) {
+    firebaseInitError = err;
+    console.warn('Firebase disabled due to invalid runtime configuration.', err);
+  }
+} else {
+  console.warn('Firebase disabled: missing or placeholder environment variables.');
+}
+
+export { db, firebaseAuth };
+
 const ANON_AUTH_STATE_KEY = 'meeplemind-firebase-anon-auth-state';
 const ANON_AUTH_LEGACY_DISABLED_KEY = 'meeplemind-firebase-anon-auth-disabled';
 const ANON_AUTH_RETRY_COOLDOWN_MS = 2 * 60 * 1000;
@@ -117,18 +147,24 @@ const isAnonymousSignInUnsupported = (err) => {
 // IndexedDB by previous versions of this code. Without this, the Firebase SDK
 // calls accounts:signInWithIdp on every page load to refresh that credential,
 // which returns 400 (Bad Request) because the access token has expired.
-const _unsubCleanup = onAuthStateChanged(firebaseAuth, async (user) => {
-  _unsubCleanup();
-  if (user && !user.isAnonymous) {
-    await signOut(firebaseAuth).catch(() => {});
-  }
-});
+if (firebaseAuth) {
+  const _unsubCleanup = onAuthStateChanged(firebaseAuth, async (user) => {
+    _unsubCleanup();
+    if (user && !user.isAnonymous) {
+      await signOut(firebaseAuth).catch(() => {});
+    }
+  });
+}
 
 /**
  * Ensures Firebase Auth is signed in (anonymously, persisted per browser).
  * Returns the Firebase UID. Safe to call on every Firestore operation.
  */
 export const ensureFirebaseUser = async ({ forceRetry = false } = {}) => {
+  if (!firebaseAuth) {
+    throw createAnonymousAuthUnavailableError(firebaseInitError);
+  }
+
   if (!forceRetry && isAnonymousAuthTemporarilyBlocked()) {
     throw createAnonymousAuthUnavailableError();
   }

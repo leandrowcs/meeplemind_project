@@ -49,6 +49,7 @@ export const Home = ({
   games = [],
   library = [],
   googlePhotoUrl,
+  sideMenuNotifications = {},
 }) => {
   const { t, isInitialized, language } = useLanguage();
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -357,6 +358,7 @@ export const Home = ({
               openFrom="right"
               userName={displayPlayerName || primaryPlayer}
               userPhotoUrl={googlePhotoUrl}
+              {...sideMenuNotifications}
             />
           </div>
         </header>
@@ -441,12 +443,12 @@ export const Home = ({
 
             <div className="history-summary-grid">
               <article className="summary-tile blue">
-                <span className="summary-icon"><Trophy size={18} /></span>
+                <span className="summary-icon"><Trophy size={18} /> <small> {t('home.competitiveGames')}</small></span>
                 <strong>{userCompetitiveWins + userCoopWins}</strong>
                 <small>{t('home.totalWins')}</small>
               </article>
               <article className="summary-tile purple">
-                <span className="summary-icon"><Target size={18} /></span>
+                <span className="summary-icon"><Target size={18} /> <small> {t('home.mostPlayed')}</small></span>
                 <strong>{mostPlayedGameData?.[0] || '—'}</strong>
                 <small>
                   {formatTemplate('home.gamesCount', {
@@ -456,9 +458,11 @@ export const Home = ({
                 </small>
               </article>
               <article className="summary-tile orange">
-                <span className="summary-icon"><Flame size={18} /></span>
+                <span className="summary-icon"><Flame size={18} /> <small> {t('home.competitiveGames')}</small></span>
                 <strong>{competitiveStreak}</strong>
-                <small>{t('home.consecutiveWins')}</small>
+                <small>
+                  {t((competitiveStreak || 0) === 1 ? 'home.consecutiveWin' : 'home.consecutiveWins')}
+                </small>
               </article>
             </div>
 

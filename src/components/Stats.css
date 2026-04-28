@@ -218,6 +218,15 @@
   font-size: 0.9rem;
 }
 
+.friends-selection-row {
+  margin-top: 0.55rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
 .year-nav {
   display: flex;
   align-items: center;
@@ -306,6 +315,18 @@
   margin-top: 0.5rem;
   display: grid;
   gap: 0.45rem;
+}
+
+.stats-inline-list {
+  margin-top: 0.55rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.stats-inline-item {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #b7c3e8;
 }
 
 .leaderboard-item {
@@ -590,6 +611,51 @@
   background: rgba(9, 16, 35, 0.72);
   display: grid;
   gap: 0.3rem;
+}
+
+.stats-modal-item.selectable {
+  cursor: pointer;
+}
+
+.stats-modal-item.selectable.selected {
+  border-color: rgba(96, 165, 250, 0.7);
+  background: rgba(15, 23, 42, 0.92);
+}
+
+.stats-checkbox-row {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.stats-checkbox-row input {
+  accent-color: #3b82f6;
+}
+
+.stats-checkbox-meta {
+  display: grid;
+  gap: 0.08rem;
+}
+
+.stats-checkbox-meta strong {
+  color: #e2e8f0;
+  font-size: 0.84rem;
+}
+
+.stats-checkbox-meta small {
+  color: #9fb0dd;
+}
+
+.friends-select-list {
+  margin-top: 0.55rem;
+}
+
+.friends-select-footer {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .stats-modal-item p,

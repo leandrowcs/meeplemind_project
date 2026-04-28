@@ -44,6 +44,7 @@ export const History = ({
   syncStatus,
   displayPlayerName,
   googlePhotoUrl,
+  sideMenuNotifications = {},
 }) => {
   const { language, t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState('');
@@ -145,6 +146,7 @@ export const History = ({
             openFrom="right"
             userName={displayPlayerName}
             userPhotoUrl={googlePhotoUrl}
+            {...sideMenuNotifications}
           />
         </header>
 
