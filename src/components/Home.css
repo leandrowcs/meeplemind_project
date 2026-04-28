@@ -234,9 +234,10 @@
 }
 
 .summary-icon {
-  font-size: 1.1rem;
+  font-size: var(--font-size-sm);
   display: inline-flex;
   align-items: center;
+  gap: 5px;
 }
 
 .summary-tile.blue {
