@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   doc,
   setDoc,
@@ -489,6 +489,9 @@ const buildSnapshot = (user, games, library) => {
  */
 export const useFriends = (auth, games, library) => {
   const [friends, setFriends] = useState(loadFriendsFromStorage);
+  const friendsRef = useRef(friends);
+  useEffect(() => { friendsRef.current = friends; }, [friends]);
+  const currentFirebaseUidRef = useRef('');
   const [isPublic, setIsPublicState] = useState(
     () => localStorage.getItem(PUBLIC_KEY) === 'true'
   );
@@ -515,6 +518,31 @@ export const useFriends = (auth, games, library) => {
     if (!auth.isSignedIn) throw new Error('not-signed-in');
     return ensureFirebaseUser(options);
   }, [auth.isSignedIn]);
+
+  useEffect(() => {
+    if (!auth.isSignedIn) {
+      currentFirebaseUidRef.current = '';
+      return;
+    }
+
+    let isCancelled = false;
+
+    withTimeout(ensureFirebaseAuth())
+      .then((uid) => {
+        if (!isCancelled) {
+          currentFirebaseUidRef.current = sanitizeText(String(uid || ''), 180);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          currentFirebaseUidRef.current = '';
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [auth.isSignedIn, ensureFirebaseAuth]);
 
   const persistNotifications = useCallback((nextNotifications) => {
     const sanitized = sanitizeNotificationsList(nextNotifications);
@@ -871,7 +899,14 @@ export const useFriends = (auth, games, library) => {
   const searchByEmail = useCallback(
     async (rawEmail) => {
       const email = sanitizeText(rawEmail).trim().toLowerCase();
+      const currentEmail = sanitizeText(auth.user?.email || '', 180).toLowerCase();
       if (!email) return;
+      if (currentEmail && email === currentEmail) {
+        setSearchError(null);
+        setSearchResult('not-found');
+        return;
+      }
+
       setIsSearching(true);
       setSearchError(null);
       setSearchResult(null);
@@ -892,7 +927,13 @@ export const useFriends = (auth, games, library) => {
               lastUpdatedAt: docSnap.data()?.updatedAt,
             })
           )
-          .filter((profile) => profile && profile.uid && profile.uid !== currentUid)
+          .filter(
+            (profile) =>
+              profile &&
+              profile.uid &&
+              profile.uid !== currentUid &&
+              (!currentEmail || profile.email !== currentEmail)
+          )
           .sort((a, b) => {
             const timeDiff = getFriendSortTime(b) - getFriendSortTime(a);
             if (timeDiff !== 0) return timeDiff;
@@ -915,56 +956,107 @@ export const useFriends = (auth, games, library) => {
         setIsSearching(false);
       }
     },
-    [ensureFirebaseAuth]
+    [auth.user?.email, ensureFirebaseAuth]
   );
+
+  const resolveFriendNotificationTargets = useCallback(async (friendData) => {
+    const targetUids = new Set();
+
+    const baseTargetUid = sanitizeText(String(friendData?.uid || ''), 180);
+    if (baseTargetUid) {
+      targetUids.add(baseTargetUid);
+    }
+
+    const targetEmail = sanitizeText(friendData?.email || '', 180).toLowerCase();
+    if (!targetEmail) {
+      return [...targetUids];
+    }
+
+    try {
+      const emailQuery = query(
+        collection(db, 'users'),
+        where('isPublic', '==', true),
+        where('email', '==', targetEmail)
+      );
+      const emailSnap = await withTimeout(getDocs(emailQuery));
+      emailSnap.docs.forEach((docSnap) => {
+        if (docSnap?.id) {
+          targetUids.add(docSnap.id);
+        }
+      });
+    } catch {
+      // Non-blocking: fallback to the provided UID.
+    }
+
+    return [...targetUids];
+  }, []);
 
   const sendFriendRequestNotification = useCallback(
     async (friendData) => {
       if (!auth.isSignedIn || !auth.user) return;
 
-      const targetUid = sanitizeText(String(friendData?.uid || ''), 180);
-      if (!targetUid) return;
-
       try {
         const senderUid = await withTimeout(ensureFirebaseAuth());
-        if (!senderUid || senderUid === targetUid) return;
+        if (!senderUid) return;
+
+        const targetUids = await resolveFriendNotificationTargets(friendData);
+        const eligibleTargetUids = targetUids.filter(
+          (uid) => uid && uid !== senderUid
+        );
+        if (!eligibleTargetUids.length) return;
 
         const fromDisplayName = sanitizeText(auth.user.name || '', 100);
         const fromEmail = sanitizeText(auth.user.email || '', 180).toLowerCase();
         const fromPhotoUrl = sanitizeText(auth.user.picture || '', 1000);
 
-        await pushNotificationToUser(targetUid, (existingNotifications) => {
-          const hasPendingRequest = existingNotifications.some(
-            (notification) =>
-              notification.type === NOTIFICATION_TYPE_FRIEND_REQUEST &&
-              notification.status === NOTIFICATION_STATUS_PENDING &&
-              notification.fromUid === senderUid
+        const deliveries = await Promise.all(
+          eligibleTargetUids.map((targetUid) =>
+            pushNotificationToUser(targetUid, (existingNotifications) => {
+              const hasPendingRequest = existingNotifications.some(
+                (notification) =>
+                  notification.type === NOTIFICATION_TYPE_FRIEND_REQUEST &&
+                  notification.status === NOTIFICATION_STATUS_PENDING &&
+                  notification.fromUid === senderUid
+              );
+
+              if (hasPendingRequest) return null;
+
+              return {
+                id: createNotificationId(),
+                type: NOTIFICATION_TYPE_FRIEND_REQUEST,
+                status: NOTIFICATION_STATUS_PENDING,
+                createdAt: new Date().toISOString(),
+                fromUid: senderUid,
+                fromDisplayName,
+                fromEmail,
+                fromPhotoUrl,
+                friend: {
+                  uid: senderUid,
+                  displayName: fromDisplayName,
+                  email: fromEmail,
+                  photoUrl: fromPhotoUrl,
+                },
+              };
+            })
+          )
+        );
+
+        if (!deliveries.some(Boolean)) {
+          console.warn(
+            'Friend request notification was not delivered. Check Firestore permissions for cross-user writes.'
           );
-
-          if (hasPendingRequest) return null;
-
-          return {
-            id: createNotificationId(),
-            type: NOTIFICATION_TYPE_FRIEND_REQUEST,
-            status: NOTIFICATION_STATUS_PENDING,
-            createdAt: new Date().toISOString(),
-            fromUid: senderUid,
-            fromDisplayName,
-            fromEmail,
-            fromPhotoUrl,
-            friend: {
-              uid: senderUid,
-              displayName: fromDisplayName,
-              email: fromEmail,
-              photoUrl: fromPhotoUrl,
-            },
-          };
-        });
+        }
       } catch {
         // Non-blocking: friend add should still succeed locally.
       }
     },
-    [auth.isSignedIn, auth.user, ensureFirebaseAuth, pushNotificationToUser]
+    [
+      auth.isSignedIn,
+      auth.user,
+      ensureFirebaseAuth,
+      pushNotificationToUser,
+      resolveFriendNotificationTargets,
+    ]
   );
 
   /**
@@ -975,6 +1067,19 @@ export const useFriends = (auth, games, library) => {
     (friendData, options = {}) => {
       const normalizedFriend = normalizeFriend(friendData);
       if (!normalizedFriend) return false;
+
+      const currentUid = currentFirebaseUidRef.current;
+      const currentEmail = sanitizeText(auth.user?.email || '', 180).toLowerCase();
+      const isSelfFriend =
+        (currentUid && normalizedFriend.uid === currentUid) ||
+        (currentEmail && normalizedFriend.email === currentEmail);
+
+      if (isSelfFriend) {
+        if (options.clearSearch !== false) {
+          setSearchResult('not-found');
+        }
+        return false;
+      }
 
       const alreadyAdded = friends.some(
         (friend) =>
@@ -1029,7 +1134,7 @@ export const useFriends = (auth, games, library) => {
 
       return !alreadyAdded;
     },
-    [friends, sendFriendRequestNotification]
+    [auth.user?.email, friends, sendFriendRequestNotification]
   );
 
   const notifyFriendsOfGame = useCallback(
@@ -1175,7 +1280,7 @@ export const useFriends = (auth, games, library) => {
   );
 
   const refreshFriendsData = useCallback(async () => {
-    const syncableFriends = friends.filter((friend) => friend.uid);
+    const syncableFriends = friendsRef.current.filter((friend) => friend.uid);
 
     if (!syncableFriends.length) {
       setFriendSnapshots({});
@@ -1229,7 +1334,7 @@ export const useFriends = (auth, games, library) => {
     } finally {
       setIsRefreshingFriends(false);
     }
-  }, [friends, getFriendStats]);
+  }, [getFriendStats]);
 
   const pendingNotifications = notifications.filter(
     (notification) => notification.status === NOTIFICATION_STATUS_PENDING

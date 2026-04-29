@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.1.4: Busca de amigos agora bloqueia auto-adicao por e-mail/UID atual e tenta entregar pedido de amizade para perfis publicos com o mesmo e-mail, reduzindo falhas quando existem documentos duplicados no Firestore.',
       'v3.1.3: O menu lateral agora usa fallback seguro ao carregar notificacoes. Se a consulta por e-mail falhar por regra/permissao, o app continua usando o documento atual sem exibir erro de carregamento.',
       'v3.1.2: Notificacoes de amizade agora consolidam documentos com o mesmo e-mail no Firestore. Isso corrige casos em que o pedido de "adicionar de volta" era salvo em um UID antigo e nao aparecia no dispositivo atual.',
       'v3.1.1: Busca de amigos por e-mail agora prioriza o perfil publico mais recente para evitar UID antigo. Convites de amizade e sugestoes de amigos na Nova Partida ficaram mais confiaveis, incluindo fallback de nome quando displayName estiver vazio.',
@@ -38,6 +39,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.1.4: Friend search now blocks self-add by current email/UID and friend-request delivery now targets public profiles that share the same email, reducing failures when duplicate Firestore user documents exist.',
       'v3.1.3: Side-menu notifications now use a safe fallback while loading. If the email-based query fails due to rules/permissions, the app keeps using the current user document without showing a loading error.',
       'v3.1.2: Friend notifications now consolidate Firestore documents that share the same email. This fixes cases where the "add back" request was saved to a stale UID and did not show on the current device.',
       'v3.1.1: Friend search by email now prioritizes the newest public profile to avoid stale UIDs. Friend add-back notifications and New Game friend suggestions are now more reliable, including name fallback when displayName is empty.',
@@ -74,6 +76,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.1.4: La recherche d\'amis bloque maintenant l\'auto-ajout par courriel/UID courant, et l\'envoi de demande d\'ami cible les profils publics partageant le meme courriel pour reduire les echecs quand des documents Firestore dupliques existent.',
       'v3.1.3: Les notifications du menu lateral utilisent maintenant un fallback securise au chargement. Si la requete par courriel echoue (regles/permissions), l\'application utilise le document utilisateur courant sans afficher d\'erreur de chargement.',
       'v3.1.2: Les notifications d\'amis consolident maintenant les documents Firestore partageant le meme courriel. Cela corrige les cas ou la demande "ajouter en retour" etait enregistree sur un UID obsolete et absente sur l\'appareil actuel.',
       'v3.1.1: La recherche d\'amis par courriel priorise maintenant le profil public le plus recent pour eviter les UID obsoletes. Les notifications d\'ajout en retour et les suggestions d\'amis dans Nouvelle Partie sont plus fiables, avec un nom de secours si displayName est vide.',

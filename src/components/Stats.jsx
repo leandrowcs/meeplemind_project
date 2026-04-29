@@ -1814,8 +1814,6 @@ export const Stats = ({
                                   )}
                                 </span>
                               </div>
-
-                              <strong className="rate-badge">{entry.competitiveWinRate}%</strong>
                             </div>
                           ))}
                         </div>
