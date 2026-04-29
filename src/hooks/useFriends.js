@@ -62,12 +62,89 @@ const withTimeout = (promise, timeoutMs = NETWORK_TIMEOUT_MS) =>
       });
   });
 
+const deriveDisplayNameFromEmail = (email) => {
+  const cleanEmail = sanitizeText(String(email || ''), 180).toLowerCase();
+  if (!cleanEmail.includes('@')) return '';
+  const prefix = cleanEmail.split('@')[0];
+  return sanitizePlayerName(prefix || '');
+};
+
+const getFriendSortTime = (friend) => {
+  const timestamp = new Date(friend?.lastUpdatedAt || friend?.addedAt || 0).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+};
+
+const normalizeFriend = (rawFriend) => {
+  if (!rawFriend || typeof rawFriend !== 'object') return null;
+
+  const uid = sanitizeText(
+    String(rawFriend.uid || rawFriend.friendUid || rawFriend.id || ''),
+    180
+  );
+  const email = sanitizeText(rawFriend.email || '', 180).toLowerCase();
+  const displayName =
+    sanitizeText(rawFriend.displayName || rawFriend.name || '', 100) ||
+    deriveDisplayNameFromEmail(email);
+
+  if (!uid && !email) return null;
+
+  return {
+    uid,
+    displayName,
+    email,
+    photoUrl: sanitizeText(
+      rawFriend.photoUrl || rawFriend.avatarUrl || rawFriend.picture || '',
+      1000
+    ),
+    lastUpdatedAt:
+      normalizeIsoDate(rawFriend.updatedAt || rawFriend.lastUpdatedAt) || null,
+    addedAt: normalizeIsoDate(rawFriend.addedAt) || null,
+  };
+};
+
+const mergeFriendRecords = (current, incoming) => {
+  const preferIncoming = getFriendSortTime(incoming) >= getFriendSortTime(current);
+  const preferred = preferIncoming ? incoming : current;
+  const fallback = preferIncoming ? current : incoming;
+
+  return {
+    uid: preferred.uid || fallback.uid,
+    displayName: preferred.displayName || fallback.displayName,
+    email: preferred.email || fallback.email,
+    photoUrl: preferred.photoUrl || fallback.photoUrl,
+    lastUpdatedAt: preferred.lastUpdatedAt || fallback.lastUpdatedAt || null,
+    addedAt: current.addedAt || incoming.addedAt || null,
+  };
+};
+
+const sanitizeFriendsList = (rawFriends) => {
+  const byKey = new Map();
+
+  (Array.isArray(rawFriends) ? rawFriends : []).forEach((entry) => {
+    const normalized = normalizeFriend(entry);
+    if (!normalized) return;
+
+    const key = normalized.email
+      ? `email:${normalized.email}`
+      : normalized.uid
+        ? `uid:${normalized.uid}`
+        : '';
+
+    if (!key) return;
+
+    const current = byKey.get(key);
+    byKey.set(key, current ? mergeFriendRecords(current, normalized) : normalized);
+  });
+
+  return Array.from(byKey.values());
+};
+
 const loadFriendsFromStorage = () => {
   try {
     const raw = localStorage.getItem(FRIENDS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return sanitizeFriendsList(parsed);
   } catch {
     return [];
   }
@@ -75,7 +152,7 @@ const loadFriendsFromStorage = () => {
 
 const saveFriendsToStorage = (list) => {
   try {
-    localStorage.setItem(FRIENDS_KEY, JSON.stringify(list));
+    localStorage.setItem(FRIENDS_KEY, JSON.stringify(sanitizeFriendsList(list)));
   } catch {
     // Ignore localStorage write failures.
   }
@@ -265,6 +342,14 @@ const sanitizeNotificationsList = (rawNotifications) => {
   return sanitized;
 };
 
+const notificationsFingerprint = (list) => {
+  try {
+    return JSON.stringify(sanitizeNotificationsList(list));
+  } catch {
+    return '';
+  }
+};
+
 /**
  * Computes the public stats snapshot to publish in Firestore.
  * Only minimal / aggregate data — no raw game entries.
@@ -443,10 +528,18 @@ export const useFriends = (auth, games, library) => {
       if (!auth.isSignedIn) return;
       try {
         const uid = await withTimeout(ensureFirebaseAuth());
+        const normalizedEmail = sanitizeText(auth.user?.email || '', 180).toLowerCase();
+        const normalizedName = sanitizeText(auth.user?.name || '', 100);
+        const normalizedPhotoUrl = sanitizeText(auth.user?.picture || '', 1000);
         await withTimeout(
           setDoc(
             doc(db, 'users', uid),
-            { notifications: sanitizeNotificationsList(nextNotifications) },
+            {
+              email: normalizedEmail || undefined,
+              displayName: normalizedName || undefined,
+              photoUrl: normalizedPhotoUrl || undefined,
+              notifications: sanitizeNotificationsList(nextNotifications),
+            },
             { merge: true }
           )
         );
@@ -454,7 +547,57 @@ export const useFriends = (auth, games, library) => {
         // Non-blocking: local state remains source of truth while offline.
       }
     },
-    [auth.isSignedIn, ensureFirebaseAuth]
+    [auth.isSignedIn, auth.user?.email, auth.user?.name, auth.user?.picture, ensureFirebaseAuth]
+  );
+
+  const fetchNotificationOwnersForCurrentUser = useCallback(
+    async (currentUid) => {
+      const ownerMap = new Map();
+
+      const currentRef = doc(db, 'users', currentUid);
+      const currentSnap = await withTimeout(getDoc(currentRef));
+      ownerMap.set(currentUid, currentSnap.data() || {});
+
+      const normalizedEmail = sanitizeText(auth.user?.email || '', 180).toLowerCase();
+      if (!normalizedEmail) {
+        return ownerMap;
+      }
+
+      const emailQuery = query(
+        collection(db, 'users'),
+        where('email', '==', normalizedEmail)
+      );
+      const emailSnap = await withTimeout(getDocs(emailQuery));
+      emailSnap.docs.forEach((docSnap) => {
+        if (!ownerMap.has(docSnap.id)) {
+          ownerMap.set(docSnap.id, docSnap.data() || {});
+        }
+      });
+
+      return ownerMap;
+    },
+    [auth.user?.email]
+  );
+
+  const writeNotificationsToOwners = useCallback(
+    async (ownerUids, nextNotifications) => {
+      const targets = [...new Set((ownerUids || []).map((uid) => sanitizeText(String(uid || ''), 180)).filter(Boolean))];
+      if (!targets.length) return;
+
+      const sanitized = sanitizeNotificationsList(nextNotifications);
+      await Promise.all(
+        targets.map((uid) =>
+          withTimeout(
+            setDoc(
+              doc(db, 'users', uid),
+              { notifications: sanitized },
+              { merge: true }
+            )
+          ).catch(() => null)
+        )
+      );
+    },
+    []
   );
 
   const pushNotificationToUser = useCallback(async (targetUid, buildNotification) => {
@@ -511,9 +654,30 @@ export const useFriends = (auth, games, library) => {
 
     try {
       const uid = await withTimeout(ensureFirebaseAuth());
-      const snap = await withTimeout(getDoc(doc(db, 'users', uid)));
-      const next = sanitizeNotificationsList(snap.data()?.notifications);
-      return persistNotifications(next);
+
+      const ownerMap = await fetchNotificationOwnersForCurrentUser(uid);
+      const ownerEntries = Array.from(ownerMap.entries());
+      const ownerUids = ownerEntries.map(([ownerUid]) => ownerUid);
+
+      // Keep current UID first so local status updates win during duplicate merge.
+      const orderedOwners = ownerEntries.sort(([aUid], [bUid]) => {
+        if (aUid === uid) return -1;
+        if (bUid === uid) return 1;
+        return aUid.localeCompare(bUid);
+      });
+
+      const mergedRawNotifications = orderedOwners.flatMap(([, data]) =>
+        Array.isArray(data?.notifications) ? data.notifications : []
+      );
+      const merged = sanitizeNotificationsList(mergedRawNotifications);
+      const persisted = persistNotifications(merged);
+
+      const currentNotifications = sanitizeNotificationsList(ownerMap.get(uid)?.notifications);
+      if (notificationsFingerprint(currentNotifications) !== notificationsFingerprint(persisted)) {
+        await writeNotificationsToOwners(ownerUids, persisted);
+      }
+
+      return persisted;
     } catch {
       if (!silent) {
         setNotificationsError('load-failed');
@@ -574,9 +738,25 @@ export const useFriends = (auth, games, library) => {
 
       const persisted = persistNotifications(updated);
       await writeNotificationsToCurrentUser(persisted);
+
+      try {
+        const currentUid = await withTimeout(ensureFirebaseAuth());
+        const owners = await fetchNotificationOwnersForCurrentUser(currentUid);
+        await writeNotificationsToOwners(Array.from(owners.keys()), persisted);
+      } catch {
+        // Non-blocking: status is still saved locally/current owner.
+      }
+
       return persisted.find((item) => item.id === cleanId) || null;
     },
-    [notifications, persistNotifications, writeNotificationsToCurrentUser]
+    [
+      notifications,
+      persistNotifications,
+      writeNotificationsToCurrentUser,
+      ensureFirebaseAuth,
+      fetchNotificationOwnersForCurrentUser,
+      writeNotificationsToOwners,
+    ]
   );
 
   /**
@@ -675,18 +855,38 @@ export const useFriends = (auth, games, library) => {
       setSearchError(null);
       setSearchResult(null);
       try {
-        await ensureFirebaseAuth();
+        const currentUid = await ensureFirebaseAuth();
         const q = query(
           collection(db, 'users'),
           where('isPublic', '==', true),
           where('email', '==', email)
         );
         const snap = await getDocs(q);
-        if (snap.empty) {
+
+        const candidates = snap.docs
+          .map((docSnap) =>
+            normalizeFriend({
+              uid: docSnap.id,
+              ...docSnap.data(),
+              lastUpdatedAt: docSnap.data()?.updatedAt,
+            })
+          )
+          .filter((profile) => profile && profile.uid && profile.uid !== currentUid)
+          .sort((a, b) => {
+            const timeDiff = getFriendSortTime(b) - getFriendSortTime(a);
+            if (timeDiff !== 0) return timeDiff;
+
+            const hasDisplayDiff = Number(Boolean(b.displayName)) - Number(Boolean(a.displayName));
+            if (hasDisplayDiff !== 0) return hasDisplayDiff;
+
+            return a.uid.localeCompare(b.uid);
+          });
+
+        if (!candidates.length) {
           setSearchResult('not-found');
         } else {
-          const docSnap = snap.docs[0];
-          setSearchResult({ uid: docSnap.id, ...docSnap.data() });
+          // Prefer the freshest profile when the same email has stale/duplicate docs.
+          setSearchResult(candidates[0]);
         }
       } catch {
         setSearchError('search-failed');
@@ -752,22 +952,42 @@ export const useFriends = (auth, games, library) => {
    */
   const addFriend = useCallback(
     (friendData, options = {}) => {
-      const normalizedFriend = {
-        uid: sanitizeText(String(friendData?.uid || ''), 180),
-        displayName: sanitizeText(friendData?.displayName || '', 100),
-        email: sanitizeText(friendData?.email || '', 180).toLowerCase(),
-        photoUrl: sanitizeText(friendData?.photoUrl || '', 1000),
-        lastUpdatedAt:
-          normalizeIsoDate(friendData?.updatedAt || friendData?.lastUpdatedAt) || null,
-      };
+      const normalizedFriend = normalizeFriend(friendData);
+      if (!normalizedFriend) return false;
 
-      if (!normalizedFriend.uid) return false;
+      const alreadyAdded = friends.some(
+        (friend) =>
+          (normalizedFriend.uid && friend.uid === normalizedFriend.uid) ||
+          (normalizedFriend.email && friend.email === normalizedFriend.email)
+      );
 
       setFriends((prev) => {
-        if (prev.some((f) => f.uid === normalizedFriend.uid)) return prev;
+        const safePrev = sanitizeFriendsList(prev);
+        const existingIndex = safePrev.findIndex(
+          (friend) =>
+            (normalizedFriend.uid && friend.uid === normalizedFriend.uid) ||
+            (normalizedFriend.email && friend.email === normalizedFriend.email)
+        );
+
+        if (existingIndex >= 0) {
+          const merged = mergeFriendRecords(safePrev[existingIndex], normalizedFriend);
+          const sameAsBefore =
+            merged.uid === safePrev[existingIndex].uid &&
+            merged.displayName === safePrev[existingIndex].displayName &&
+            merged.email === safePrev[existingIndex].email &&
+            merged.photoUrl === safePrev[existingIndex].photoUrl &&
+            merged.lastUpdatedAt === safePrev[existingIndex].lastUpdatedAt;
+
+          if (sameAsBefore) return safePrev;
+
+          const next = [...safePrev];
+          next[existingIndex] = merged;
+          saveFriendsToStorage(next);
+          return next;
+        }
 
         const next = [
-          ...prev,
+          ...safePrev,
           {
             ...normalizedFriend,
             addedAt: new Date().toISOString(),
@@ -782,13 +1002,13 @@ export const useFriends = (auth, games, library) => {
         setSearchResult(null);
       }
 
-      if (options.notifyBack !== false) {
+      if (!alreadyAdded && options.notifyBack !== false && normalizedFriend.uid) {
         void sendFriendRequestNotification(normalizedFriend);
       }
 
-      return true;
+      return !alreadyAdded;
     },
-    [sendFriendRequestNotification]
+    [friends, sendFriendRequestNotification]
   );
 
   const notifyFriendsOfGame = useCallback(
@@ -830,7 +1050,11 @@ export const useFriends = (auth, games, library) => {
         const fromDisplayName = sanitizeText(auth.user.name || '', 100);
         const fromEmail = sanitizeText(auth.user.email || '', 180).toLowerCase();
         const fromPhotoUrl = sanitizeText(auth.user.picture || '', 1000);
-        const friendMap = new Map(friends.map((friend) => [friend.uid, friend]));
+        const friendMap = new Map(
+          friends
+            .filter((friend) => friend.uid)
+            .map((friend) => [friend.uid, friend])
+        );
 
         const sends = uniqueTargetUids.map(async (targetUid) => {
           if (!targetUid || targetUid === senderUid) return false;
@@ -930,7 +1154,9 @@ export const useFriends = (auth, games, library) => {
   );
 
   const refreshFriendsData = useCallback(async () => {
-    if (!friends.length) {
+    const syncableFriends = friends.filter((friend) => friend.uid);
+
+    if (!syncableFriends.length) {
       setFriendSnapshots({});
       return {};
     }
@@ -938,7 +1164,7 @@ export const useFriends = (auth, games, library) => {
     setIsRefreshingFriends(true);
     try {
       const entries = await Promise.all(
-        friends.map(async (friend) => {
+        syncableFriends.map(async (friend) => {
           const data = await getFriendStats(friend.uid);
           return [friend.uid, data];
         })
@@ -952,14 +1178,26 @@ export const useFriends = (auth, games, library) => {
       setFriendSnapshots(nextSnapshots);
 
       setFriends((prev) => {
-        const next = prev.map((friend) => {
+        const next = sanitizeFriendsList(prev).map((friend) => {
+          if (!friend.uid) return friend;
+
           const data = nextSnapshots[friend.uid];
           if (!data) return friend;
-          return {
+
+          const normalizedData = normalizeFriend({
             ...friend,
+            uid: friend.uid,
             displayName: data.displayName || friend.displayName,
+            email: data.email || friend.email,
             photoUrl: data.photoUrl || friend.photoUrl,
-            lastUpdatedAt: data.updatedAt || friend.lastUpdatedAt || null,
+            lastUpdatedAt: data.updatedAt || friend.lastUpdatedAt,
+          });
+
+          if (!normalizedData) return friend;
+
+          return {
+            ...mergeFriendRecords(friend, normalizedData),
+            addedAt: friend.addedAt || normalizedData.addedAt || null,
           };
         });
         saveFriendsToStorage(next);

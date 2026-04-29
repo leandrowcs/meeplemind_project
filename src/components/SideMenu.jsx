@@ -48,7 +48,7 @@ export const SideMenu = ({
   const [processingNotificationId, setProcessingNotificationId] = useState('');
   const displayName = userName || auth?.user?.name || 'MeepleMind Player';
   const profilePhoto = userPhotoUrl || auth?.user?.picture || '/user_icon.png';
-  const whatsNew = getChangelog(language, 5);
+  const whatsNew = getChangelog(language, 4);
   const pendingNotifications = (Array.isArray(notifications) ? notifications : []).filter(
     (item) => item.status === 'pending'
   );

@@ -2,6 +2,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.1.2: Notificacoes de amizade agora consolidam documentos com o mesmo e-mail no Firestore. Isso corrige casos em que o pedido de "adicionar de volta" era salvo em um UID antigo e nao aparecia no dispositivo atual.',
+      'v3.1.1: Busca de amigos por e-mail agora prioriza o perfil publico mais recente para evitar UID antigo. Convites de amizade e sugestoes de amigos na Nova Partida ficaram mais confiaveis, incluindo fallback de nome quando displayName estiver vazio.',
       'v3.1.0: A abertura do app ganhou um loading com ícones de jogos do Lucide alternando em sequência para indicar a inicialização.',
       'v3.0.10: Corrigimos a oscilação da área de notificações no menu lateral. O estado "Carregando notificações..." agora aparece apenas no carregamento inicial, sem piscar entre carregando e vazio durante atualizações em segundo plano.',
       'v3.0.9: Amigos agora gera notificações no menu lateral para adicionar de volta e para registrar partidas em que você foi marcado. Estatísticas de Amigos limita comparação a 10 participantes (incluindo você) com seletor de amigos quando necessário. Cards de taxa competitiva e ranking geral ganharam textos explicativos e detalhamento de percentual com quantidade de partidas.',
@@ -35,6 +37,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.1.2: Friend notifications now consolidate Firestore documents that share the same email. This fixes cases where the "add back" request was saved to a stale UID and did not show on the current device.',
+      'v3.1.1: Friend search by email now prioritizes the newest public profile to avoid stale UIDs. Friend add-back notifications and New Game friend suggestions are now more reliable, including name fallback when displayName is empty.',
       'v3.1.0: App startup now shows a loading screen, cycling through game-related Lucide icons to signal initialization.',
       'v3.0.10: Fixed side-menu notification panel flicker. The "Loading notifications..." state is now shown only on the first load, avoiding rapid loading/empty blinking during background refreshes.',
       'v3.0.9: Friends now trigger side-menu notifications to add back and to register games where you were tagged. Friends stats comparison is now capped at 10 participants (including you), with a friend selector modal when needed. Competitive rate and overall ranking cards now include clearer criteria plus percentage + sample-size details.',
@@ -68,6 +72,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.1.2: Les notifications d\'amis consolident maintenant les documents Firestore partageant le meme courriel. Cela corrige les cas ou la demande "ajouter en retour" etait enregistree sur un UID obsolete et absente sur l\'appareil actuel.',
+      'v3.1.1: La recherche d\'amis par courriel priorise maintenant le profil public le plus recent pour eviter les UID obsoletes. Les notifications d\'ajout en retour et les suggestions d\'amis dans Nouvelle Partie sont plus fiables, avec un nom de secours si displayName est vide.',
       'v3.1.0: Le démarrage de l\'application affiche maintenant un écran de chargement, avec des icônes de jeu Lucide qui alternent pour indiquer l\'initialisation.',
       'v3.0.10: Correction du clignotement du panneau de notifications dans le menu latéral. L\'état "Chargement des notifications..." s\'affiche maintenant seulement au premier chargement, sans alternance rapide entre chargement et vide pendant les rafraîchissements en arrière-plan.',
       'v3.0.9: Les amis génèrent maintenant des notifications dans le menu latéral pour ajouter en retour et pour enregistrer une partie où vous avez été ajouté. La comparaison Amis dans Statistiques est limitée à 10 participants (vous inclus) avec un sélecteur d\'amis au besoin. Les cartes de taux compétitif et de classement général affichent maintenant des explications et le détail pourcentage + nombre de parties.',

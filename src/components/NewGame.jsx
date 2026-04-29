@@ -74,6 +74,16 @@ const getDurationLabel = (minutes, t) => {
   return `${minutes}${t('newgame.minutesShort')}`;
 };
 
+const getFriendDisplayName = (friend) => {
+  const cleanName = String(friend?.displayName || friend?.name || '').trim();
+  if (cleanName) return cleanName;
+
+  const email = String(friend?.email || '').trim().toLowerCase();
+  if (!email.includes('@')) return '';
+
+  return email.split('@')[0].trim();
+};
+
 export const NewGame = ({
   onNavigate,
   onSave,
@@ -246,11 +256,11 @@ export const NewGame = ({
     return safeFriendsList
       .map((friend) => ({
         ...friend,
-        displayName: (friend?.displayName || '').trim(),
+        uid: String(friend?.uid || '').trim(),
+        displayName: getFriendDisplayName(friend),
       }))
       .filter(
         (friend) =>
-          friend.uid &&
           friend.displayName &&
           !selectedKeys.has(friend.displayName.toLowerCase())
       )
@@ -355,7 +365,7 @@ export const NewGame = ({
 
     const pool = [
       ...safeFriendsList
-        .map((friend) => (friend?.displayName || '').trim())
+        .map((friend) => getFriendDisplayName(friend))
         .filter(Boolean),
       ...safeUniquePlayers,
     ];
@@ -387,8 +397,7 @@ export const NewGame = ({
     const matchedFriend =
       options.friendUid ||
       safeFriendsList.find(
-        (friend) =>
-          (friend?.displayName || '').trim().toLowerCase() === normalizedKey
+        (friend) => getFriendDisplayName(friend).toLowerCase() === normalizedKey
       )?.uid ||
       '';
 
@@ -680,7 +689,7 @@ export const NewGame = ({
           <div className="chip-grid">
             {friendPlayersToSuggest.map((friend) => (
               <button
-                key={friend.uid}
+                key={friend.uid || friend.email || friend.displayName}
                 type="button"
                 className="chip-btn"
                 onClick={() => handleAddPlayer(friend.displayName, { friendUid: friend.uid })}
