@@ -554,25 +554,34 @@ export const useFriends = (auth, games, library) => {
     async (currentUid) => {
       const ownerMap = new Map();
 
-      const currentRef = doc(db, 'users', currentUid);
-      const currentSnap = await withTimeout(getDoc(currentRef));
-      ownerMap.set(currentUid, currentSnap.data() || {});
+      try {
+        const currentRef = doc(db, 'users', currentUid);
+        const currentSnap = await withTimeout(getDoc(currentRef));
+        ownerMap.set(currentUid, currentSnap.data() || {});
+      } catch {
+        ownerMap.set(currentUid, {});
+        return ownerMap;
+      }
 
       const normalizedEmail = sanitizeText(auth.user?.email || '', 180).toLowerCase();
       if (!normalizedEmail) {
         return ownerMap;
       }
 
-      const emailQuery = query(
-        collection(db, 'users'),
-        where('email', '==', normalizedEmail)
-      );
-      const emailSnap = await withTimeout(getDocs(emailQuery));
-      emailSnap.docs.forEach((docSnap) => {
-        if (!ownerMap.has(docSnap.id)) {
-          ownerMap.set(docSnap.id, docSnap.data() || {});
-        }
-      });
+      try {
+        const emailQuery = query(
+          collection(db, 'users'),
+          where('email', '==', normalizedEmail)
+        );
+        const emailSnap = await withTimeout(getDocs(emailQuery));
+        emailSnap.docs.forEach((docSnap) => {
+          if (!ownerMap.has(docSnap.id)) {
+            ownerMap.set(docSnap.id, docSnap.data() || {});
+          }
+        });
+      } catch {
+        // Fallback: some environments/rules may block cross-user email queries.
+      }
 
       return ownerMap;
     },
@@ -678,10 +687,16 @@ export const useFriends = (auth, games, library) => {
       }
 
       return persisted;
-    } catch {
-      if (!silent) {
+    } catch (err) {
+      const shouldSurfaceError =
+        !silent && err?.message !== 'anonymous-auth-unavailable';
+
+      if (shouldSurfaceError) {
         setNotificationsError('load-failed');
+      } else if (!silent) {
+        setNotificationsError(null);
       }
+
       return [];
     } finally {
       setHasLoadedNotifications(true);
@@ -689,7 +704,13 @@ export const useFriends = (auth, games, library) => {
         setIsLoadingNotifications(false);
       }
     }
-  }, [auth.isSignedIn, ensureFirebaseAuth, persistNotifications]);
+  }, [
+    auth.isSignedIn,
+    ensureFirebaseAuth,
+    fetchNotificationOwnersForCurrentUser,
+    persistNotifications,
+    writeNotificationsToOwners,
+  ]);
 
   useEffect(() => {
     if (!auth.isSignedIn) {
