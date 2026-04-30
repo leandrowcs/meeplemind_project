@@ -530,6 +530,7 @@ export const Library = ({
   clearAllData,
   auth,
   syncStatus,
+  gameDataProviderMode = GAME_DATA_PROVIDER.BGG,
   sideMenuNotifications = {},
 }) => {
   const { language, t } = useLanguage();
@@ -555,6 +556,7 @@ export const Library = ({
   const [hotError, setHotError] = useState(false);
   const [hotLoaded, setHotLoaded] = useState(false);
   const [catalogDataSource, setCatalogDataSource] = useState('online');
+  const [catalogProviderId, setCatalogProviderId] = useState(GAME_DATA_PROVIDER.BGG);
   const [sortAlpha, setSortAlpha] = useState(false);
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogDetailsLoadingName, setCatalogDetailsLoadingName] = useState('');
@@ -563,6 +565,22 @@ export const Library = ({
   const bggDetailsCacheRef = useRef({});
   const addCoverInputRef = useRef(null);
   const editCoverInputRef = useRef(null);
+
+  const modeIncludesBgg = gameDataProviderMode === GAME_DATA_PROVIDER.BGG
+    || gameDataProviderMode === GAME_DATA_PROVIDER.AUTO
+    || gameDataProviderMode === GAME_DATA_PROVIDER.BOTH;
+
+  const currentCatalogProviderLabel = catalogProviderId === GAME_DATA_PROVIDER.LUDOPEDIA
+    ? t('settings.providerModeLudopedia')
+    : t('settings.providerModeBgg');
+
+  const formatTemplate = useCallback((key, replacements = {}) => {
+    let text = t(key);
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+      text = text.replaceAll(`{${placeholder}}`, String(value));
+    });
+    return text;
+  }, [t]);
 
   // Build a play-count map from game session history
   const playCount = useMemo(() => {
@@ -615,7 +633,7 @@ export const Library = ({
 
     try {
       const data = await fetchProviderGameDetailsByName(gameName, {
-        mode: GAME_DATA_PROVIDER.BGG,
+        mode: gameDataProviderMode,
         language,
       });
       if (data) {
@@ -626,7 +644,7 @@ export const Library = ({
     } catch {
       return null;
     }
-  }, [language]);
+  }, [gameDataProviderMode, language]);
 
   const handleEditField = (key) => (e) =>
     setEditingGame((prev) => ({ ...prev, [key]: e.target.value }));
@@ -683,7 +701,7 @@ export const Library = ({
     setBggAddStatus('loading');
     try {
       const data = await fetchProviderGameDetailsByName(name, {
-        mode: GAME_DATA_PROVIDER.BGG,
+        mode: gameDataProviderMode,
         language,
       });
       if (!data) {
@@ -709,7 +727,7 @@ export const Library = ({
     setBggEditStatus('loading');
     try {
       const data = await fetchProviderGameDetailsByName(name, {
-        mode: GAME_DATA_PROVIDER.BGG,
+        mode: gameDataProviderMode,
         language,
       });
       if (!data) { setBggEditStatus('notfound'); return; }
@@ -876,23 +894,27 @@ export const Library = ({
     setHotLoading(true);
     setHotError(false);
     try {
-      const { items } = await fetchProviderHotCatalogGames({
-        mode: GAME_DATA_PROVIDER.BGG,
+      const { items, providerId } = await fetchProviderHotCatalogGames({
+        mode: gameDataProviderMode,
         language,
       });
       setHotGames(items);
+      setCatalogProviderId(providerId || GAME_DATA_PROVIDER.BGG);
       setHotLoaded(true);
       setCatalogDataSource('online');
     } catch {
       try {
-        const cachedRaw = localStorage.getItem(BGG_OFFLINE_CACHE_KEY);
-        const cachedPayload = readCatalogOfflinePayload(cachedRaw);
-        if (Array.isArray(cachedPayload?.items) && cachedPayload.items.length > 0) {
-          setHotGames(cachedPayload.items);
-          setHotLoaded(true);
-          setHotError(false);
-          setCatalogDataSource('offline');
-          return;
+        if (modeIncludesBgg) {
+          const cachedRaw = localStorage.getItem(BGG_OFFLINE_CACHE_KEY);
+          const cachedPayload = readCatalogOfflinePayload(cachedRaw);
+          if (Array.isArray(cachedPayload?.items) && cachedPayload.items.length > 0) {
+            setHotGames(cachedPayload.items);
+            setHotLoaded(true);
+            setHotError(false);
+            setCatalogDataSource('offline');
+            setCatalogProviderId(cachedPayload.provider || GAME_DATA_PROVIDER.BGG);
+            return;
+          }
         }
       } catch {
         // No valid offline cache available.
@@ -902,7 +924,7 @@ export const Library = ({
     } finally {
       setHotLoading(false);
     }
-  }, [hotLoaded, language]);
+  }, [gameDataProviderMode, hotLoaded, language, modeIncludesBgg]);
 
   const handleCatalogTab = useCallback(() => {
     setActiveTab('catalog');
@@ -1178,7 +1200,7 @@ export const Library = ({
           {/* ── Catálogo BGG tab ── */}
           {activeTab === 'catalog' && (
           <>
-            {language !== 'en-US' && (
+            {language !== 'en-US' && catalogProviderId === GAME_DATA_PROVIDER.BGG && (
               <div className="bgg-lang-notice">
                 <Info size={14} />
                 {t('library.bggEnglishNotice')}
@@ -1222,7 +1244,7 @@ export const Library = ({
                 <span>
                   {catalogDataSource === 'offline'
                     ? t('library.bggSourceOffline')
-                    : t('library.bggSourceOnline')}
+                    : formatTemplate('library.catalogSourceOnline', { provider: currentCatalogProviderLabel })}
                 </span>
               </div>
             )}
@@ -1307,7 +1329,7 @@ export const Library = ({
                           <h3>{game.name}</h3>
                           <div className="library-card-meta">
                             <span className="library-card-chip">
-                              {primaryCategory ? getCategoryLabel(primaryCategory) : 'BGG'}
+                              {primaryCategory ? getCategoryLabel(primaryCategory) : currentCatalogProviderLabel}
                             </span>
                             {game.yearPublished && (
                               <span className="library-card-chip subtle">{game.yearPublished}</span>

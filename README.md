@@ -8,7 +8,7 @@ Um web app simples e rápido para registrar partidas de boardgames com amigos, c
 - **Histórico**: Lista todas as partidas com filtro por jogo
 - **Estatísticas**: Top vencedores, jogos mais jogados e participações
 - **Autocomplete**: Sugere jogos e jogadores já cadastrados
-- **Sem Backend**: Dados salvos 100% em localStorage do navegador
+- **Backend Opcional**: OAuth seguro da Ludopedia via BFF Node local
 - **Dark Mode**: Interface escura com tema azul + laranja
 - **Responsivo**: Funciona perfeitamente em mobile
 
@@ -20,6 +20,9 @@ npm install
 
 # Rodar em desenvolvimento
 npm run dev
+
+# Backend OAuth Ludopedia (terminal separado)
+npm run dev:ludopedia
 
 # Build para produção
 npm run build
@@ -33,9 +36,44 @@ O app estará disponível em `http://localhost:5173`
 ## 📦 Stack
 
 - **Frontend**: React 18 + Vite
+- **Backend opcional**: Node.js (BFF OAuth para Ludopedia)
 - **Armazenamento**: localStorage
 - **Styling**: CSS vanilla com variáveis de cor
 - **Build Tool**: Vite
+
+## OAuth Ludopedia (Fase 2)
+
+Configure variáveis de ambiente antes de iniciar o backend local:
+
+O backend `npm run dev:ludopedia` carrega automaticamente `.env` e `.env.local`.
+
+```bash
+LUDOPEDIA_APP_ID=seu_app_id
+LUDOPEDIA_REDIRECT_URI=http://localhost:8787/api/ludopedia/oauth/callback
+LUDOPEDIA_FRONTEND_RETURN_URL=http://localhost:5173
+LUDOPEDIA_SESSION_SECRET=troque_por_um_segredo_longo
+MEEPLEMIND_ALLOWED_ORIGINS=http://localhost:5173
+LUDOPEDIA_BACKEND_PORT=8787
+LUDOPEDIA_COOKIE_SECURE=0
+
+# Opcional (frontend): sobrescreve a base da API Ludopedia
+VITE_LUDOPEDIA_BFF_BASE=http://localhost:8787/api/ludopedia
+```
+
+Fluxo OAuth oficial aplicado no backend:
+
+- `GET /oauth?app_id=...&redirect_uri=...`
+- callback com `code`
+- `POST /tokenrequest` enviando apenas `code`
+
+Endpoints principais do backend:
+
+- `GET /api/ludopedia/oauth/start`
+- `GET /api/ludopedia/oauth/callback`
+- `GET /api/ludopedia/oauth/session`
+- `POST /api/ludopedia/oauth/logout`
+- `GET /api/ludopedia/jogos`
+- `GET /api/ludopedia/jogos/{id_jogo}`
 
 ## 🌐 Deploy no GitHub Pages
 

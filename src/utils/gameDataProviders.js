@@ -1,12 +1,41 @@
 const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
 const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
 
+const normalizeBaseUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
+
+export const LUDOPEDIA_BFF_BASE = (() => {
+  const configuredBase = normalizeBaseUrl(import.meta.env.VITE_LUDOPEDIA_BFF_BASE);
+  if (configuredBase) return configuredBase;
+
+  // Local fallback avoids relying on dev proxy when frontend runs standalone.
+  if (typeof window !== 'undefined') {
+    const host = String(window.location.hostname || '').toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:8787/api/ludopedia';
+    }
+  }
+
+  return '/api/ludopedia';
+})();
+
 export const GAME_DATA_PROVIDER = Object.freeze({
   AUTO: 'auto',
   BGG: 'bgg',
   LUDOPEDIA: 'ludopedia',
   BOTH: 'both',
 });
+
+export const GAME_DATA_PROVIDER_PREFERENCE_KEY = 'meeplemind-game-data-provider';
+
+const SUPPORTED_PROVIDER_MODES = new Set(Object.values(GAME_DATA_PROVIDER));
+
+export const normalizeGameDataProviderMode = (value) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (!normalized) return GAME_DATA_PROVIDER.BGG;
+  return SUPPORTED_PROVIDER_MODES.has(normalized)
+    ? normalized
+    : GAME_DATA_PROVIDER.BGG;
+};
 
 export const OPEN_LIBRARY_CATALOG_KEY = 'meeplemind-open-library-catalog';
 export const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
@@ -91,6 +120,47 @@ const parseBggHotGames = (xmlText) => {
   })).filter((item) => item.name);
 };
 
+const parseJsonSafe = (raw) => {
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+};
+
+const toNumericString = (value) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? String(parsed) : '';
+};
+
+const buildQuery = (query = {}) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return;
+    searchParams.set(key, String(value));
+  });
+  const serialized = searchParams.toString();
+  return serialized ? `?${serialized}` : '';
+};
+
+const fetchLudopediaJson = async (path, query = {}) => {
+  const endpoint = `${LUDOPEDIA_BFF_BASE}${path}${buildQuery(query)}`;
+  const response = await fetch(endpoint, {
+    credentials: 'include',
+  });
+
+  const text = await response.text();
+  const data = parseJsonSafe(text);
+
+  if (!response.ok) {
+    const message = data?.error || `LUDOPEDIA ${response.status}`;
+    throw new Error(message);
+  }
+
+  return data;
+};
+
 const searchBggId = async (gameName) => {
   const term = String(gameName || '').trim();
   if (!term) return null;
@@ -155,15 +225,74 @@ const bggProvider = {
 const ludopediaProvider = {
   id: GAME_DATA_PROVIDER.LUDOPEDIA,
   label: 'Ludopedia',
-  enabled: false,
-  async searchNames() {
-    return [];
+  enabled: true,
+  async searchNames(term, limit = 8) {
+    const safeLimit = Math.max(1, Math.min(Number(limit) || 8, 100));
+    const result = await fetchLudopediaJson('/jogos', {
+      search: term,
+      tp_jogo: 'b',
+      rows: safeLimit,
+      page: 1,
+    });
+
+    const names = Array.isArray(result?.jogos)
+      ? result.jogos
+        .map((item) => String(item?.nm_jogo || '').trim())
+        .filter(Boolean)
+      : [];
+
+    return dedupeStrings(names).slice(0, safeLimit);
   },
-  async fetchGameDetailsByName() {
-    return null;
+  async fetchGameDetailsByName(gameName) {
+    const result = await fetchLudopediaJson('/jogos', {
+      search: gameName,
+      tp_jogo: 'b',
+      rows: 8,
+      page: 1,
+    });
+
+    const candidates = Array.isArray(result?.jogos) ? result.jogos : [];
+    if (!candidates.length) return null;
+
+    const normalized = String(gameName || '').trim().toLowerCase();
+    const exact = candidates.find((item) => {
+      const name = String(item?.nm_jogo || '').trim().toLowerCase();
+      const original = String(item?.nm_original || '').trim().toLowerCase();
+      return name === normalized || original === normalized;
+    });
+
+    const selected = exact || candidates[0];
+    const selectedId = Number.parseInt(selected?.id_jogo, 10);
+    if (!Number.isFinite(selectedId)) return null;
+
+    const details = await fetchLudopediaJson(`/jogos/${selectedId}`);
+
+    return {
+      thumbnail: normalizeExternalImageUrl(details?.thumb || selected?.thumb || ''),
+      description: '',
+      minPlayers: toNumericString(details?.qt_jogadores_min),
+      maxPlayers: toNumericString(details?.qt_jogadores_max),
+      source: GAME_DATA_PROVIDER.LUDOPEDIA,
+    };
   },
   async fetchHotGames() {
-    return [];
+    const result = await fetchLudopediaJson('/jogos', {
+      tp_jogo: 'b',
+      rows: 50,
+      page: 1,
+    });
+
+    const entries = Array.isArray(result?.jogos) ? result.jogos : [];
+
+    return entries
+      .map((item, index) => ({
+        id: String(item?.id_jogo || ''),
+        rank: index + 1,
+        name: String(item?.nm_jogo || '').trim(),
+        thumbnail: normalizeExternalImageUrl(item?.thumb || ''),
+        yearPublished: toNumericString(item?.ano_publicacao),
+      }))
+      .filter((item) => item.name);
   },
   buildOfflinePayload(items) {
     const safeItems = Array.isArray(items) ? items.filter((item) => item?.name) : [];
@@ -204,7 +333,7 @@ const dedupeStrings = (values) => {
 };
 
 const resolveProviderOrder = (mode, language) => {
-  const effectiveMode = mode || GAME_DATA_PROVIDER.BGG;
+  const effectiveMode = normalizeGameDataProviderMode(mode);
 
   if (effectiveMode === GAME_DATA_PROVIDER.BOTH) {
     return [GAME_DATA_PROVIDER.BGG, GAME_DATA_PROVIDER.LUDOPEDIA]

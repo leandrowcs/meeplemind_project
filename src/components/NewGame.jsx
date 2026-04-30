@@ -53,6 +53,7 @@ export const NewGame = ({
   friendsList = [],
   libraryGames = [],
   libraryEntries = [],
+  gameDataProviderMode = GAME_DATA_PROVIDER.BGG,
 }) => {
   const { language, t } = useLanguage();
   const initialDate = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -299,7 +300,7 @@ export const NewGame = ({
 
     try {
       const names = await searchProviderGameNames(term, {
-        mode: GAME_DATA_PROVIDER.BGG,
+        mode: gameDataProviderMode,
         language,
         limit: 8,
       });

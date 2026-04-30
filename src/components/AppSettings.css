@@ -203,6 +203,64 @@
   color: #fca5a5;
 }
 
+.settings-ludopedia-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.settings-ludopedia-actions .settings-action-btn {
+  width: fit-content;
+}
+
+.settings-provider-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+.settings-provider-btn {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 10px;
+  background: rgba(10, 16, 34, 0.75);
+  color: #e2e8f0;
+  cursor: pointer;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.settings-provider-btn:hover {
+  border-color: rgba(123, 155, 255, 0.78);
+}
+
+.settings-provider-btn.active {
+  border-color: rgba(59, 130, 246, 0.95);
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.settings-provider-current {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  font-size: 0.82rem !important;
+}
+
+.settings-provider-current span {
+  color: #94a3b8;
+}
+
+.settings-provider-current strong {
+  color: #f8fafc;
+  text-align: right;
+}
+
 .settings-actions-list {
   display: grid;
   gap: 0.45rem;

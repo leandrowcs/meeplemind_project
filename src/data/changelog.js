@@ -2,6 +2,11 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v4.0.5: Correção no backend OAuth da Ludopedia para carregar automaticamente variáveis de `.env`/`.env.local` ao iniciar com `npm run dev:ludopedia`. Isso resolve o status `missing_env`, reativa o botão Conectar quando APP_ID/REDIRECT_URI já existem no arquivo e mostra feedback imediato no app quando o backend estiver indisponível.',
+      'v4.0.4: Backend OAuth da Ludopedia alinhado ao fluxo oficial da documentação: tokenrequest via POST com apenas `code`. Também adicionamos diagnóstico de variáveis obrigatórias ausentes nos endpoints de health/session.',
+      'v4.0.3: Corrigida a base de URL da integração Ludopedia no frontend. Em ambiente local, as chamadas agora usam fallback direto para http://localhost:8787/api/ludopedia, evitando falhas quando o proxy do Vite não está ativo.',
+      'v4.0.2: Seleção de fonte de dados habilitada no app. Agora você pode escolher BGG, Ludopedia, Auto ou ambos nas Configurações, e a opção passa a ser usada na busca da Nova Partida e no catálogo/autofill da Biblioteca.',
+      'v4.0.1: Início da Fase 2 com backend OAuth seguro da Ludopedia. A troca de token saiu do frontend para um BFF com cookies HttpOnly, endpoints de sessão/login/logout e proxy autenticado para consulta de jogos.',
       'v4.0.0: Fase 1 da integração multi-fonte concluída. A busca e o catálogo BGG foram migrados para uma camada compartilhada de providers, preparando a base para habilitar Ludopedia em paralelo sem duplicar lógica nas telas.',
       'v3.1.15: Restaurado o estilo do seletor de idioma no SideMenu. Classes CSS foram alinhadas com o JSX atual (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
       'v3.1.14: Header da Home agora segue as mesmas configuracoes sticky/blur dos demais headers. SideMenu foi renderizado via portal no body e ajustado para abrir colado na borda direita sem espaco lateral.',
@@ -51,6 +56,11 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v4.0.5: Fixed Ludopedia OAuth backend to auto-load `.env`/`.env.local` when started with `npm run dev:ludopedia`. This resolves `missing_env` status, enables the Connect button when APP_ID/REDIRECT_URI are present, and gives immediate in-app feedback when backend availability fails.',
+      'v4.0.4: Ludopedia OAuth backend now follows the official documented flow: tokenrequest via POST with only `code`. We also added required-env diagnostics to health/session endpoints.',
+      'v4.0.3: Fixed Ludopedia integration base URL on the frontend. In local environments, requests now use a direct fallback to http://localhost:8787/api/ludopedia, avoiding failures when the Vite proxy is not active.',
+      'v4.0.2: Game data source selection is now active in the app. You can choose BGG, Ludopedia, Auto, or both in Settings, and the selected mode is now used in New Game search plus Library catalog/autofill.',
+      'v4.0.1: Phase 2 kickoff with secure Ludopedia OAuth backend. Token exchange moved out of the frontend into a BFF with HttpOnly cookies, session/login/logout endpoints, and an authenticated games proxy.',
       'v4.0.0: Phase 1 of the multi-source integration is complete. BGG search and catalog flows were moved to a shared provider layer, preparing the app to enable Ludopedia in parallel without duplicating screen logic.',
       'v3.1.15: Restored SideMenu language selector styling. CSS class names were aligned with current JSX (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
       'v3.1.14: Home header now follows the same sticky/blur configuration used by other page headers. SideMenu now renders through a body portal and was tuned to open flush against the right edge with no lateral gap.',
@@ -100,6 +110,11 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v4.0.5: Correction du backend OAuth Ludopedia pour charger automatiquement `.env`/`.env.local` au démarrage via `npm run dev:ludopedia`. Cela corrige le statut `missing_env`, réactive le bouton Connecter quand APP_ID/REDIRECT_URI sont présents et affiche un retour immédiat dans l\'app si le backend est indisponible.',
+      'v4.0.4: Le backend OAuth Ludopedia suit maintenant le flux officiel documenté : tokenrequest en POST avec seulement `code`. Nous avons aussi ajouté le diagnostic des variables obligatoires manquantes dans les endpoints health/session.',
+      'v4.0.3: Correction de la base URL de l\'intégration Ludopedia côté frontend. En environnement local, les appels utilisent maintenant un fallback direct vers http://localhost:8787/api/ludopedia, évitant les échecs quand le proxy Vite n\'est pas actif.',
+      'v4.0.2: Sélection de la source de données activée dans l\'app. Vous pouvez choisir BGG, Ludopedia, Auto ou les deux dans Paramètres, et ce mode est maintenant utilisé dans la recherche de Nouvelle Partie et le catalogue/autoremplissage de la Bibliothèque.',
+      'v4.0.1: Début de la phase 2 avec backend OAuth Ludopedia sécurisé. L\'échange de jeton est déplacé hors du frontend vers un BFF avec cookies HttpOnly, endpoints de session/login/logout et proxy authentifié pour les jeux.',
       'v4.0.0: Phase 1 de l\'integration multi-source terminee. Les flux de recherche et de catalogue BGG ont ete migres vers une couche partagee de providers, preparant l\'activation parallele de Ludopedia sans dupliquer la logique des ecrans.',
       'v3.1.15: Style du selecteur de langue du SideMenu restaure. Les classes CSS ont ete alignees avec le JSX actuel (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
       'v3.1.14: Le header de l\'Accueil utilise maintenant la meme configuration sticky/blur que les autres headers. Le SideMenu est rendu via portal dans le body et ouvre desormais colle au bord droit, sans espace lateral.',

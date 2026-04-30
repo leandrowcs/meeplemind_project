@@ -9,6 +9,13 @@ export default defineConfig({
 
   server: {
     proxy: {
+      // Rota /api/ludopedia/* para backend OAuth local (BFF)
+      '/api/ludopedia': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+        secure: false,
+      },
+
       // Rota /bggapi/* para boardgamegeek.com — resolve CORS no dev server
       '/bggapi': {
         target: 'https://boardgamegeek.com',

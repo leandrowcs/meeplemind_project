@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ChevronLeft,
   DatabaseBackup,
+  Dices,
   ExternalLink,
   Globe,
   House,
   RefreshCw,
   Settings,
+  ShieldCheck,
   UserRound,
 } from 'lucide-react';
 import { Button } from './Button';
@@ -15,18 +17,27 @@ import { useLanguage } from '../hooks/useLanguage';
 import {
   BGG_OFFLINE_CACHE_KEY,
   GAME_DATA_PROVIDER,
+  LUDOPEDIA_BFF_BASE,
   buildCatalogOfflinePayload,
   fetchProviderHotCatalogGames,
 } from '../utils/gameDataProviders';
 import './AppSettings.css';
 
 const BGG_SITE_URL = 'https://boardgamegeek.com';
+const LUDOPEDIA_SITE_URL = 'https://ludopedia.com.br';
 const SHARE_TOGGLE_MAX_WAIT_MS = 15000;
 
 const LANGUAGES = [
   { code: 'pt-BR', labelKey: 'settings.languageOptionPtBr', flag: '🇧🇷' },
   { code: 'en-US', labelKey: 'settings.languageOptionEnUs', flag: '🇺🇸' },
   { code: 'fr-CA', labelKey: 'settings.languageOptionFrCa', flag: '🇨🇦' },
+];
+
+const PROVIDER_MODE_OPTIONS = [
+  { value: GAME_DATA_PROVIDER.BGG, labelKey: 'settings.providerModeBgg' },
+  { value: GAME_DATA_PROVIDER.LUDOPEDIA, labelKey: 'settings.providerModeLudopedia' },
+  { value: GAME_DATA_PROVIDER.AUTO, labelKey: 'settings.providerModeAuto' },
+  { value: GAME_DATA_PROVIDER.BOTH, labelKey: 'settings.providerModeBoth' },
 ];
 
 const downloadBGGOfflinePayload = (payload) => {
@@ -66,6 +77,8 @@ export const AppSettings = ({
   clearAllData,
   auth,
   syncStatus,
+  gameDataProviderMode = GAME_DATA_PROVIDER.BGG,
+  onChangeGameDataProviderMode,
   isPublic,
   publicShareError,
   setProfilePublic,
@@ -74,6 +87,13 @@ export const AppSettings = ({
   const importInputRef = useRef(null);
   const shareToggleGuardRef = useRef(null);
   const [bggSyncState, setBggSyncState] = useState('idle');
+  const [ludopediaSession, setLudopediaSession] = useState({
+    loading: true,
+    available: false,
+    connected: false,
+  });
+  const [ludopediaActionState, setLudopediaActionState] = useState('idle');
+  const [ludopediaCallbackState, setLudopediaCallbackState] = useState('');
   const [isUpdatingPublicShare, setIsUpdatingPublicShare] = useState(false);
   const browserLanguage = getPreferredBrowserLanguage();
 
@@ -87,9 +107,13 @@ export const AppSettings = ({
   );
 
   const selectedLanguage = LANGUAGES.find((item) => item.code === language);
+  const selectedProviderMode = PROVIDER_MODE_OPTIONS.find((item) => item.value === gameDataProviderMode);
   const currentLanguageLabel = selectedLanguage
     ? t(selectedLanguage.labelKey)
     : language;
+  const currentProviderModeLabel = selectedProviderMode
+    ? t(selectedProviderMode.labelKey)
+    : t('settings.providerModeBgg');
 
   const profilePhoto = googlePhotoUrl || auth?.user?.picture || '/user_icon.png';
   const profileName = displayPlayerName || auth?.user?.name || 'MeepleMind Player';
@@ -108,12 +132,138 @@ export const AppSettings = ({
     error: t('settings.bggSyncError'),
   }[bggSyncState] || '';
 
+  const loadLudopediaSession = useCallback(async () => {
+    try {
+      const response = await fetch(`${LUDOPEDIA_BFF_BASE}/oauth/session`, {
+        credentials: 'include',
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const nextState = {
+          loading: false,
+          available: false,
+          connected: false,
+        };
+        setLudopediaSession(nextState);
+        return nextState;
+      }
+
+      const nextState = {
+        loading: false,
+        available: Boolean(payload?.available),
+        connected: Boolean(payload?.connected),
+      };
+      setLudopediaSession(nextState);
+      return nextState;
+    } catch {
+      const nextState = {
+        loading: false,
+        available: false,
+        connected: false,
+      };
+      setLudopediaSession(nextState);
+      return nextState;
+    }
+  }, []);
+
+  useEffect(() => {
+    const pageUrl = new URL(window.location.href);
+    const callbackState = pageUrl.searchParams.get('ludopedia');
+    if (!callbackState) return;
+
+    if (callbackState === 'connected') {
+      setLudopediaCallbackState('success');
+    } else if (callbackState === 'error') {
+      setLudopediaCallbackState('error');
+    }
+
+    pageUrl.searchParams.delete('ludopedia');
+    pageUrl.searchParams.delete('reason');
+    window.history.replaceState({}, '', `${pageUrl.pathname}${pageUrl.search}${pageUrl.hash}`);
+  }, []);
+
+  useEffect(() => {
+    loadLudopediaSession();
+  }, [loadLudopediaSession]);
+
+  const handleConnectLudopedia = async () => {
+    if (ludopediaActionState === 'loading') return;
+
+    setLudopediaActionState('loading');
+    const sessionState = await loadLudopediaSession();
+    if (!sessionState?.available) {
+      setLudopediaActionState('error');
+      return;
+    }
+
+    const returnTo = `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const endpoint = `${LUDOPEDIA_BFF_BASE}/oauth/start?return_to=${encodeURIComponent(returnTo)}`;
+    window.location.assign(endpoint);
+  };
+
+  const handleDisconnectLudopedia = async () => {
+    if (ludopediaActionState === 'loading') return;
+
+    setLudopediaActionState('loading');
+    try {
+      await fetch(`${LUDOPEDIA_BFF_BASE}/oauth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      await loadLudopediaSession();
+      setLudopediaCallbackState('');
+      setLudopediaActionState('success');
+    } catch {
+      setLudopediaActionState('error');
+    }
+  };
+
+  const ludopediaStatusKey = ludopediaSession.loading
+    ? 'settings.ludopediaConnecting'
+    : !ludopediaSession.available
+      ? 'settings.ludopediaStatusUnavailable'
+      : ludopediaSession.connected
+        ? 'settings.ludopediaStatusConnected'
+        : 'settings.ludopediaStatusDisconnected';
+
+  const ludopediaStatusClass = ludopediaSession.loading
+    ? 'inactive'
+    : !ludopediaSession.available
+      ? 'unavailable'
+      : ludopediaSession.connected
+        ? 'active'
+        : 'inactive';
+
+  const ludopediaFeedback = (() => {
+    if (ludopediaActionState === 'loading') return t('settings.ludopediaConnecting');
+    if (ludopediaActionState === 'error') return t('settings.ludopediaActionError');
+    if (ludopediaActionState === 'success') return t('settings.ludopediaDisconnectedFeedback');
+    if (ludopediaCallbackState === 'success') return t('settings.ludopediaConnectedFeedback');
+    if (ludopediaCallbackState === 'error') return t('settings.ludopediaActionError');
+    return '';
+  })();
+
+  const ludopediaFeedbackClass = (() => {
+    if (ludopediaActionState === 'loading') return 'loading';
+    if (ludopediaActionState === 'error') return 'error';
+    if (ludopediaActionState === 'success') return 'success';
+    if (ludopediaCallbackState === 'success') return 'success';
+    if (ludopediaCallbackState === 'error') return 'error';
+    return '';
+  })();
+
   const handleLanguageChange = (newLanguage) => {
     if (newLanguage === language) return;
     changeLanguage(newLanguage);
     setTimeout(() => {
       window.location.reload();
     }, 100);
+  };
+
+  const handleProviderModeChange = (nextMode) => {
+    if (!onChangeGameDataProviderMode) return;
+    onChangeGameDataProviderMode(nextMode);
   };
 
   const handleImport = (event) => {
@@ -269,6 +419,101 @@ export const AppSettings = ({
                 <p className="settings-google-hint">{t('settings.googleConnectionHint')}</p>
               )}
             </div>
+          </section>
+
+          <section className="settings-card">
+            <h2>
+              <ShieldCheck size={16} /> {t('settings.ludopediaOAuthTitle')}
+            </h2>
+
+            <div className="settings-bgg-brand">
+              <div className="settings-bgg-brand-copy">
+                <p className="settings-bgg-brand-title">
+                  <a
+                    href={LUDOPEDIA_SITE_URL}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="settings-bgg-link"
+                  >
+                    Ludopedia
+                  </a>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </p>
+                <p>{t('settings.ludopediaExternalDescription')}</p>
+              </div>
+            </div>
+
+            <p className="settings-bgg-legal">{t('settings.ludopediaLegalNotice')}</p>
+            <p className="settings-card-note">{t('settings.ludopediaOAuthHint')}</p>
+
+            <p className="settings-google-status">
+              <span>{t('settings.ludopediaStatusLabel')}</span>
+              <strong className={`settings-google-status-badge ${ludopediaStatusClass}`}>
+                {t(ludopediaStatusKey)}
+              </strong>
+            </p>
+
+            <div className="settings-ludopedia-actions">
+              <button
+                type="button"
+                className="settings-sync-btn"
+                onClick={handleConnectLudopedia}
+                disabled={ludopediaActionState === 'loading'}
+              >
+                <ShieldCheck size={14} />
+                {ludopediaActionState === 'loading'
+                  ? t('settings.ludopediaConnecting')
+                  : t('settings.ludopediaConnectButton')}
+              </button>
+
+              <button
+                type="button"
+                className="settings-action-btn"
+                onClick={handleDisconnectLudopedia}
+                disabled={ludopediaActionState === 'loading' || !ludopediaSession.connected}
+              >
+                <span className="settings-action-title">{t('settings.ludopediaDisconnectButton')}</span>
+              </button>
+            </div>
+
+            {ludopediaFeedback && (
+              <p className={`settings-sync-feedback ${ludopediaFeedbackClass}`}>{ludopediaFeedback}</p>
+            )}
+          </section>
+
+          <section className="settings-card">
+            <h2>
+              <Dices size={16} /> {t('settings.providerModeTitle')}
+            </h2>
+
+            <p>{t('settings.providerModeDescription')}</p>
+
+            <div
+              className="settings-provider-grid"
+              role="group"
+              aria-label={t('settings.providerModeTitle')}
+            >
+              {PROVIDER_MODE_OPTIONS.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={`settings-provider-btn ${
+                    gameDataProviderMode === item.value ? 'active' : ''
+                  }`}
+                  onClick={() => handleProviderModeChange(item.value)}
+                  aria-pressed={gameDataProviderMode === item.value}
+                >
+                  {t(item.labelKey)}
+                </button>
+              ))}
+            </div>
+
+            <p className="settings-card-note">{t('settings.providerModeHint')}</p>
+
+            <p className="settings-provider-current">
+              <span>{t('settings.providerModeCurrent')}</span>
+              <strong>{currentProviderModeLabel}</strong>
+            </p>
           </section>
 
           <section className="settings-card">

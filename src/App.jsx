@@ -21,6 +21,11 @@ import { Library } from './components/Library';
 import { AppSettings } from './components/AppSettings';
 import { Friends } from './components/Friends';
 import { OnboardingModal } from './components/OnboardingModal';
+import {
+  GAME_DATA_PROVIDER,
+  GAME_DATA_PROVIDER_PREFERENCE_KEY,
+  normalizeGameDataProviderMode,
+} from './utils/gameDataProviders';
 import './App.css';
 
 const VALID_PAGES = new Set(['home', 'newgame', 'history', 'stats', 'profile', 'library', 'settings', 'friends']);
@@ -34,6 +39,15 @@ const PRIMARY_PLAYER_KEY = 'meeplemind-primary-player';
 const STARTUP_LOADING_MAX_MS = 4000;
 const STARTUP_LOADING_STEP_MS = 480;
 const STARTUP_LOADING_ICONS = [Dices, Gamepad2, Joystick, Swords, ChessKnight];
+
+const getInitialGameDataProviderMode = () => {
+  try {
+    const storedMode = localStorage.getItem(GAME_DATA_PROVIDER_PREFERENCE_KEY);
+    return normalizeGameDataProviderMode(storedMode);
+  } catch {
+    return GAME_DATA_PROVIDER.BGG;
+  }
+};
 
 const toLocalDateInput = (value) => {
   const parsed = new Date(value);
@@ -67,6 +81,7 @@ function App() {
   const [primaryPlayer, setPrimaryPlayer] = useState(
     () => localStorage.getItem(PRIMARY_PLAYER_KEY) || null
   );
+  const [gameDataProviderMode, setGameDataProviderMode] = useState(getInitialGameDataProviderMode);
   const [showStartupLoading, setShowStartupLoading] = useState(true);
   const [startupIconIndex, setStartupIconIndex] = useState(0);
   const [syncStatus, setSyncStatus] = useState('idle'); // 'idle' | 'syncing' | 'synced' | 'error'
@@ -106,6 +121,17 @@ function App() {
     const target = VALID_PAGES.has(page) ? page : 'home';
     window.location.hash = target;
     setCurrentPage(target);
+  }, []);
+
+  const handleChangeGameDataProviderMode = useCallback((nextMode) => {
+    const normalizedMode = normalizeGameDataProviderMode(nextMode);
+    setGameDataProviderMode(normalizedMode);
+
+    try {
+      localStorage.setItem(GAME_DATA_PROVIDER_PREFERENCE_KEY, normalizedMode);
+    } catch {
+      // Ignore persistence failures; in-memory state is still applied.
+    }
   }, []);
 
   useEffect(() => {
@@ -457,6 +483,7 @@ function App() {
           friendsList={friends.friends}
           libraryGames={lib.getGameNames()}
           libraryEntries={lib.library}
+          gameDataProviderMode={gameDataProviderMode}
         />
       )}
       {currentPage === 'history' && (
@@ -547,6 +574,7 @@ function App() {
           clearAllData={handleClearAllData}
           auth={auth}
           syncStatus={syncStatus}
+          gameDataProviderMode={gameDataProviderMode}
           sideMenuNotifications={sideMenuNotifications}
         />
       )}
@@ -561,6 +589,8 @@ function App() {
           clearAllData={handleClearAllData}
           auth={auth}
           syncStatus={syncStatus}
+          gameDataProviderMode={gameDataProviderMode}
+          onChangeGameDataProviderMode={handleChangeGameDataProviderMode}
           isPublic={friends.isPublic}
           publicShareError={friends.publicShareError}
           setProfilePublic={friends.setProfilePublic}
