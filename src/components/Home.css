@@ -3,14 +3,30 @@
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
-  padding: var(--spacing-lg) var(--spacing-md) 6.75rem;
+  padding: 0 var(--spacing-md) 6.75rem;
+  position: relative;
 }
 
 .home-header {
-  margin-bottom: var(--spacing-md);
+  position: sticky;
+  top: 0;
+  z-index: 970;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  border-left: 1px solid #94a3b838;
+  border-right: 1px solid #94a3b838;
+  backdrop-filter: blur(50px);
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto var(--spacing-md);
 }
 
 .header-main-row {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;

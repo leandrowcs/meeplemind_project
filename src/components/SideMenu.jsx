@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Bell,
   Check,
@@ -141,7 +142,7 @@ export const SideMenu = ({
         )}
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <>
           {/* Overlay */}
           <div className="menu-overlay" onClick={() => setIsOpen(false)} />
@@ -308,7 +309,8 @@ export const SideMenu = ({
 
             <div className="menu-footer">MeepleMind v{APP_VERSION}</div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   );

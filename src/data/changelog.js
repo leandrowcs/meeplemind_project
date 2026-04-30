@@ -2,6 +2,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.1.15: Restaurado o estilo do seletor de idioma no SideMenu. Classes CSS foram alinhadas com o JSX atual (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
+      'v3.1.14: Header da Home agora segue as mesmas configuracoes sticky/blur dos demais headers. SideMenu foi renderizado via portal no body e ajustado para abrir colado na borda direita sem espaco lateral.',
+      'v3.1.13: Correção específica nas páginas Amigos e Biblioteca: o CSS local do menu de navegacao inferior foi ajustado para manter o nav dentro da viewport no mobile, removendo a rolagem horizontal residual.',
       'v3.1.12: Ajustado posicionamento do menu de navegacao inferior para ficar 100% dentro da viewport no mobile e SideMenu lateral agora so renderiza quando aberto, evitando largura horizontal fantasma nas paginas internas.',
       'v3.1.11: Headers voltaram para dentro dos containers em Estatisticas, Biblioteca, Amigos, Perfil, Nova Partida e Historico, restaurando o sticky no Chrome mobile e mantendo sem rolagem horizontal.',
       'v3.1.10: Ajustado comportamento no Chrome mobile: headers sticky continuam fixos no topo e a rolagem horizontal foi removida com controle de overflow no elemento html.',
@@ -47,6 +50,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.1.15: Restored SideMenu language selector styling. CSS class names were aligned with current JSX (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
+      'v3.1.14: Home header now follows the same sticky/blur configuration used by other page headers. SideMenu now renders through a body portal and was tuned to open flush against the right edge with no lateral gap.',
+      'v3.1.13: Targeted fix for Friends and Library pages: local bottom-nav CSS was updated to keep the navigation strictly inside the mobile viewport, removing residual horizontal scroll.',
       'v3.1.12: Updated bottom navigation positioning to stay fully inside the mobile viewport, and the side drawer now renders only when open, preventing phantom horizontal width on internal pages.',
       'v3.1.11: Headers were moved back inside page containers on Stats, Library, Friends, Profile, New Game, and History, restoring sticky behavior on mobile Chrome while keeping horizontal scroll blocked.',
       'v3.1.10: Improved mobile Chrome behavior: sticky headers stay fixed at the top and horizontal scrolling was removed by handling overflow on the html element.',
@@ -92,6 +98,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.1.15: Style du selecteur de langue du SideMenu restaure. Les classes CSS ont ete alignees avec le JSX actuel (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
+      'v3.1.14: Le header de l\'Accueil utilise maintenant la meme configuration sticky/blur que les autres headers. Le SideMenu est rendu via portal dans le body et ouvre desormais colle au bord droit, sans espace lateral.',
+      'v3.1.13: Correctif cible pour Amis et Bibliotheque: le CSS local de la navigation du bas a ete ajuste pour maintenir le menu dans la viewport mobile et supprimer le defilement horizontal residuel.',
       'v3.1.12: Ajustement du positionnement de la navigation du bas pour rester entierement dans la viewport mobile, et le menu lateral est maintenant rendu uniquement lorsqu\'il est ouvert, ce qui evite une largeur horizontale fantome sur les pages internes.',
       'v3.1.11: Les headers ont ete remis dans les containers des pages Statistiques, Bibliotheque, Amis, Profil, Nouvelle Partie et Historique, ce qui retablit le sticky sur Chrome mobile sans retour du defilement horizontal.',
       'v3.1.10: Correction du comportement sur Chrome mobile: les headers sticky restent fixes en haut et le defilement horizontal a ete retire via la gestion du debordement sur l\'element html.',
