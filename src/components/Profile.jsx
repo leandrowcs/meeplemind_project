@@ -929,7 +929,7 @@ export const Profile = ({
             </div>
 
             <p className="profile-subtle-text">
-              {t('profile.currentLevelXp').replace('{current}', gamificationSummary.currentLevelXp).replace('{target}', gamificationSummary.xpForNextLevel)}
+              {t('profile.currentLevelXp').replace('{current}', gamificationSummary.score).replace('{target}', gamificationSummary.nextLevelScore)}
             </p>
             <p className="profile-subtle-text">
               {t('profile.nextLevelAt').replace('{score}', gamificationSummary.nextLevelScore)} • {t('profile.xpMissingToNext').replace('{xp}', gamificationSummary.missingForNextLevel)}
