@@ -3,7 +3,7 @@
   "description": "A simple web app to register and track board game matches with friends",
   "author": "Leandro Wanderley",
   "private": true,
-  "version": "3.1.4",
+  "version": "3.1.9",
   "type": "module",
   "scripts": {
     "dev": "vite",

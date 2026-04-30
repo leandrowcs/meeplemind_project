@@ -10,10 +10,17 @@
 }
 
 .settings-header {
+  position: sticky;
+  top: 0;
+  z-index: 970;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  background: transparent;
+  backdrop-filter: blur(50px);
 }
 
 .settings-title-wrap {
@@ -25,6 +32,8 @@
 .settings-title-wrap h1 {
   margin: 0;
   font-size: 1.7rem;
+  color: var(--color-accent);
+  text-shadow: 0px 0px 3px rgba(249, 115, 22, 0.5);
 }
 
 .settings-title-icon {

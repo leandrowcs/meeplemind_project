@@ -2,6 +2,11 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.1.9: Corrigida regressao que desfixava os headers no topo apos o ajuste de rolagem horizontal; os headers sticky voltaram ao comportamento esperado.',
+      'v3.1.8: Corrigida a barra de rolagem horizontal que aparecia nas paginas fora da Home, com controle global de overflow horizontal no layout.',
+      'v3.1.7: Header de Biblioteca, Amigos, Perfil, Nova Partida e Historico agora segue o mesmo estilo visual do header de Estatisticas.',
+      'v3.1.6: Headers de Estatisticas, Biblioteca, Amigos, Perfil e Nova Partida agora ficam fixos no topo durante a rolagem.',
+      'v3.1.5: Header da Nova Partida foi alinhado ao layout moderno de Estatisticas e Biblioteca, com bloco de titulo com icone e acao de voltar no topo.',
       'v3.1.4: Busca de amigos agora bloqueia auto-adicao por e-mail/UID atual e tenta entregar pedido de amizade para perfis publicos com o mesmo e-mail, reduzindo falhas quando existem documentos duplicados no Firestore.',
       'v3.1.3: O menu lateral agora usa fallback seguro ao carregar notificacoes. Se a consulta por e-mail falhar por regra/permissao, o app continua usando o documento atual sem exibir erro de carregamento.',
       'v3.1.2: Notificacoes de amizade agora consolidam documentos com o mesmo e-mail no Firestore. Isso corrige casos em que o pedido de "adicionar de volta" era salvo em um UID antigo e nao aparecia no dispositivo atual.',
@@ -39,6 +44,11 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.1.9: Fixed a regression that broke sticky top headers after the horizontal scroll fix; sticky headers now behave as expected again.',
+      'v3.1.8: Fixed horizontal scrollbar appearing on non-Home pages by adding global horizontal overflow control to the app layout.',
+      'v3.1.7: Library, Friends, Profile, New Game, and History headers now follow the same visual style as the Stats header.',
+      'v3.1.6: Headers on Stats, Library, Friends, Profile, and New Game now stay fixed at the top while scrolling.',
+      'v3.1.5: New Game header now matches the modern Stats and Library structure, with an icon title block and a top back action.',
       'v3.1.4: Friend search now blocks self-add by current email/UID and friend-request delivery now targets public profiles that share the same email, reducing failures when duplicate Firestore user documents exist.',
       'v3.1.3: Side-menu notifications now use a safe fallback while loading. If the email-based query fails due to rules/permissions, the app keeps using the current user document without showing a loading error.',
       'v3.1.2: Friend notifications now consolidate Firestore documents that share the same email. This fixes cases where the "add back" request was saved to a stale UID and did not show on the current device.',
@@ -76,6 +86,11 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.1.9: Correction d\'une regression qui retirait le comportement sticky des headers apres le correctif du defilement horizontal; les headers fixes en haut sont revenus.',
+      'v3.1.8: Correction de la barre de defilement horizontale sur les pages hors Accueil via un controle global de debordement horizontal du layout.',
+      'v3.1.7: Les headers de Bibliotheque, Amis, Profil, Nouvelle Partie et Historique suivent maintenant le meme style visuel que le header de Statistiques.',
+      'v3.1.6: Les headers de Statistiques, Bibliotheque, Amis, Profil et Nouvelle Partie restent maintenant fixes en haut pendant le defilement.',
+      'v3.1.5: Le header de Nouvelle Partie adopte la structure moderne de Statistiques et Bibliotheque, avec bloc titre icone et action retour en haut.',
       'v3.1.4: La recherche d\'amis bloque maintenant l\'auto-ajout par courriel/UID courant, et l\'envoi de demande d\'ami cible les profils publics partageant le meme courriel pour reduire les echecs quand des documents Firestore dupliques existent.',
       'v3.1.3: Les notifications du menu lateral utilisent maintenant un fallback securise au chargement. Si la requete par courriel echoue (regles/permissions), l\'application utilise le document utilisateur courant sans afficher d\'erreur de chargement.',
       'v3.1.2: Les notifications d\'amis consolident maintenant les documents Firestore partageant le meme courriel. Cela corrige les cas ou la demande "ajouter en retour" etait enregistree sur un UID obsolete et absente sur l\'appareil actuel.',

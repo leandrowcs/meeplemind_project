@@ -19,7 +19,7 @@
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: linear-gradient(150deg, rgba(15, 23, 42, 0.97) 0%, rgba(26, 39, 68, 0.97) 100%);
-  padding: 1.25rem;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 1rem;

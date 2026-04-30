@@ -1066,31 +1066,30 @@ export const Library = ({
 
   return (
     <>
+      <header className="library-header">
+        <div className="library-title-wrap">
+          <span className="library-title-icon"><BookOpen size={18} /></span>
+          <h1>{t('library.title')}</h1>
+        </div>
+        <div className="library-header-actions">
+          <span className="library-count" aria-label={String(library.length)}>{library.length}</span>
+          <SideMenu
+            onExportCSV={exportToCSV}
+            onExportJSON={exportToJSON}
+            onImportJSON={importFromJSON}
+            onClearData={clearAllData}
+            onOpenSettings={() => onNavigate('settings')}
+            auth={auth}
+            syncStatus={syncStatus}
+            compact
+            openFrom="right"
+            userName={displayPlayerName || primaryPlayer}
+            userPhotoUrl={googlePhotoUrl}
+            {...sideMenuNotifications}
+          />
+        </div>
+      </header>
       <div className="library-container fade-in">
-        <header className="library-header">
-          <div className="library-title-wrap">
-            <span className="library-title-icon"><BookOpen size={18} /></span>
-            <h1>{t('library.title')}</h1>
-          </div>
-          <div className="library-header-actions">
-            <span className="library-count" aria-label={String(library.length)}>{library.length}</span>
-            <SideMenu
-              onExportCSV={exportToCSV}
-              onExportJSON={exportToJSON}
-              onImportJSON={importFromJSON}
-              onClearData={clearAllData}
-              onOpenSettings={() => onNavigate('settings')}
-              auth={auth}
-              syncStatus={syncStatus}
-              compact
-              openFrom="right"
-              userName={displayPlayerName || primaryPlayer}
-              userPhotoUrl={googlePhotoUrl}
-              {...sideMenuNotifications}
-            />
-          </div>
-        </header>
-
         {/* Tab bar */}
         <div className="library-tabs">
           <button

@@ -2,33 +2,6 @@
   "version": "2.0",
   "games": [
     {
-      "id": "cba5092b-140a-44ff-971f-8c7fcb2eac1a",
-      "game": "Ticket to Ride",
-      "gameType": "competitive",
-      "players": [
-        "Leandro Wanderley",
-        "Leandro Wanderley Couto",
-        "Amigo 1",
-        "Amigo 2"
-      ],
-      "points": [
-        90,
-        120,
-        84,
-        74
-      ],
-      "winner": "Leandro Wanderley Couto",
-      "coopResult": null,
-      "duration": 90,
-      "date": "2026-04-29T04:00:00.000Z",
-      "rating": 0,
-      "notes": "",
-      "themes": [],
-      "mechanics": [],
-      "gameCategories": [],
-      "updatedAt": "2026-04-29T17:53:04.827Z"
-    },
-    {
       "id": "f0c32476-68f2-429d-b176-d15fe9d40c92",
       "game": "Zombicide: Black Plague",
       "gameType": "cooperative",
@@ -1115,5 +1088,5 @@
       "updatedAt": "2026-04-27T03:08:48.825Z"
     }
   ],
-  "exportedAt": "2026-04-29T19:21:11.182Z"
+  "exportedAt": "2026-04-29T23:55:57.972Z"
 }

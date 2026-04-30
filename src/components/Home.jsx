@@ -443,7 +443,7 @@ export const Home = ({
 
             <div className="history-summary-grid">
               <article className="summary-tile blue">
-                <span className="summary-icon"><Trophy size={18} /> <small> {t('home.competitiveGames')}</small></span>
+                <span className="summary-icon"><Trophy size={18} /> <small> {t('home.allGames')}</small></span>
                 <strong>{userCompetitiveWins + userCoopWins}</strong>
                 <small>{t('home.totalWins')}</small>
               </article>

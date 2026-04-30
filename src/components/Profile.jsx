@@ -782,53 +782,52 @@ export const Profile = ({
 
   return (
     <>
-      <div className="profile-container fade-in">
-        <header className="profile-header-modern">
-          <div className="profile-header-top-row">
-            <h2 className="profile-header-page-title"></h2>
-            <SideMenu
-              onExportCSV={exportToCSV}
-              onExportJSON={exportToJSON}
-              onImportJSON={importFromJSON}
-              onClearData={clearAllData}
-              onOpenSettings={() => onNavigate('settings')}
-              auth={auth}
-              syncStatus={syncStatus}
-              compact
-              openFrom="right"
-              userName={displayPlayerName || primaryPlayer}
-              userPhotoUrl={googlePhotoUrl}
-              {...sideMenuNotifications}
+      <header className="profile-header-modern">
+        <div className="profile-header-top-row">
+          <h2 className="profile-header-page-title"></h2>
+          <SideMenu
+            onExportCSV={exportToCSV}
+            onExportJSON={exportToJSON}
+            onImportJSON={importFromJSON}
+            onClearData={clearAllData}
+            onOpenSettings={() => onNavigate('settings')}
+            auth={auth}
+            syncStatus={syncStatus}
+            compact
+            openFrom="right"
+            userName={displayPlayerName || primaryPlayer}
+            userPhotoUrl={googlePhotoUrl}
+            {...sideMenuNotifications}
+          />
+        </div>
+        <div className="profile-avatar-block">
+          <div className="profile-avatar-wrap">
+            <img src={avatarSrc} alt={displayPlayerName || primaryPlayer} className="profile-avatar" referrerPolicy="no-referrer" />
+            <button
+              className="profile-avatar-upload-btn"
+              onClick={() => fileInputRef.current?.click()}
+              type="button"
+            >
+              <Upload size={14} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="profile-avatar-input"
+              onChange={onAvatarUpload}
             />
           </div>
-          <div className="profile-avatar-block">
-            <div className="profile-avatar-wrap">
-              <img src={avatarSrc} alt={displayPlayerName || primaryPlayer} className="profile-avatar" referrerPolicy="no-referrer" />
-              <button
-                className="profile-avatar-upload-btn"
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-              >
-                <Upload size={14} />
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="profile-avatar-input"
-                onChange={onAvatarUpload}
-              />
+          <h1 className="profile-player-name">{displayPlayerName || primaryPlayer}</h1>
+          {auth?.isSignedIn && (
+            <div className="profile-google-badge">
+              <BadgeCheck size={13} />
+              <span>{t('profile.googleConnected')}</span>
             </div>
-            <h1 className="profile-player-name">{displayPlayerName || primaryPlayer}</h1>
-            {auth?.isSignedIn && (
-              <div className="profile-google-badge">
-                <BadgeCheck size={13} />
-                <span>{t('profile.googleConnected')}</span>
-              </div>
-            )}
-          </div>
-        </header>
-
+          )}
+        </div>
+      </header>
+      <div className="profile-container fade-in">
         <div className="profile-content">
           <section className="profile-top-stats" aria-label={t('profile.summaryAria')}>
             <article className="profile-small-stat-card">

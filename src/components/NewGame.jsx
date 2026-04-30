@@ -994,83 +994,92 @@ export const NewGame = ({
   };
 
   return (
-    <div className="newgame-container fade-in">
+    <>
       <header className="newgame-header">
-        <button className="back-btn" onClick={() => onNavigate('home')}>
+        <div className="newgame-title-wrap">
+          <span className="newgame-title-icon"><Dices size={18} /></span>
+          <h1>{t('newgame.title')}</h1>
+        </div>
+        <button
+          type="button"
+          className="newgame-header-back"
+          onClick={() => onNavigate('home')}
+        >
+          <ChevronLeft size={16} />
           {t('common.back')}
         </button>
-        <h1>{t('newgame.title')}</h1>
       </header>
-
-      <form onSubmit={handleSubmit} className="newgame-form">
-        <section className="wizard-progress" aria-label={t('newgame.progressAriaLabel')}>
-          <div className="wizard-progress-top">
-            <strong>{currentStep.title}</strong>
-            <span>
-              {formatTemplate('newgame.progressLabel', {
-                current: stepIndex + 1,
-                total: TOTAL_STEPS,
-              })}
-            </span>
-          </div>
-          <div className="wizard-progress-track">
-            <span className="wizard-progress-fill" style={{ width: `${progressPercent}%` }} />
-          </div>
-          <div className="wizard-step-pills" aria-hidden>
-            {steps.map((step, index) => (
-              <span
-                key={step.short}
-                className={`wizard-step-pill ${index === stepIndex ? 'active' : ''} ${completionByStep[index] ? 'done' : ''}`}
-              >
-                {index + 1}. {step.short}
+      <div className="newgame-container fade-in">
+        <form onSubmit={handleSubmit} className="newgame-form">
+          <section className="wizard-progress" aria-label={t('newgame.progressAriaLabel')}>
+            <div className="wizard-progress-top">
+              <strong>{currentStep.title}</strong>
+              <span>
+                {formatTemplate('newgame.progressLabel', {
+                  current: stepIndex + 1,
+                  total: TOTAL_STEPS,
+                })}
               </span>
-            ))}
-          </div>
-        </section>
+            </div>
+            <div className="wizard-progress-track">
+              <span className="wizard-progress-fill" style={{ width: `${progressPercent}%` }} />
+            </div>
+            <div className="wizard-step-pills" aria-hidden>
+              {steps.map((step, index) => (
+                <span
+                  key={step.short}
+                  className={`wizard-step-pill ${index === stepIndex ? 'active' : ''} ${completionByStep[index] ? 'done' : ''}`}
+                >
+                  {index + 1}. {step.short}
+                </span>
+              ))}
+            </div>
+          </section>
 
-        <section className="wizard-card" data-step-index={stepIndex + 1}>
-          <h2><Gamepad size={16} /> {currentStep.title}</h2>
-          <p className="wizard-step-description">{currentStep.description}</p>
-          <div key={`step-${stepIndex}`} className={`wizard-step-frame ${stepDirection}`}>
-            {renderStepContent()}
-          </div>
-        </section>
+          <section className="wizard-card" data-step-index={stepIndex + 1}>
+            <h2><Gamepad size={16} /> {currentStep.title}</h2>
+            <p className="wizard-step-description">{currentStep.description}</p>
+            <div key={`step-${stepIndex}`} className={`wizard-step-frame ${stepDirection}`}>
+              {renderStepContent()}
+            </div>
+          </section>
 
-        <div className="wizard-actions">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handlePreviousStep}
-            disabled={stepIndex === 0}
-          >
-            <ChevronLeft size={16} /> {t('newgame.previous')}
-          </Button>
-
-          {stepIndex < TOTAL_STEPS - 1 ? (
+          <div className="wizard-actions">
             <Button
               type="button"
-              variant="accent"
-              onClick={handleNextStep}
-              disabled={!completionByStep[stepIndex]}
-              className="newgame-next-btn"
-              data-testid="newgame-next-step"
+              variant="secondary"
+              onClick={handlePreviousStep}
+              disabled={stepIndex === 0}
             >
-              {t('newgame.next')} <ChevronRight size={16} />
+              <ChevronLeft size={16} /> {t('newgame.previous')}
             </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="accent"
-              disabled={!isValid}
-              className="newgame-submit-btn"
-              data-testid="newgame-submit"
-              onClick={handleSubmit}
-            >
-              <Check size={16} /> {t('newgame.confirm')}
-            </Button>
-          )}
-        </div>
-      </form>
-    </div>
+
+            {stepIndex < TOTAL_STEPS - 1 ? (
+              <Button
+                type="button"
+                variant="accent"
+                onClick={handleNextStep}
+                disabled={!completionByStep[stepIndex]}
+                className="newgame-next-btn"
+                data-testid="newgame-next-step"
+              >
+                {t('newgame.next')} <ChevronRight size={16} />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="accent"
+                disabled={!isValid}
+                className="newgame-submit-btn"
+                data-testid="newgame-submit"
+                onClick={handleSubmit}
+              >
+                <Check size={16} /> {t('newgame.confirm')}
+              </Button>
+            )}
+          </div>
+        </form>
+      </div>
+    </>
   );
 };

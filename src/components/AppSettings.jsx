@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  ChevronLeft,
   DatabaseBackup,
   ExternalLink,
   Globe,
@@ -212,7 +213,7 @@ export const AppSettings = ({
   };
 
   return (
-    <div className="settings-page fade-in">
+    <>
       <header className="settings-header">
         <div className="settings-title-wrap">
           <span className="settings-title-icon">
@@ -220,244 +221,253 @@ export const AppSettings = ({
           </span>
           <h1>{t('settings.title')}</h1>
         </div>
-      </header>
-
-      <main className="settings-content">
-        <section className="settings-card">
-          <h2>
-            <UserRound size={16} /> {t('settings.accountTitle')}
-          </h2>
-
-          <div className="settings-profile-row">
-            <img
-              src={profilePhoto}
-              alt={profileName}
-              className="settings-profile-avatar"
-              referrerPolicy="no-referrer"
-              onError={(event) => {
-                event.currentTarget.src = '/user_icon.png';
-              }}
-            />
-            <strong>{profileName}</strong>
-          </div>
-
-          <div className="settings-google-connection">
-            <p className="settings-google-status">
-              <span>{t('settings.googleConnectionLabel')}</span>
-              <strong
-                className={`settings-google-status-badge ${
-                  !isGoogleConfigured
-                    ? 'unavailable'
-                    : isGoogleConnected
-                      ? 'active'
-                      : 'inactive'
-                }`}
-              >
-                {googleConnectionLabel}
-              </strong>
-            </p>
-
-            <p className="settings-card-note">{t('settings.googleConnectionInfo')}</p>
-            <p className="settings-card-note rules">{t('settings.googleConnectionSession')}</p>
-
-            {isGoogleConfigured ? (
-              <div className="settings-google-auth">
-                <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
-
-                {isGoogleConnected && (
-                  <div className="settings-share-toggle">
-                    <label className="settings-share-label" htmlFor="settings-share-profile">
-                      <span className="settings-share-text">
-                        <strong>{t('friends.shareProfile')}</strong>
-                        <span className="settings-card-note">{t('friends.shareProfileHint')}</span>
-                      </span>
-                      <input
-                        id="settings-share-profile"
-                        type="checkbox"
-                        className="settings-share-checkbox"
-                        checked={Boolean(isPublic)}
-                        onChange={handleShareToggle}
-                        disabled={isUpdatingPublicShare}
-                        aria-label={t('friends.shareProfile')}
-                      />
-                      <span className="settings-share-switch" aria-hidden="true" />
-                    </label>
-                    {publicShareError && (
-                      <p className="settings-share-error">{t('friends.shareProfileError')}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="settings-google-hint">{t('settings.googleConnectionHint')}</p>
-            )}
-          </div>
-        </section>
-
-        <section className="settings-card">
-          <h2>
-            <RefreshCw size={16} /> {t('settings.bggSyncTitle')}
-          </h2>
-
-          <div className="settings-bgg-brand">
-            <img
-              src="/bgg-logo.svg"
-              alt={t('settings.bggLogoAlt')}
-              className="settings-bgg-logo"
-            />
-            <div className="settings-bgg-brand-copy">
-              <p className="settings-bgg-brand-title">
-                <a
-                  href={BGG_SITE_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="settings-bgg-link"
-                >
-                  BoardGameGeek
-                </a>
-                <ExternalLink size={13} aria-hidden="true" />
-              </p>
-              <p>{t('settings.bggExternalDescription')}</p>
-            </div>
-          </div>
-
-          <p className="settings-bgg-legal">{t('settings.bggLegalNotice')}</p>
-          <p className="settings-card-note">{t('settings.bggSyncOfflineHint')}</p>
-
-          <button
-            type="button"
-            className="settings-sync-btn"
-            onClick={handleSyncWithBGG}
-            disabled={bggSyncState === 'loading'}
-          >
-            <RefreshCw
-              size={14}
-              className={bggSyncState === 'loading' ? 'settings-spin' : ''}
-            />
-            {bggSyncState === 'loading'
-              ? t('settings.bggSyncGenerating')
-              : t('settings.bggSyncButton')}
-          </button>
-
-          {bggSyncFeedback && (
-            <p className={`settings-sync-feedback ${bggSyncState}`}>{bggSyncFeedback}</p>
-          )}
-        </section>
-
-        <section className="settings-card">
-          <h2>
-            <DatabaseBackup size={16} /> {t('menu.dataBackup')}
-          </h2>
-
-          <div className="settings-actions-list">
-            <button
-              type="button"
-              className="settings-action-btn"
-              onClick={() => exportToCSV(language)}
-              title={t('home.exportCSVTitle')}
-            >
-              <span className="settings-action-title">{t('home.exportCSV')}</span>
-              <span className="settings-action-description">
-                {t('settings.backupCsvDescription')}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="settings-action-btn"
-              onClick={() => exportToJSON()}
-              title={t('home.backupJSONTitle')}
-            >
-              <span className="settings-action-title">{t('home.backupJSON')}</span>
-              <span className="settings-action-description">
-                {t('settings.backupJsonDescription')}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="settings-action-btn"
-              onClick={() => importInputRef.current?.click()}
-              title={t('home.importJSONTitle')}
-            >
-              <span className="settings-action-title">{t('home.importJSON')}</span>
-              <span className="settings-action-description">
-                {t('settings.backupImportDescription')}
-              </span>
-            </button>
-
-            <input
-              ref={importInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="settings-import-input"
-            />
-
-            <button
-              type="button"
-              className="settings-action-btn danger"
-              onClick={handleClearData}
-              title={t('menu.clearDataTitle')}
-            >
-              <span className="settings-action-title">{t('menu.clearData')}</span>
-              <span className="settings-action-description">
-                {t('settings.backupClearDescription')}
-              </span>
-            </button>
-          </div>
-        </section>
-
-        <section className="settings-card">
-          <h2>
-            <Globe size={16} /> {t('settings.languageTitle')}
-          </h2>
-          <p>{t('settings.languageDescription')}</p>
-
-          <div
-            className="settings-language-grid"
-            role="group"
-            aria-label={t('settings.languageTitle')}
-          >
-            {LANGUAGES.map((item) => (
-              <button
-                key={item.code}
-                type="button"
-                className={`settings-language-btn ${
-                  language === item.code ? 'active' : ''
-                }`}
-                onClick={() => handleLanguageChange(item.code)}
-                title={t(item.labelKey)}
-                aria-label={t(item.labelKey)}
-              >
-                <span className="settings-language-flag" aria-hidden="true">
-                  {item.flag}
-                </span>
-                <span className="settings-language-label">{t(item.labelKey)}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="settings-language-meta">
-            <p>
-              <span>{t('settings.currentLanguage')}</span>
-              <strong>{currentLanguageLabel}</strong>
-            </p>
-            <p>
-              <span>{t('settings.deviceLanguage')}</span>
-              <strong>{browserLanguage}</strong>
-            </p>
-          </div>
-        </section>
-
-        <Button
-          variant="primary"
+        <button
+          type="button"
+          className="newgame-header-back"
           onClick={() => onNavigate('home')}
-          className="settings-back-btn"
         >
-          <House size={16} /> {t('settings.backHome')}
-        </Button>
-      </main>
-    </div>
+          <ChevronLeft size={16} />
+          {t('common.back')}
+        </button>
+      </header>
+      <div className="settings-page fade-in">
+        <main className="settings-content">
+          <section className="settings-card">
+            <h2>
+              <UserRound size={16} /> {t('settings.accountTitle')}
+            </h2>
+
+            <div className="settings-profile-row">
+              <img
+                src={profilePhoto}
+                alt={profileName}
+                className="settings-profile-avatar"
+                referrerPolicy="no-referrer"
+                onError={(event) => {
+                  event.currentTarget.src = '/user_icon.png';
+                }}
+              />
+              <strong>{profileName}</strong>
+            </div>
+
+            <div className="settings-google-connection">
+              <p className="settings-google-status">
+                <span>{t('settings.googleConnectionLabel')}</span>
+                <strong
+                  className={`settings-google-status-badge ${
+                    !isGoogleConfigured
+                      ? 'unavailable'
+                      : isGoogleConnected
+                        ? 'active'
+                        : 'inactive'
+                  }`}
+                >
+                  {googleConnectionLabel}
+                </strong>
+              </p>
+
+              <p className="settings-card-note">{t('settings.googleConnectionInfo')}</p>
+              <p className="settings-card-note rules">{t('settings.googleConnectionSession')}</p>
+
+              {isGoogleConfigured ? (
+                <div className="settings-google-auth">
+                  <GoogleAuthButton auth={auth} syncStatus={syncStatus} />
+
+                  {isGoogleConnected && (
+                    <div className="settings-share-toggle">
+                      <label className="settings-share-label" htmlFor="settings-share-profile">
+                        <span className="settings-share-text">
+                          <strong>{t('friends.shareProfile')}</strong>
+                          <span className="settings-card-note">{t('friends.shareProfileHint')}</span>
+                        </span>
+                        <input
+                          id="settings-share-profile"
+                          type="checkbox"
+                          className="settings-share-checkbox"
+                          checked={Boolean(isPublic)}
+                          onChange={handleShareToggle}
+                          disabled={isUpdatingPublicShare}
+                          aria-label={t('friends.shareProfile')}
+                        />
+                        <span className="settings-share-switch" aria-hidden="true" />
+                      </label>
+                      {publicShareError && (
+                        <p className="settings-share-error">{t('friends.shareProfileError')}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="settings-google-hint">{t('settings.googleConnectionHint')}</p>
+              )}
+            </div>
+          </section>
+
+          <section className="settings-card">
+            <h2>
+              <RefreshCw size={16} /> {t('settings.bggSyncTitle')}
+            </h2>
+
+            <div className="settings-bgg-brand">
+              <img
+                src="/bgg-logo.svg"
+                alt={t('settings.bggLogoAlt')}
+                className="settings-bgg-logo"
+              />
+              <div className="settings-bgg-brand-copy">
+                <p className="settings-bgg-brand-title">
+                  <a
+                    href={BGG_SITE_URL}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="settings-bgg-link"
+                  >
+                    BoardGameGeek
+                  </a>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </p>
+                <p>{t('settings.bggExternalDescription')}</p>
+              </div>
+            </div>
+
+            <p className="settings-bgg-legal">{t('settings.bggLegalNotice')}</p>
+            <p className="settings-card-note">{t('settings.bggSyncOfflineHint')}</p>
+
+            <button
+              type="button"
+              className="settings-sync-btn"
+              onClick={handleSyncWithBGG}
+              disabled={bggSyncState === 'loading'}
+            >
+              <RefreshCw
+                size={14}
+                className={bggSyncState === 'loading' ? 'settings-spin' : ''}
+              />
+              {bggSyncState === 'loading'
+                ? t('settings.bggSyncGenerating')
+                : t('settings.bggSyncButton')}
+            </button>
+
+            {bggSyncFeedback && (
+              <p className={`settings-sync-feedback ${bggSyncState}`}>{bggSyncFeedback}</p>
+            )}
+          </section>
+
+          <section className="settings-card">
+            <h2>
+              <DatabaseBackup size={16} /> {t('menu.dataBackup')}
+            </h2>
+
+            <div className="settings-actions-list">
+              <button
+                type="button"
+                className="settings-action-btn"
+                onClick={() => exportToCSV(language)}
+                title={t('home.exportCSVTitle')}
+              >
+                <span className="settings-action-title">{t('home.exportCSV')}</span>
+                <span className="settings-action-description">
+                  {t('settings.backupCsvDescription')}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="settings-action-btn"
+                onClick={() => exportToJSON()}
+                title={t('home.backupJSONTitle')}
+              >
+                <span className="settings-action-title">{t('home.backupJSON')}</span>
+                <span className="settings-action-description">
+                  {t('settings.backupJsonDescription')}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="settings-action-btn"
+                onClick={() => importInputRef.current?.click()}
+                title={t('home.importJSONTitle')}
+              >
+                <span className="settings-action-title">{t('home.importJSON')}</span>
+                <span className="settings-action-description">
+                  {t('settings.backupImportDescription')}
+                </span>
+              </button>
+
+              <input
+                ref={importInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="settings-import-input"
+              />
+
+              <button
+                type="button"
+                className="settings-action-btn danger"
+                onClick={handleClearData}
+                title={t('menu.clearDataTitle')}
+              >
+                <span className="settings-action-title">{t('menu.clearData')}</span>
+                <span className="settings-action-description">
+                  {t('settings.backupClearDescription')}
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section className="settings-card">
+            <h2>
+              <Globe size={16} /> {t('settings.languageTitle')}
+            </h2>
+            <p>{t('settings.languageDescription')}</p>
+
+            <div
+              className="settings-language-grid"
+              role="group"
+              aria-label={t('settings.languageTitle')}
+            >
+              {LANGUAGES.map((item) => (
+                <button
+                  key={item.code}
+                  type="button"
+                  className={`settings-language-btn ${
+                    language === item.code ? 'active' : ''
+                  }`}
+                  onClick={() => handleLanguageChange(item.code)}
+                  title={t(item.labelKey)}
+                  aria-label={t(item.labelKey)}
+                >
+                  <span className="settings-language-flag" aria-hidden="true">
+                    {item.flag}
+                  </span>
+                  <span className="settings-language-label">{t(item.labelKey)}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="settings-language-meta">
+              <p>
+                <span>{t('settings.currentLanguage')}</span>
+                <strong>{currentLanguageLabel}</strong>
+              </p>
+              <p>
+                <span>{t('settings.deviceLanguage')}</span>
+                <strong>{browserLanguage}</strong>
+              </p>
+            </div>
+          </section>
+
+          <Button
+            variant="primary"
+            onClick={() => onNavigate('home')}
+            className="settings-back-btn"
+          >
+            <House size={16} /> {t('settings.backHome')}
+          </Button>
+        </main>
+      </div>
+    </>
   );
 };

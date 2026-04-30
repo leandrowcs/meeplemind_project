@@ -1,6 +1,7 @@
 export const translations = {
   'pt-BR': {
     // Home
+    'home.allGames': 'Todas as Partidas',
     'home.backupJSON': 'Backup JSON',
     'home.backupJSONTitle': 'Backup dos seus dados em JSON',
     'home.carousel.empty': 'Registre sua primeira partida para ver o carrossel.',
@@ -627,7 +628,7 @@ export const translations = {
     'settings.backHome': 'Voltar para Home',
 
     // Common
-    'common.back': '← Voltar',
+    'common.back': 'Voltar',
     'common.cancel': 'Cancelar',
     'common.close': 'Fechar',
     'common.confirm': 'Confirmar',
@@ -689,6 +690,7 @@ export const translations = {
   },
   'en-US': {
     // Home
+    'home.allGames': 'All Games',
     'home.backupJSON': 'Backup JSON',
     'home.backupJSONTitle': 'Backup your data as JSON',
     'home.carousel.empty': 'Register your first game to see the carousel.',
@@ -1310,7 +1312,7 @@ export const translations = {
     'settings.backHome': 'Back to Home',
 
     // Common
-    'common.back': '← Back',
+    'common.back': 'Back',
     'common.cancel': 'Cancel',
     'common.close': 'Close',
     'common.confirm': 'Confirm',
@@ -1372,6 +1374,7 @@ export const translations = {
   },
   'fr-CA': {
     // Home
+    'home.allGames': 'Toutes les Parties',
     'home.backupJSON': 'Sauvegarde JSON',
     'home.backupJSONTitle': 'Sauvegarder vos données en JSON',
     'home.carousel.empty': 'Enregistrez votre première partie pour voir le carrousel.',
@@ -1998,7 +2001,7 @@ export const translations = {
     'settings.backHome': 'Retour à l\'accueil',
 
     // Common
-    'common.back': '← Retour',
+    'common.back': 'Retour',
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.confirm': 'Confirmer',
