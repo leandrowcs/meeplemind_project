@@ -67,6 +67,23 @@ body::before {
   flex-direction: column;
 }
 
+/* Keep fixed bottom nav fully inside viewport on internal pages (mobile overflow safeguard) */
+.stats-container .bottom-nav,
+.library-container .bottom-nav,
+.history-container .bottom-nav,
+.friends-container .bottom-nav,
+.profile-container .bottom-nav {
+  left: 50%;
+  right: auto;
+  width: min(560px, 100vw);
+  width: min(560px, 100dvw);
+  max-width: 560px;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  overflow-x: clip;
+  contain: paint;
+}
+
 /* Scrollbar Customization */
 ::-webkit-scrollbar {
   width: 8px;

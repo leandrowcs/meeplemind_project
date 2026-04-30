@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.1.12: Ajustado posicionamento do menu de navegacao inferior para ficar 100% dentro da viewport no mobile e SideMenu lateral agora so renderiza quando aberto, evitando largura horizontal fantasma nas paginas internas.',
       'v3.1.11: Headers voltaram para dentro dos containers em Estatisticas, Biblioteca, Amigos, Perfil, Nova Partida e Historico, restaurando o sticky no Chrome mobile e mantendo sem rolagem horizontal.',
       'v3.1.10: Ajustado comportamento no Chrome mobile: headers sticky continuam fixos no topo e a rolagem horizontal foi removida com controle de overflow no elemento html.',
       'v3.1.9: Corrigida regressao que desfixava os headers no topo apos o ajuste de rolagem horizontal; os headers sticky voltaram ao comportamento esperado.',
@@ -46,6 +47,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.1.12: Updated bottom navigation positioning to stay fully inside the mobile viewport, and the side drawer now renders only when open, preventing phantom horizontal width on internal pages.',
       'v3.1.11: Headers were moved back inside page containers on Stats, Library, Friends, Profile, New Game, and History, restoring sticky behavior on mobile Chrome while keeping horizontal scroll blocked.',
       'v3.1.10: Improved mobile Chrome behavior: sticky headers stay fixed at the top and horizontal scrolling was removed by handling overflow on the html element.',
       'v3.1.9: Fixed a regression that broke sticky top headers after the horizontal scroll fix; sticky headers now behave as expected again.',
@@ -90,6 +92,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.1.12: Ajustement du positionnement de la navigation du bas pour rester entierement dans la viewport mobile, et le menu lateral est maintenant rendu uniquement lorsqu\'il est ouvert, ce qui evite une largeur horizontale fantome sur les pages internes.',
       'v3.1.11: Les headers ont ete remis dans les containers des pages Statistiques, Bibliotheque, Amis, Profil, Nouvelle Partie et Historique, ce qui retablit le sticky sur Chrome mobile sans retour du defilement horizontal.',
       'v3.1.10: Correction du comportement sur Chrome mobile: les headers sticky restent fixes en haut et le defilement horizontal a ete retire via la gestion du debordement sur l\'element html.',
       'v3.1.9: Correction d\'une regression qui retirait le comportement sticky des headers apres le correctif du defilement horizontal; les headers fixes en haut sont revenus.',
