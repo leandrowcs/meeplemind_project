@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v4.0.0: Fase 1 da integração multi-fonte concluída. A busca e o catálogo BGG foram migrados para uma camada compartilhada de providers, preparando a base para habilitar Ludopedia em paralelo sem duplicar lógica nas telas.',
       'v3.1.15: Restaurado o estilo do seletor de idioma no SideMenu. Classes CSS foram alinhadas com o JSX atual (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
       'v3.1.14: Header da Home agora segue as mesmas configuracoes sticky/blur dos demais headers. SideMenu foi renderizado via portal no body e ajustado para abrir colado na borda direita sem espaco lateral.',
       'v3.1.13: Correção específica nas páginas Amigos e Biblioteca: o CSS local do menu de navegacao inferior foi ajustado para manter o nav dentro da viewport no mobile, removendo a rolagem horizontal residual.',
@@ -50,6 +51,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v4.0.0: Phase 1 of the multi-source integration is complete. BGG search and catalog flows were moved to a shared provider layer, preparing the app to enable Ludopedia in parallel without duplicating screen logic.',
       'v3.1.15: Restored SideMenu language selector styling. CSS class names were aligned with current JSX (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
       'v3.1.14: Home header now follows the same sticky/blur configuration used by other page headers. SideMenu now renders through a body portal and was tuned to open flush against the right edge with no lateral gap.',
       'v3.1.13: Targeted fix for Friends and Library pages: local bottom-nav CSS was updated to keep the navigation strictly inside the mobile viewport, removing residual horizontal scroll.',
@@ -98,6 +100,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v4.0.0: Phase 1 de l\'integration multi-source terminee. Les flux de recherche et de catalogue BGG ont ete migres vers une couche partagee de providers, preparant l\'activation parallele de Ludopedia sans dupliquer la logique des ecrans.',
       'v3.1.15: Style du selecteur de langue du SideMenu restaure. Les classes CSS ont ete alignees avec le JSX actuel (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
       'v3.1.14: Le header de l\'Accueil utilise maintenant la meme configuration sticky/blur que les autres headers. Le SideMenu est rendu via portal dans le body et ouvre desormais colle au bord droit, sans espace lateral.',
       'v3.1.13: Correctif cible pour Amis et Bibliotheque: le CSS local de la navigation du bas a ete ajuste pour maintenir le menu dans la viewport mobile et supprimer le defilement horizontal residuel.',

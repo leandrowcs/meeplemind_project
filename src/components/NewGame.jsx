@@ -24,50 +24,10 @@ import {
 import { Button } from './Button';
 import { useLanguage } from '../hooks/useLanguage';
 import { GAME_THEMES, GAME_MECHANICS, GAME_CATEGORIES } from '../utils/classifications';
+import { GAME_DATA_PROVIDER, searchProviderGameNames } from '../utils/gameDataProviders';
 import './NewGame.css';
 
 const TOTAL_STEPS = 5;
-
-const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
-const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
-
-const bggUrl = (path) => BGG_PROXY_BASE + path;
-
-const fetchBGGXml = async (url, maxRetries = 4) => {
-  for (let attempt = 0; attempt < maxRetries; attempt += 1) {
-    const res = await fetch(url, { credentials: 'omit' });
-    if (res.status === 202 || res.status === 401) {
-      await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
-      continue;
-    }
-    if (!res.ok) throw new Error(`BGG ${res.status}`);
-    return res.text();
-  }
-
-  throw new Error('BGG timeout');
-};
-
-const parseBGGSearchNames = (xmlText, limit = 8) => {
-  const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
-  const items = Array.from(doc.querySelectorAll('item'));
-  const uniqueNames = new Set();
-  const names = [];
-
-  for (const item of items) {
-    const primaryName = item.querySelector('name[type="primary"]')?.getAttribute('value');
-    const fallbackName = item.querySelector('name')?.getAttribute('value');
-    const cleanName = (primaryName || fallbackName || '').trim();
-    const key = cleanName.toLowerCase();
-
-    if (!cleanName || uniqueNames.has(key)) continue;
-    uniqueNames.add(key);
-    names.push(cleanName);
-
-    if (names.length >= limit) break;
-  }
-
-  return names;
-};
 
 const getDurationLabel = (minutes, t) => {
   if (!minutes) return t('newgame.summaryDurationUnknown');
@@ -94,7 +54,7 @@ export const NewGame = ({
   libraryGames = [],
   libraryEntries = [],
 }) => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const initialDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -338,10 +298,11 @@ export const NewGame = ({
     setBggSearch({ loading: true, results: [], error: '' });
 
     try {
-      const xmlText = await fetchBGGXml(
-        bggUrl(`/search?query=${encodeURIComponent(term)}&type=boardgame`)
-      );
-      const names = parseBGGSearchNames(xmlText);
+      const names = await searchProviderGameNames(term, {
+        mode: GAME_DATA_PROVIDER.BGG,
+        language,
+        limit: 8,
+      });
 
       if (!names.length) {
         setBggSearch({ loading: false, results: [], error: t('library.bggNotFound') });

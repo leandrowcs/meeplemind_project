@@ -12,11 +12,14 @@ import {
 import { Button } from './Button';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { useLanguage } from '../hooks/useLanguage';
+import {
+  BGG_OFFLINE_CACHE_KEY,
+  GAME_DATA_PROVIDER,
+  buildCatalogOfflinePayload,
+  fetchProviderHotCatalogGames,
+} from '../utils/gameDataProviders';
 import './AppSettings.css';
 
-const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
-const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
-const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
 const BGG_SITE_URL = 'https://boardgamegeek.com';
 const SHARE_TOGGLE_MAX_WAIT_MS = 15000;
 
@@ -25,47 +28,6 @@ const LANGUAGES = [
   { code: 'en-US', labelKey: 'settings.languageOptionEnUs', flag: '🇺🇸' },
   { code: 'fr-CA', labelKey: 'settings.languageOptionFrCa', flag: '🇨🇦' },
 ];
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const fetchBGGHotXml = async (maxRetries = 4) => {
-  const endpoint = `${BGG_PROXY_BASE}/hot?type=boardgame`;
-
-  for (let attempt = 0; attempt < maxRetries; attempt += 1) {
-    const response = await fetch(endpoint, { credentials: 'omit' });
-
-    // BGG may return transient responses while hot list is warming up.
-    if (response.status === 202 || response.status === 401) {
-      await sleep(1200 * (attempt + 1));
-      continue;
-    }
-
-    if (!response.ok) throw new Error(`BGG ${response.status}`);
-    return response.text();
-  }
-
-  throw new Error('BGG timeout');
-};
-
-const buildBGGOfflinePayload = (xmlText) => {
-  const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
-  const items = Array.from(doc.querySelectorAll('item'))
-    .map((item) => ({
-      id: item.getAttribute('id') || '',
-      rank: Number.parseInt(item.getAttribute('rank') || '', 10) || null,
-      name: item.querySelector('name')?.getAttribute('value') || '',
-      thumbnail: item.querySelector('thumbnail')?.getAttribute('value') || '',
-      yearPublished: item.querySelector('yearpublished')?.getAttribute('value') || '',
-    }))
-    .filter((item) => item.name);
-
-  return {
-    generatedAt: new Date().toISOString(),
-    source: 'bgg-hot-boardgames',
-    total: items.length,
-    items,
-  };
-};
 
 const downloadBGGOfflinePayload = (payload) => {
   const stamp = (payload.generatedAt || new Date().toISOString()).slice(0, 10);
@@ -176,8 +138,14 @@ export const AppSettings = ({
 
     setBggSyncState('loading');
     try {
-      const xml = await fetchBGGHotXml();
-      const payload = buildBGGOfflinePayload(xml);
+      const { items } = await fetchProviderHotCatalogGames({
+        mode: GAME_DATA_PROVIDER.BGG,
+        language,
+      });
+      const payload = buildCatalogOfflinePayload({
+        providerId: GAME_DATA_PROVIDER.BGG,
+        items,
+      });
       localStorage.setItem(BGG_OFFLINE_CACHE_KEY, JSON.stringify(payload));
       downloadBGGOfflinePayload(payload);
       setBggSyncState('success');

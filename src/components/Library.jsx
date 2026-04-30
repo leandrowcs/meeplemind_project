@@ -37,19 +37,17 @@ import {
   GAMETYPE_LABEL_KEYS,
 } from '../utils/classifications';
 import { sanitizeImageSource } from '../utils/sanitize';
+import {
+  BGG_OFFLINE_CACHE_KEY,
+  GAME_DATA_PROVIDER,
+  OPEN_LIBRARY_CATALOG_KEY,
+  fetchProviderGameDetailsByName,
+  fetchProviderHotCatalogGames,
+  normalizeExternalImageUrl,
+  readCatalogOfflinePayload,
+} from '../utils/gameDataProviders';
 import './Library.css';
 
-// ──────────────────────────────────────────────────
-// BoardGameGeek XML API v2 helpers (gratuita, sem chave)
-// https://boardgamegeek.com/wiki/page/BGG_XML_API2
-// Roteado via corsproxy.io para contornar restrições CORS do navegador
-// ──────────────────────────────────────────────────
-const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
-const OPEN_LIBRARY_CATALOG_KEY = 'meeplemind-open-library-catalog';
-const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
-// Em desenvolvimento: usa proxy do Vite (/bggapi → boardgamegeek.com/xmlapi2)
-// Em produção: chama a API diretamente (requer CORS habilitado no servidor de hospedagem)
-const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
 const SUPPORTED_COVER_UPLOAD_MIME_TYPES = new Set([
   'image/png',
   'image/jpeg',
@@ -58,75 +56,6 @@ const SUPPORTED_COVER_UPLOAD_MIME_TYPES = new Set([
   'image/gif',
   'image/bmp',
 ]);
-
-function bggUrl(path) {
-  return BGG_PROXY_BASE + path;
-}
-
-function normalizeImageUrl(url) {
-  const normalized = (url || '').trim();
-  if (!normalized) return '';
-  if (normalized.startsWith('//')) return `https:${normalized}`;
-  if (normalized.startsWith('http://')) return normalized.replace('http://', 'https://');
-  return normalized;
-}
-
-function decodeHtmlEntities(str) {
-  const div = document.createElement('div');
-  div.innerHTML = str;
-  return div.textContent || div.innerText || '';
-}
-
-function cleanBGGDescription(raw, maxLen = 500) {
-  const decoded = decodeHtmlEntities(raw);
-  const clean = decoded.replace(/\n{3,}/g, '\n\n').trim();
-  if (clean.length <= maxLen) return clean;
-  const cut = clean.lastIndexOf(' ', maxLen);
-  return clean.slice(0, cut > 0 ? cut : maxLen) + '\u2026';
-}
-
-async function fetchBGGXml(url, maxRetries = 4) {
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const res = await fetch(url, { credentials: 'omit' });
-    // BGG/CDN pode retornar 202 (cache miss) ou 401 (Cloudflare transient) — tentar novamente
-    if (res.status === 202 || res.status === 401) {
-      await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
-      continue;
-    }
-    if (!res.ok) throw new Error(`BGG ${res.status}`);
-    return res.text();
-  }
-  throw new Error('BGG timeout');
-}
-
-async function searchBGGId(gameName) {
-  // Tenta match exato primeiro, depois busca livre (mais resultados)
-  for (const exact of [true, false]) {
-    const path =
-      `/search?query=${encodeURIComponent(gameName)}&type=boardgame` +
-      (exact ? '&exact=1' : '');
-    const xml = await fetchBGGXml(bggUrl(path));
-    const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    const item = doc.querySelector('item');
-    if (item) return item.getAttribute('id');
-  }
-  return null;
-}
-
-async function fetchBGGData(gameName) {
-  const id = await searchBGGId(gameName.trim());
-  if (!id) return null;
-  const xml = await fetchBGGXml(bggUrl(`/thing?id=${id}`));
-  const doc = new DOMParser().parseFromString(xml, 'text/xml');
-  const item = doc.querySelector('item');
-  if (!item) return null;
-  return {
-    thumbnail: normalizeImageUrl(item.querySelector('thumbnail')?.textContent || ''),
-    description: cleanBGGDescription(item.querySelector('description')?.textContent || ''),
-    minPlayers: item.querySelector('minplayers')?.getAttribute('value') || '',
-    maxPlayers: item.querySelector('maxplayers')?.getAttribute('value') || '',
-  };
-}
 
 const LEGACY_CATEGORY_LABEL_KEYS = {
   strategy: 'library.categoryStrategy',
@@ -299,7 +228,7 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
   const typeMeta = getTypeMetaByValue(game.gameType || '');
   const displayName = game.nameLocal?.[language] || game.name;
   const displayDescription = game.descriptionLocal?.[language] || game.description;
-  const displayCoverUrl = normalizeImageUrl(game.coverUrl);
+  const displayCoverUrl = normalizeExternalImageUrl(game.coverUrl);
 
   const formatLastPlayed = (dateStr) => {
     if (!dateStr) return null;
@@ -685,7 +614,10 @@ export const Library = ({
     if (bggDetailsCacheRef.current[key]) return bggDetailsCacheRef.current[key];
 
     try {
-      const data = await fetchBGGData(gameName);
+      const data = await fetchProviderGameDetailsByName(gameName, {
+        mode: GAME_DATA_PROVIDER.BGG,
+        language,
+      });
       if (data) {
         bggDetailsCacheRef.current[key] = data;
         setBggCardDetails((prev) => ({ ...prev, [key]: data }));
@@ -694,7 +626,7 @@ export const Library = ({
     } catch {
       return null;
     }
-  }, []);
+  }, [language]);
 
   const handleEditField = (key) => (e) =>
     setEditingGame((prev) => ({ ...prev, [key]: e.target.value }));
@@ -750,7 +682,10 @@ export const Library = ({
 
     setBggAddStatus('loading');
     try {
-      const data = await fetchBGGData(name);
+      const data = await fetchProviderGameDetailsByName(name, {
+        mode: GAME_DATA_PROVIDER.BGG,
+        language,
+      });
       if (!data) {
         setBggAddStatus('notfound');
         return;
@@ -773,7 +708,10 @@ export const Library = ({
     if (!name) return;
     setBggEditStatus('loading');
     try {
-      const data = await fetchBGGData(name);
+      const data = await fetchProviderGameDetailsByName(name, {
+        mode: GAME_DATA_PROVIDER.BGG,
+        language,
+      });
       if (!data) { setBggEditStatus('notfound'); return; }
       setEditingGame((prev) => ({
         ...prev,
@@ -938,23 +876,17 @@ export const Library = ({
     setHotLoading(true);
     setHotError(false);
     try {
-      const xml = await fetchBGGXml(bggUrl('/hot?type=boardgame'));
-      const doc = new DOMParser().parseFromString(xml, 'text/xml');
-      const items = Array.from(doc.querySelectorAll('item'));
-      const parsed = items.map((item) => ({
-        id: item.getAttribute('id'),
-        rank: parseInt(item.getAttribute('rank'), 10),
-        name: item.querySelector('name')?.getAttribute('value') || '',
-        thumbnail: item.querySelector('thumbnail')?.getAttribute('value') || '',
-        yearPublished: item.querySelector('yearpublished')?.getAttribute('value') || '',
-      }));
-      setHotGames(parsed);
+      const { items } = await fetchProviderHotCatalogGames({
+        mode: GAME_DATA_PROVIDER.BGG,
+        language,
+      });
+      setHotGames(items);
       setHotLoaded(true);
       setCatalogDataSource('online');
     } catch {
       try {
         const cachedRaw = localStorage.getItem(BGG_OFFLINE_CACHE_KEY);
-        const cachedPayload = cachedRaw ? JSON.parse(cachedRaw) : null;
+        const cachedPayload = readCatalogOfflinePayload(cachedRaw);
         if (Array.isArray(cachedPayload?.items) && cachedPayload.items.length > 0) {
           setHotGames(cachedPayload.items);
           setHotLoaded(true);
@@ -970,7 +902,7 @@ export const Library = ({
     } finally {
       setHotLoading(false);
     }
-  }, [hotLoaded]);
+  }, [hotLoaded, language]);
 
   const handleCatalogTab = useCallback(() => {
     setActiveTab('catalog');
@@ -994,7 +926,7 @@ export const Library = ({
 
   const handleAddFromCatalog = useCallback((bggGame) => {
     const cachedDetails = bggDetailsCacheRef.current[bggGame.name.toLowerCase()];
-    const coverUrl = normalizeImageUrl(bggGame.thumbnail);
+    const coverUrl = normalizeExternalImageUrl(bggGame.thumbnail);
     onAdd({
       name: bggGame.name,
       category: '',
@@ -1022,7 +954,7 @@ export const Library = ({
       return;
     }
 
-    const coverUrl = normalizeImageUrl(bggGame.thumbnail);
+    const coverUrl = normalizeExternalImageUrl(bggGame.thumbnail);
 
     setSelectedGame({
       id: null,
@@ -1163,7 +1095,7 @@ export const Library = ({
                 const count = playCount[game.name.toLowerCase()] || 0;
                 const primaryCategory = normalizeGameCategories(game)[0] || '';
                 const typeMeta = getTypeMetaByValue(game.gameType || '');
-                const shelfCoverUrl = normalizeImageUrl(game.coverUrl);
+                const shelfCoverUrl = normalizeExternalImageUrl(game.coverUrl);
                 const playersLabel =
                   (game.minPlayers || game.maxPlayers)
                     ? `${game.minPlayers ?? '?'}-${game.maxPlayers ?? '?'}`
@@ -1323,7 +1255,7 @@ export const Library = ({
                     ? (thumb.startsWith('//') ? `https:${thumb}` : thumb)
                     : '';
                   const preferredCoverUrl =
-                    normalizeImageUrl(inLibraryEntry?.coverUrl) || normalizeImageUrl(thumbSrc);
+                    normalizeExternalImageUrl(inLibraryEntry?.coverUrl) || normalizeExternalImageUrl(thumbSrc);
                   const playersLabel =
                     (inLibraryEntry?.minPlayers || inLibraryEntry?.maxPlayers)
                       ? `${inLibraryEntry?.minPlayers ?? '?'}-${inLibraryEntry?.maxPlayers ?? '?'}`
