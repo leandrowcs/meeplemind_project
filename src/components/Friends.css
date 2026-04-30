@@ -28,7 +28,12 @@
   gap: var(--spacing-md);
   padding: var(--spacing-sm);
   border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  border-left: 1px solid #94a3b838;
+  border-right: 1px solid #94a3b838;
   backdrop-filter: blur(50px);
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
 .friends-title-wrap {
