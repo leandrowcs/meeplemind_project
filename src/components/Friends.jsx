@@ -21,27 +21,27 @@ export const Friends = ({
 
   return (
     <>
-      <header className="friends-header">
-        <div className="friends-title-wrap">
-          <span className="friends-title-icon"><Users size={18} /></span>
-          <h1>{t('friends.title')}</h1>
-        </div>
-        <SideMenu
-          onExportCSV={exportToCSV}
-          onExportJSON={exportToJSON}
-          onImportJSON={importFromJSON}
-          onClearData={clearAllData}
-          onOpenSettings={() => onNavigate('settings')}
-          auth={auth}
-          syncStatus={syncStatus}
-          compact
-          openFrom="right"
-          userName={displayPlayerName}
-          userPhotoUrl={googlePhotoUrl}
-          {...sideMenuNotifications}
-        />
-      </header>
       <div className="friends-container fade-in">
+        <header className="friends-header">
+          <div className="friends-title-wrap">
+            <span className="friends-title-icon"><Users size={18} /></span>
+            <h1>{t('friends.title')}</h1>
+          </div>
+          <SideMenu
+            onExportCSV={exportToCSV}
+            onExportJSON={exportToJSON}
+            onImportJSON={importFromJSON}
+            onClearData={clearAllData}
+            onOpenSettings={() => onNavigate('settings')}
+            auth={auth}
+            syncStatus={syncStatus}
+            compact
+            openFrom="right"
+            userName={displayPlayerName}
+            userPhotoUrl={googlePhotoUrl}
+            {...sideMenuNotifications}
+          />
+        </header>
         <div className="friends-content">
           {!auth?.isSignedIn ? (
             <div className="friends-login-required">

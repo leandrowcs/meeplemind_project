@@ -3,7 +3,7 @@
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
-  padding: var(--spacing-md) var(--spacing-md) 5.5rem;
+  padding: 0 var(--spacing-md);
   position: relative;
 }
 
@@ -64,6 +64,8 @@
 .stats-content {
   display: grid;
   gap: var(--spacing-md);
+  margin-top: 10px;
+  margin-bottom: 70px;
 }
 
 .summary-cards {

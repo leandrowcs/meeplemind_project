@@ -3,7 +3,7 @@
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
-  padding: var(--spacing-md) var(--spacing-md) 6rem;
+  padding: 0 var(--spacing-md);
   position: relative;
 }
 
@@ -90,6 +90,8 @@
   gap: var(--spacing-md);
   position: relative;
   z-index: 1;
+  margin-top: 10px;
+  margin-bottom: 70px;
 }
 
 .wizard-progress {

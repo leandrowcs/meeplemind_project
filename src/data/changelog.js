@@ -2,6 +2,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v3.1.11: Headers voltaram para dentro dos containers em Estatisticas, Biblioteca, Amigos, Perfil, Nova Partida e Historico, restaurando o sticky no Chrome mobile e mantendo sem rolagem horizontal.',
       'v3.1.10: Ajustado comportamento no Chrome mobile: headers sticky continuam fixos no topo e a rolagem horizontal foi removida com controle de overflow no elemento html.',
       'v3.1.9: Corrigida regressao que desfixava os headers no topo apos o ajuste de rolagem horizontal; os headers sticky voltaram ao comportamento esperado.',
       'v3.1.8: Corrigida a barra de rolagem horizontal que aparecia nas paginas fora da Home, com controle global de overflow horizontal no layout.',
@@ -45,6 +46,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v3.1.11: Headers were moved back inside page containers on Stats, Library, Friends, Profile, New Game, and History, restoring sticky behavior on mobile Chrome while keeping horizontal scroll blocked.',
       'v3.1.10: Improved mobile Chrome behavior: sticky headers stay fixed at the top and horizontal scrolling was removed by handling overflow on the html element.',
       'v3.1.9: Fixed a regression that broke sticky top headers after the horizontal scroll fix; sticky headers now behave as expected again.',
       'v3.1.8: Fixed horizontal scrollbar appearing on non-Home pages by adding global horizontal overflow control to the app layout.',
@@ -88,6 +90,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v3.1.11: Les headers ont ete remis dans les containers des pages Statistiques, Bibliotheque, Amis, Profil, Nouvelle Partie et Historique, ce qui retablit le sticky sur Chrome mobile sans retour du defilement horizontal.',
       'v3.1.10: Correction du comportement sur Chrome mobile: les headers sticky restent fixes en haut et le defilement horizontal a ete retire via la gestion du debordement sur l\'element html.',
       'v3.1.9: Correction d\'une regression qui retirait le comportement sticky des headers apres le correctif du defilement horizontal; les headers fixes en haut sont revenus.',
       'v3.1.8: Correction de la barre de defilement horizontale sur les pages hors Accueil via un controle global de debordement horizontal du layout.',

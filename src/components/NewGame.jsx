@@ -995,21 +995,21 @@ export const NewGame = ({
 
   return (
     <>
-      <header className="newgame-header">
-        <div className="newgame-title-wrap">
-          <span className="newgame-title-icon"><Dices size={18} /></span>
-          <h1>{t('newgame.title')}</h1>
-        </div>
-        <button
-          type="button"
-          className="newgame-header-back"
-          onClick={() => onNavigate('home')}
-        >
-          <ChevronLeft size={16} />
-          {t('common.back')}
-        </button>
-      </header>
       <div className="newgame-container fade-in">
+        <header className="newgame-header">
+          <div className="newgame-title-wrap">
+            <span className="newgame-title-icon"><Dices size={18} /></span>
+            <h1>{t('newgame.title')}</h1>
+          </div>
+          <button
+            type="button"
+            className="newgame-header-back"
+            onClick={() => onNavigate('home')}
+          >
+            <ChevronLeft size={16} />
+            {t('common.back')}
+          </button>
+        </header>
         <form onSubmit={handleSubmit} className="newgame-form">
           <section className="wizard-progress" aria-label={t('newgame.progressAriaLabel')}>
             <div className="wizard-progress-top">

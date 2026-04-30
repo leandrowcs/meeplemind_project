@@ -129,27 +129,27 @@ export const History = ({
 
   return (
     <>
-      <header className="history-header-modern">
-        <div className="history-title-wrap">
-          <span className="history-title-icon"><ScrollText size={18} /></span>
-          <h1>{t('history.title')}</h1>
-        </div>
-        <SideMenu
-          onExportCSV={exportToCSV}
-          onExportJSON={exportToJSON}
-          onImportJSON={importFromJSON}
-          onClearData={clearAllData}
-          onOpenSettings={() => onNavigate('settings')}
-          auth={auth}
-          syncStatus={syncStatus}
-          compact
-          openFrom="right"
-          userName={displayPlayerName}
-          userPhotoUrl={googlePhotoUrl}
-          {...sideMenuNotifications}
-        />
-      </header>
       <div className="history-container fade-in">
+        <header className="history-header-modern">
+          <div className="history-title-wrap">
+            <span className="history-title-icon"><ScrollText size={18} /></span>
+            <h1>{t('history.title')}</h1>
+          </div>
+          <SideMenu
+            onExportCSV={exportToCSV}
+            onExportJSON={exportToJSON}
+            onImportJSON={importFromJSON}
+            onClearData={clearAllData}
+            onOpenSettings={() => onNavigate('settings')}
+            auth={auth}
+            syncStatus={syncStatus}
+            compact
+            openFrom="right"
+            userName={displayPlayerName}
+            userPhotoUrl={googlePhotoUrl}
+            {...sideMenuNotifications}
+          />
+        </header>
         <div className="history-content">
           {safeGames.length === 0 ? (
             <div className="history-empty-state">

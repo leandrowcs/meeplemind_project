@@ -2,6 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: 0 var(--spacing-md);
 }
 
 .library-content {
@@ -14,6 +15,7 @@
   margin: 0 auto;
   width: 100%;
   padding: var(--spacing-xl);
+  margin-top: 5px;
 }
 
 .library-header .back-btn {
@@ -791,6 +793,7 @@
   padding: 0 var(--spacing-lg);
   border-bottom: 2px solid var(--color-border);
   background: rgba(15, 23, 42, 0.6);
+  margin-top: 5px;
 }
 
 .library-tab-btn {
@@ -1080,7 +1083,7 @@
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
-  padding: var(--spacing-md) var(--spacing-md) 6.6rem;
+  padding: 0 var(--spacing-md);
   position: relative;
 }
 
@@ -1171,7 +1174,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  margin-bottom: var(--spacing-sm);
+  margin-top: 10px;
 }
 
 .library-tab-btn {
@@ -1198,6 +1201,8 @@
   gap: var(--spacing-md);
   position: relative;
   z-index: 1;
+  margin-top: 10px;
+  margin-bottom: 70px;
 }
 
 .library-quick-filters {

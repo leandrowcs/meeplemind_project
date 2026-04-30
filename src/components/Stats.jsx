@@ -1176,28 +1176,26 @@ export const Stats = ({
 
   return (
     <>
-      <header className="stats-header">
-        <div className="stats-title-wrap">
-          <span className="stats-title-icon"><BarChart3 size={18} /></span>
-          <h1>{t('stats.title')}</h1>
-        </div>
-        <SideMenu
-          onExportCSV={exportToCSV}
-          onExportJSON={exportToJSON}
-          onImportJSON={importFromJSON}
-          onClearData={clearAllData}
-          onOpenSettings={() => onNavigate('settings')}
-          auth={auth}
-          syncStatus={syncStatus}
-          compact
-          userName={displayPlayerName || primaryPlayer}
-          userPhotoUrl={googlePhotoUrl}
-          {...sideMenuNotifications}
-        />
-      </header>
       <div className="stats-container fade-in">
-        
-
+        <header className="stats-header">
+          <div className="stats-title-wrap">
+            <span className="stats-title-icon"><BarChart3 size={18} /></span>
+            <h1>{t('stats.title')}</h1>
+          </div>
+          <SideMenu
+            onExportCSV={exportToCSV}
+            onExportJSON={exportToJSON}
+            onImportJSON={importFromJSON}
+            onClearData={clearAllData}
+            onOpenSettings={() => onNavigate('settings')}
+            auth={auth}
+            syncStatus={syncStatus}
+            compact
+            userName={displayPlayerName || primaryPlayer}
+            userPhotoUrl={googlePhotoUrl}
+            {...sideMenuNotifications}
+          />
+        </header>
         {!games ? (
           <div className="empty-stats">
             <span className="empty-icon"><AlertTriangle size={22} /></span>
