@@ -2,6 +2,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v4.0.8: Catálogo da Ludopedia agora carrega detalhes de cada jogo (jogadores, tempo de partida, mecânicas) com indicador de progresso animado. Dados enriquecidos são salvos em cache local para uso offline.',
+      'v4.0.7: Busca de jogos da Ludopedia agora funciona sem precisar conectar conta OAuth. O servidor usa o access_token estático do app como fallback, permitindo pesquisa de jogos imediata. OAuth continua disponível para acesso a dados pessoais futuros.',
+      'v4.0.6: Conexão Ludopedia no localhost corrigida para ambientes com CSP. Quando a base estiver como `http://localhost:8787/api/ludopedia`, o app normaliza automaticamente para `/api/ludopedia` e usa o proxy do Vite, evitando bloqueio de `connect-src` e status falso de backend indisponível.',
       'v4.0.5: Correção no backend OAuth da Ludopedia para carregar automaticamente variáveis de `.env`/`.env.local` ao iniciar com `npm run dev:ludopedia`. Isso resolve o status `missing_env`, reativa o botão Conectar quando APP_ID/REDIRECT_URI já existem no arquivo e mostra feedback imediato no app quando o backend estiver indisponível.',
       'v4.0.4: Backend OAuth da Ludopedia alinhado ao fluxo oficial da documentação: tokenrequest via POST com apenas `code`. Também adicionamos diagnóstico de variáveis obrigatórias ausentes nos endpoints de health/session.',
       'v4.0.3: Corrigida a base de URL da integração Ludopedia no frontend. Em ambiente local, as chamadas agora usam fallback direto para http://localhost:8787/api/ludopedia, evitando falhas quando o proxy do Vite não está ativo.',
@@ -56,6 +59,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v4.0.8: Ludopedia catalog now loads per-game details (players, play time, mechanics) with an animated progress indicator. Enriched data is cached locally for offline use.',
+      'v4.0.7: Ludopedia game search now works without connecting an OAuth account. The server uses the static app access_token as a fallback, enabling immediate game lookup. OAuth remains available for future personal data access.',
+      'v4.0.6: Fixed localhost Ludopedia connection under CSP environments. When the base is set to `http://localhost:8787/api/ludopedia`, the app now normalizes it to `/api/ludopedia` and uses Vite proxy, preventing `connect-src` blocks and false backend unavailable status.',
       'v4.0.5: Fixed Ludopedia OAuth backend to auto-load `.env`/`.env.local` when started with `npm run dev:ludopedia`. This resolves `missing_env` status, enables the Connect button when APP_ID/REDIRECT_URI are present, and gives immediate in-app feedback when backend availability fails.',
       'v4.0.4: Ludopedia OAuth backend now follows the official documented flow: tokenrequest via POST with only `code`. We also added required-env diagnostics to health/session endpoints.',
       'v4.0.3: Fixed Ludopedia integration base URL on the frontend. In local environments, requests now use a direct fallback to http://localhost:8787/api/ludopedia, avoiding failures when the Vite proxy is not active.',
@@ -110,6 +116,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v4.0.8: Le catalogue Ludopedia charge maintenant les détails de chaque jeu (joueurs, durée, mécaniques) avec un indicateur de progression animé. Les données enrichies sont mises en cache local pour une utilisation hors ligne.',
+      'v4.0.7: La recherche de jeux Ludopedia fonctionne maintenant sans connecter un compte OAuth. Le serveur utilise le access_token statique de l\'app comme solution de repli, permettant une recherche de jeux immédiate. OAuth reste disponible pour un accès futur aux données personnelles.',
+      'v4.0.6: Connexion Ludopedia localhost corrigée pour les environnements avec CSP. Quand la base est `http://localhost:8787/api/ludopedia`, l\'app la normalise automatiquement vers `/api/ludopedia` et utilise le proxy Vite, évitant les blocages `connect-src` et le faux statut backend indisponible.',
       'v4.0.5: Correction du backend OAuth Ludopedia pour charger automatiquement `.env`/`.env.local` au démarrage via `npm run dev:ludopedia`. Cela corrige le statut `missing_env`, réactive le bouton Connecter quand APP_ID/REDIRECT_URI sont présents et affiche un retour immédiat dans l\'app si le backend est indisponible.',
       'v4.0.4: Le backend OAuth Ludopedia suit maintenant le flux officiel documenté : tokenrequest en POST avec seulement `code`. Nous avons aussi ajouté le diagnostic des variables obligatoires manquantes dans les endpoints health/session.',
       'v4.0.3: Correction de la base URL de l\'intégration Ludopedia côté frontend. En environnement local, les appels utilisent maintenant un fallback direct vers http://localhost:8787/api/ludopedia, évitant les échecs quand le proxy Vite n\'est pas actif.',

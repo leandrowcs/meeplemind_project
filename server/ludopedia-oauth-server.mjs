@@ -49,6 +49,7 @@ const LUDOPEDIA_API_BASE = 'https://ludopedia.com.br/api/v1';
 
 const APP_ID = String(process.env.LUDOPEDIA_APP_ID || '').trim();
 const REDIRECT_URI = String(process.env.LUDOPEDIA_REDIRECT_URI || '').trim();
+const STATIC_TOKEN = String(process.env.LUDOPEDIA_ACCESS_TOKEN || '').trim();
 const SESSION_SECRET = String(process.env.LUDOPEDIA_SESSION_SECRET || '').trim() || 'meeplemind-dev-secret-change-me';
 const COOKIE_SECURE = process.env.LUDOPEDIA_COOKIE_SECURE === '1' || process.env.NODE_ENV === 'production';
 const ALLOWED_ORIGINS = String(process.env.MEEPLEMIND_ALLOWED_ORIGINS || 'http://localhost:5173')
@@ -76,6 +77,9 @@ const getMissingRequiredEnv = () => {
 };
 
 const isOAuthConfigured = () => getMissingRequiredEnv().length === 0;
+
+// Catalog endpoints (jogos) work with either an OAuth session or the static app token.
+const isCatalogAvailable = () => isOAuthConfigured() || Boolean(STATIC_TOKEN);
 
 const toBase64Url = (value) => Buffer.from(value).toString('base64url');
 
@@ -292,7 +296,8 @@ const server = http.createServer(async (req, res) => {
     const token = readSignedValue(rawToken);
 
     return sendJson(res, 200, {
-      available: isOAuthConfigured(),
+      available: isCatalogAvailable(),
+      oauthConfigured: isOAuthConfigured(),
       missingRequiredEnv: getMissingRequiredEnv(),
       connected: Boolean(token),
       provider: 'ludopedia',
@@ -413,7 +418,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === '/api/ludopedia/jogos' && req.method === 'GET') {
-    const token = readSignedValue(cookies[TOKEN_COOKIE]);
+    const token = readSignedValue(cookies[TOKEN_COOKIE]) || STATIC_TOKEN;
     if (!token) {
       return sendJson(res, 401, { error: 'not_authenticated' }, origin);
     }
@@ -431,7 +436,7 @@ const server = http.createServer(async (req, res) => {
 
   const gameDetailsMatch = pathname.match(/^\/api\/ludopedia\/jogos\/(\d+)$/);
   if (gameDetailsMatch && req.method === 'GET') {
-    const token = readSignedValue(cookies[TOKEN_COOKIE]);
+    const token = readSignedValue(cookies[TOKEN_COOKIE]) || STATIC_TOKEN;
     if (!token) {
       return sendJson(res, 401, { error: 'not_authenticated' }, origin);
     }

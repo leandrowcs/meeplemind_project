@@ -1,20 +1,76 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const ludopediaToken = (env.LUDOPEDIA_ACCESS_TOKEN || '').trim();
+
+  // When LUDOPEDIA_ACCESS_TOKEN is set, the Vite proxy calls Ludopedia directly —
+  // no separate `npm run dev:ludopedia` server is needed.
+  // OAuth endpoints are mocked so the UI stays functional (catalog works; user
+  // OAuth connect shows "not configured" gracefully).
+  const ludopediaProxyConfig = ludopediaToken
+    ? {
+        target: 'https://ludopedia.com.br',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/ludopedia/, '/api/v1'),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('Authorization', `Bearer ${ludopediaToken}`);
+            proxyReq.removeHeader('cookie');
+            proxyReq.removeHeader('Cookie');
+          });
+        },
+      }
+    : {
+        // Fallback to local BFF when no static token is configured.
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+        secure: false,
+      };
+
+  // Inline Vite plugin: intercept OAuth management paths before the proxy so they
+  // return well-formed responses instead of hitting Ludopedia's unknown routes.
+  const ludopediaMockPlugin = {
+    name: 'ludopedia-oauth-mock',
+    configureServer(server) {
+      if (!ludopediaToken) return;
+
+      server.middlewares.use((req, res, next) => {
+        if (req.url === '/api/ludopedia/oauth/session') {
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.end(JSON.stringify({
+            available: true,
+            oauthConfigured: false,
+            connected: false,
+            provider: 'ludopedia',
+          }));
+          return;
+        }
+        if (req.url === '/api/ludopedia/oauth/logout' || req.url?.startsWith('/api/ludopedia/oauth/')) {
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.statusCode = req.url === '/api/ludopedia/oauth/start' ? 503 : 200;
+          res.end(JSON.stringify({ ok: true, error: req.url === '/api/ludopedia/oauth/start' ? 'oauth_not_configured' : undefined }));
+          return;
+        }
+        next();
+      });
+    },
+  };
+
+  return {
+  plugins: [react(), ludopediaMockPlugin],
   // Para GitHub Pages com subdomain, descomente:
   // base: '/MeepleMind_project/',
 
   server: {
     proxy: {
-      // Rota /api/ludopedia/* para backend OAuth local (BFF)
-      '/api/ludopedia': {
-        target: 'http://localhost:8787',
-        changeOrigin: true,
-        secure: false,
-      },
+      // Rota /api/ludopedia/*:
+      // - com LUDOPEDIA_ACCESS_TOKEN: proxy direto para ludopedia.com.br (sem BFF)
+      // - sem token: redireciona para backend OAuth local (BFF) em localhost:8787
+      '/api/ludopedia': ludopediaProxyConfig,
 
       // Rota /bggapi/* para boardgamegeek.com — resolve CORS no dev server
       '/bggapi': {
@@ -58,4 +114,5 @@ export default defineConfig({
     sourcemap: false, // Set to true for debugging
     minify: 'terser',
   },
+  }
 })

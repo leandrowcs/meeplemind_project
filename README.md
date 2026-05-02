@@ -56,9 +56,11 @@ MEEPLEMIND_ALLOWED_ORIGINS=http://localhost:5173
 LUDOPEDIA_BACKEND_PORT=8787
 LUDOPEDIA_COOKIE_SECURE=0
 
-# Opcional (frontend): sobrescreve a base da API Ludopedia
-VITE_LUDOPEDIA_BFF_BASE=http://localhost:8787/api/ludopedia
+# Opcional (frontend): recomendado em localhost para usar proxy do Vite
+VITE_LUDOPEDIA_BFF_BASE=/api/ludopedia
 ```
+
+Se usar URL absoluta (`http://localhost:8787/api/ludopedia`), ajuste o `connect-src` da CSP em `index.html`.
 
 Fluxo OAuth oficial aplicado no backend:
 
@@ -74,6 +76,90 @@ Endpoints principais do backend:
 - `POST /api/ludopedia/oauth/logout`
 - `GET /api/ludopedia/jogos`
 - `GET /api/ludopedia/jogos/{id_jogo}`
+
+## Deploy na Vercel (passo a passo)
+
+Para `https://meeplemind.vercel.app` funcionar com Ludopedia, o frontend precisa de um backend OAuth publico.
+
+### 1. Subir o backend OAuth (Railway, Render, Fly.io ou VPS)
+
+Use este comando de start no backend:
+
+```bash
+node server/ludopedia-oauth-server.mjs
+```
+
+Configure variaveis no backend:
+
+```bash
+LUDOPEDIA_APP_ID=seu_app_id
+LUDOPEDIA_REDIRECT_URI=https://meeplemind.vercel.app/api/ludopedia/oauth/callback
+LUDOPEDIA_FRONTEND_RETURN_URL=https://meeplemind.vercel.app
+MEEPLEMIND_ALLOWED_ORIGINS=https://meeplemind.vercel.app
+LUDOPEDIA_SESSION_SECRET=troque_por_um_segredo_longo
+LUDOPEDIA_COOKIE_SECURE=1
+```
+
+Observacoes:
+
+- `LUDOPEDIA_REDIRECT_URI` deve ser igual no backend e no cadastro do app Ludopedia.
+- `LUDOPEDIA_COOKIE_SECURE=1` e obrigatorio em producao HTTPS.
+
+### 2. Criar rewrite na Vercel para manter mesma origem
+
+Crie `vercel.json` na raiz do projeto:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/api/ludopedia/:path*",
+      "destination": "https://SEU_BACKEND_PUBLICO/api/ludopedia/:path*"
+    }
+  ]
+}
+```
+
+Isso faz o app chamar `meeplemind.vercel.app/api/ludopedia/...` e a Vercel encaminhar para seu backend.
+
+### 3. Configurar variavel do frontend na Vercel
+
+No projeto Vercel (Settings > Environment Variables):
+
+```bash
+VITE_LUDOPEDIA_BFF_BASE=/api/ludopedia
+```
+
+Depois, redeploy do frontend.
+
+### 4. Validar endpoints em producao
+
+Teste no terminal:
+
+```bash
+curl -s https://meeplemind.vercel.app/api/ludopedia/health
+curl -s https://meeplemind.vercel.app/api/ludopedia/oauth/session
+```
+
+Esperado:
+
+- `health` com `"ok": true` e `"oauthConfigured": true`
+- `session` com `"available": true`
+
+### 5. Testar no app
+
+No app publicado:
+
+1. Abra Configuracoes.
+2. Verifique status Ludopedia como disponivel.
+3. Clique em Conectar Ludopedia.
+4. Autorize na Ludopedia e volte ao app.
+
+### 6. Erros comuns
+
+- `available: false`: faltam `LUDOPEDIA_APP_ID` ou `LUDOPEDIA_REDIRECT_URI` no backend.
+- callback falha: redirect URI diferente entre Ludopedia e backend.
+- sem sessao apos conectar: rewrite ausente ou backend fora do ar.
 
 ## 🌐 Deploy no GitHub Pages
 

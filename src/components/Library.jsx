@@ -6,14 +6,17 @@ import {
   CalendarDays,
   Check,
   CircleStar,
+  Clock,
   Dices,
   Gamepad2,
   House,
   Info,
+  Joystick,
   LoaderCircle,
   Pencil,
   Plus,
   Search,
+  Swords,
   Trash2,
   Trophy,
   Upload,
@@ -39,12 +42,15 @@ import {
 import { sanitizeImageSource } from '../utils/sanitize';
 import {
   BGG_OFFLINE_CACHE_KEY,
+  LUDOPEDIA_CATALOG_CACHE_KEY,
   GAME_DATA_PROVIDER,
   OPEN_LIBRARY_CATALOG_KEY,
+  buildCatalogOfflinePayload,
   fetchProviderGameDetailsByName,
   fetchProviderHotCatalogGames,
   normalizeExternalImageUrl,
   readCatalogOfflinePayload,
+  searchProviderCatalogGames,
 } from '../utils/gameDataProviders';
 import './Library.css';
 
@@ -56,6 +62,15 @@ const SUPPORTED_COVER_UPLOAD_MIME_TYPES = new Set([
   'image/gif',
   'image/bmp',
 ]);
+
+// Non-boardgame filter — kept as safety net; Ludopedia provider already filters
+// before returning enriched catalog items.
+const NON_BOARDGAME_NAME_PATTERN = /\blivro\b|\brpg\b|roleplay|roleplaying|\bsuplemento\b|\bsourcebook\b|\bmanual\b|\bguia\b/i;
+
+const isBoardgameCatalogItem = (item) => !NON_BOARDGAME_NAME_PATTERN.test(item?.name || '');
+
+const CATALOG_LOADING_ICONS = [Dices, Gamepad2, Swords, Joystick];
+const CATALOG_LOADING_STEP_MS = 480;
 
 const LEGACY_CATEGORY_LABEL_KEYS = {
   strategy: 'library.categoryStrategy',
@@ -225,6 +240,10 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
   const themes = normalizeSessionThemes(game);
   const sessionMechanics = normalizeSessionMechanics(game);
   const sessionGameCategories = normalizeSessionGameCategories(game);
+  // Raw strings from external sources (e.g. Ludopedia) that don't match app theme keys.
+  const rawExternalThemes = Array.isArray(game.themes)
+    ? game.themes.filter((v) => v && !GAME_THEMES.includes(v))
+    : [];
   const typeMeta = getTypeMetaByValue(game.gameType || '');
   const displayName = game.nameLocal?.[language] || game.name;
   const displayDescription = game.descriptionLocal?.[language] || game.description;
@@ -296,6 +315,11 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
                 <Users size={14} /> {game.minPlayers ?? '?'}–{game.maxPlayers ?? '?'}
               </span>
             )}
+            {game.playTimeMinutes && (
+              <span className="lib-badge">
+                <Clock size={14} /> {game.playTimeMinutes}min
+              </span>
+            )}
           </div>
 
           {mechanics.length > 0 && (
@@ -311,7 +335,7 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
             </div>
           )}
 
-          {(themes.length > 0 || sessionMechanics.length > 0 || sessionGameCategories.length > 0) && (
+          {(themes.length > 0 || sessionMechanics.length > 0 || sessionGameCategories.length > 0 || (language === 'pt-BR' && rawExternalThemes.length > 0)) && (
             <div className="lib-details-classifications">
               {themes.length > 0 && (
                 <div className="lib-details-classification-row">
@@ -339,6 +363,16 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
                   <div className="lib-details-badges">
                     {sessionGameCategories.map((value) => (
                       <span key={`session-category-${value}`} className="lib-badge">{t(GAMETYPE_LABEL_KEYS[value] || value)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {language === 'pt-BR' && rawExternalThemes.length > 0 && (
+                <div className="lib-details-classification-row">
+                  <strong>{t('newgame.themesLabel')}</strong>
+                  <div className="lib-details-badges">
+                    {rawExternalThemes.map((value) => (
+                      <span key={`raw-theme-${value}`} className="lib-badge">{value}</span>
                     ))}
                   </div>
                 </div>
@@ -561,6 +595,9 @@ export const Library = ({
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogDetailsLoadingName, setCatalogDetailsLoadingName] = useState('');
   const [bggCardDetails, setBggCardDetails] = useState({});
+  const [catalogIconIndex, setCatalogIconIndex] = useState(0);
+  const [catalogSearchResults, setCatalogSearchResults] = useState([]);
+  const [catalogSearchLoading, setCatalogSearchLoading] = useState(false);
   const catalogSearchInputRef = useRef(null);
   const bggDetailsCacheRef = useRef({});
   const addCoverInputRef = useRef(null);
@@ -889,6 +926,54 @@ export const Library = ({
     }
   }, [onRemove, selectedGame]);
 
+  // Cycle the loading icon while catalog is fetching.
+  useEffect(() => {
+    if (!hotLoading) return;
+    const timer = setInterval(() => {
+      setCatalogIconIndex((prev) => (prev + 1) % CATALOG_LOADING_ICONS.length);
+    }, CATALOG_LOADING_STEP_MS);
+    return () => clearInterval(timer);
+  }, [hotLoading]);
+
+  // Live search: local catalog first, API fallback when not found.
+  useEffect(() => {
+    const trimmed = catalogSearch.trim();
+    if (trimmed.length < 2) {
+      setCatalogSearchResults([]);
+      setCatalogSearchLoading(false);
+      return;
+    }
+    setCatalogSearchLoading(true);
+    const timer = setTimeout(async () => {
+      // 1. Search locally in the already-loaded catalog (fast, no network).
+      const lower = trimmed.toLowerCase();
+      const localResults = hotGames.filter((g) =>
+        String(g.name || '').toLowerCase().includes(lower) ||
+        String(g.namePtBr || '').toLowerCase().includes(lower)
+      );
+      if (localResults.length > 0) {
+        setCatalogSearchResults(localResults);
+        setCatalogSearchLoading(false);
+        return;
+      }
+
+      // 2. Not in local cache — call provider API.
+      try {
+        const { items } = await searchProviderCatalogGames(trimmed, {
+          mode: gameDataProviderMode,
+          language,
+          limit: 20,
+        });
+        setCatalogSearchResults(Array.isArray(items) ? items : []);
+      } catch {
+        setCatalogSearchResults([]);
+      } finally {
+        setCatalogSearchLoading(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [catalogSearch, gameDataProviderMode, language, hotGames]);
+
   const fetchHotGames = useCallback(async () => {
     if (hotLoaded) return;
     setHotLoading(true);
@@ -902,6 +987,15 @@ export const Library = ({
       setCatalogProviderId(providerId || GAME_DATA_PROVIDER.BGG);
       setHotLoaded(true);
       setCatalogDataSource('online');
+      // Auto-cache the enriched Ludopedia catalog for offline fallback.
+      if (providerId === GAME_DATA_PROVIDER.LUDOPEDIA && items.length > 0) {
+        try {
+          const payload = buildCatalogOfflinePayload({ providerId, items });
+          localStorage.setItem(LUDOPEDIA_CATALOG_CACHE_KEY, JSON.stringify(payload));
+        } catch {
+          // Ignore cache write errors.
+        }
+      }
     } catch {
       try {
         if (modeIncludesBgg) {
@@ -915,6 +1009,17 @@ export const Library = ({
             setCatalogProviderId(cachedPayload.provider || GAME_DATA_PROVIDER.BGG);
             return;
           }
+        }
+        // Try Ludopedia cache as fallback.
+        const cachedLudoRaw = localStorage.getItem(LUDOPEDIA_CATALOG_CACHE_KEY);
+        const cachedLudoPayload = readCatalogOfflinePayload(cachedLudoRaw);
+        if (Array.isArray(cachedLudoPayload?.items) && cachedLudoPayload.items.length > 0) {
+          setHotGames(cachedLudoPayload.items);
+          setHotLoaded(true);
+          setHotError(false);
+          setCatalogDataSource('offline');
+          setCatalogProviderId(cachedLudoPayload.provider || GAME_DATA_PROVIDER.LUDOPEDIA);
+          return;
         }
       } catch {
         // No valid offline cache available.
@@ -982,19 +1087,20 @@ export const Library = ({
       id: null,
       name: bggGame.name,
       category: '',
-      categories: [],
-      mechanics: [],
+      categories: (language === 'pt-BR' && Array.isArray(bggGame.categories)) ? bggGame.categories : [],
+      mechanics: (language === 'pt-BR' && Array.isArray(bggGame.mechanics)) ? bggGame.mechanics : [],
       gameType: '',
-      themes: [],
+      themes: (language === 'pt-BR' && Array.isArray(bggGame.themes)) ? bggGame.themes : [],
       sessionMechanics: [],
       sessionGameCategories: [],
-      minPlayers: null,
-      maxPlayers: null,
+      minPlayers: bggGame.minPlayers || null,
+      maxPlayers: bggGame.maxPlayers || null,
       description: '',
       coverUrl,
       owned: false,
       nameLocal: {},
       descriptionLocal: {},
+      playTimeMinutes: bggGame.playTimeMinutes || null,
       inLibrary: false,
     });
 
@@ -1010,13 +1116,23 @@ export const Library = ({
         minPlayers: details.minPlayers || previous.minPlayers,
         maxPlayers: details.maxPlayers || previous.maxPlayers,
         description: details.description || previous.description,
+        playTimeMinutes: details.playTimeMinutes || previous.playTimeMinutes,
+        mechanics: (language === 'pt-BR' && details.mechanics?.length) ? details.mechanics : previous.mechanics,
+        categories: (language === 'pt-BR' && details.categories?.length) ? details.categories : previous.categories,
+        themes: (language === 'pt-BR' && details.themes?.length) ? details.themes : previous.themes,
       };
     });
   }, [libraryByNameLower, resolveBggDetails]);
 
-  const filteredHot = hotGames
-    .filter((g) => !catalogSearch || g.name.toLowerCase().includes(catalogSearch.toLowerCase()))
-    .sort(sortAlpha ? (a, b) => a.name.localeCompare(b.name) : (a, b) => a.rank - b.rank);
+  const isSearchMode = catalogSearch.trim().length >= 2;
+  const filteredHot = (isSearchMode
+    ? catalogSearchResults.filter(isBoardgameCatalogItem)
+    : hotGames.filter(isBoardgameCatalogItem)
+  )
+    .sort(sortAlpha ? (a, b) => a.name.localeCompare(b.name) : (a, b) => a.rank - b.rank)
+    .map((g, index) => ({ ...g, rank: index + 1 }));
+
+  const ActiveCatalogIcon = CATALOG_LOADING_ICONS[catalogIconIndex] || Dices;
 
   return (
     <>
@@ -1206,6 +1322,12 @@ export const Library = ({
                 {t('library.bggEnglishNotice')}
               </div>
             )}
+            {language !== 'pt-BR' && catalogProviderId === GAME_DATA_PROVIDER.LUDOPEDIA && (
+              <div className="bgg-lang-notice">
+                <Info size={14} />
+                {t('library.ludopediaPortugueseNotice')}
+              </div>
+            )}
             <div className="catalog-controls">
               <div className="catalog-sort-btns">
                 <button
@@ -1222,7 +1344,10 @@ export const Library = ({
                 </button>
               </div>
               <div className="catalog-search-wrap">
-                <Search size={14} className="catalog-search-icon" />
+                {catalogSearchLoading
+                  ? <LoaderCircle size={14} className="catalog-search-icon catalog-spinner" />
+                  : <Search size={14} className="catalog-search-icon" />
+                }
                 <input
                   ref={catalogSearchInputRef}
                   type="text"
@@ -1254,9 +1379,25 @@ export const Library = ({
             )}
 
             {hotLoading && (
-              <div className="catalog-status">
-                <LoaderCircle size={20} className="catalog-spinner" />
-                <span>{t('library.bggLoadingHot')}</span>
+              <div className="catalog-loading-panel" role="status" aria-live="polite">
+                <span className="loading-icon loading-icon--startup" aria-hidden="true">
+                  <ActiveCatalogIcon size={36} />
+                </span>
+                <div className="loading-icon-track" aria-hidden="true">
+                  {CATALOG_LOADING_ICONS.map((Icon, index) => (
+                    <span
+                      key={`catalog-icon-${index}`}
+                      className={`loading-icon-chip ${index === catalogIconIndex ? 'active' : ''}`}
+                    >
+                      <Icon size={15} />
+                    </span>
+                  ))}
+                </div>
+                <p className="catalog-loading-label">
+                  {catalogProviderId === GAME_DATA_PROVIDER.LUDOPEDIA
+                    ? t('library.ludopediaLoadingEnrich')
+                    : t('library.bggLoadingHot')}
+                </p>
               </div>
             )}
 
@@ -1281,9 +1422,11 @@ export const Library = ({
                   const playersLabel =
                     (inLibraryEntry?.minPlayers || inLibraryEntry?.maxPlayers)
                       ? `${inLibraryEntry?.minPlayers ?? '?'}-${inLibraryEntry?.maxPlayers ?? '?'}`
-                      : (cachedDetails?.minPlayers || cachedDetails?.maxPlayers)
-                        ? `${cachedDetails?.minPlayers ?? '?'}-${cachedDetails?.maxPlayers ?? '?'}`
-                      : '?';
+                      : (game.minPlayers || game.maxPlayers)
+                        ? `${game.minPlayers ?? '?'}-${game.maxPlayers ?? '?'}`
+                        : (cachedDetails?.minPlayers || cachedDetails?.maxPlayers)
+                          ? `${cachedDetails?.minPlayers ?? '?'}-${cachedDetails?.maxPlayers ?? '?'}`
+                          : '?';
                   const primaryCategory = inLibraryEntry
                     ? (normalizeGameCategories(inLibraryEntry)[0] || '')
                     : '';
@@ -1334,6 +1477,9 @@ export const Library = ({
                             {game.yearPublished && (
                               <span className="library-card-chip subtle">{game.yearPublished}</span>
                             )}
+                            {game.playTimeMinutes && (
+                              <span className="library-card-chip subtle">{game.playTimeMinutes}min</span>
+                            )}
                           </div>
                         </div>
 
@@ -1356,7 +1502,14 @@ export const Library = ({
               </ul>
             )}
 
-            {!hotLoading && !hotError && filteredHot.length === 0 && (
+            {!hotLoading && isSearchMode && catalogSearchLoading && (
+              <div className="catalog-search-status" role="status" aria-live="polite">
+                <LoaderCircle size={14} className="catalog-spinner" />
+                <span>{t('library.bggSearching')}</span>
+              </div>
+            )}
+
+            {!hotLoading && !hotError && !catalogSearchLoading && filteredHot.length === 0 && (
               <div className="library-empty">
                 <span className="library-empty-icon"><Dices size={24} /></span>
                 <p>{t('library.noGames')}</p>

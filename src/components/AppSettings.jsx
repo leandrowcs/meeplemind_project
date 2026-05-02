@@ -34,9 +34,9 @@ const LANGUAGES = [
 ];
 
 const PROVIDER_MODE_OPTIONS = [
+  { value: GAME_DATA_PROVIDER.AUTO, labelKey: 'settings.providerModeAuto' },
   { value: GAME_DATA_PROVIDER.BGG, labelKey: 'settings.providerModeBgg' },
   { value: GAME_DATA_PROVIDER.LUDOPEDIA, labelKey: 'settings.providerModeLudopedia' },
-  { value: GAME_DATA_PROVIDER.AUTO, labelKey: 'settings.providerModeAuto' },
   { value: GAME_DATA_PROVIDER.BOTH, labelKey: 'settings.providerModeBoth' },
 ];
 
@@ -423,10 +423,66 @@ export const AppSettings = ({
 
           <section className="settings-card">
             <h2>
+              <RefreshCw size={16} /> {t('settings.bggSyncTitle')}
+            </h2>
+
+            <div className="settings-bgg-brand">
+              <img
+                src="/bgg-logo.svg"
+                alt={t('settings.bggLogoAlt')}
+                className="settings-bgg-logo"
+              />
+              <div className="settings-bgg-brand-copy">
+                <p className="settings-bgg-brand-title">
+                  <a
+                    href={BGG_SITE_URL}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="settings-bgg-link"
+                  >
+                    BoardGameGeek
+                  </a>
+                  <ExternalLink size={13} aria-hidden="true" />
+                </p>
+                <p>{t('settings.bggExternalDescription')}</p>
+              </div>
+            </div>
+
+            <p className="settings-bgg-legal">{t('settings.bggLegalNotice')}</p>
+            <p className="settings-card-note">{t('settings.bggSyncOfflineHint')}</p>
+
+            <button
+              type="button"
+              className="settings-sync-btn"
+              onClick={handleSyncWithBGG}
+              disabled={bggSyncState === 'loading'}
+            >
+              <RefreshCw
+                size={14}
+                className={bggSyncState === 'loading' ? 'settings-spin' : ''}
+              />
+              {bggSyncState === 'loading'
+                ? t('settings.bggSyncGenerating')
+                : t('settings.bggSyncButton')}
+            </button>
+
+            {bggSyncFeedback && (
+              <p className={`settings-sync-feedback ${bggSyncState}`}>{bggSyncFeedback}</p>
+            )}
+          </section>
+
+
+          <section className="settings-card">
+            <h2>
               <ShieldCheck size={16} /> {t('settings.ludopediaOAuthTitle')}
             </h2>
 
             <div className="settings-bgg-brand">
+              <img
+                src="/ludopedia-logo.svg"
+                alt="Ludopedia"
+                className="settings-bgg-logo"
+              />
               <div className="settings-bgg-brand-copy">
                 <p className="settings-bgg-brand-title">
                   <a
@@ -514,56 +570,6 @@ export const AppSettings = ({
               <span>{t('settings.providerModeCurrent')}</span>
               <strong>{currentProviderModeLabel}</strong>
             </p>
-          </section>
-
-          <section className="settings-card">
-            <h2>
-              <RefreshCw size={16} /> {t('settings.bggSyncTitle')}
-            </h2>
-
-            <div className="settings-bgg-brand">
-              <img
-                src="/bgg-logo.svg"
-                alt={t('settings.bggLogoAlt')}
-                className="settings-bgg-logo"
-              />
-              <div className="settings-bgg-brand-copy">
-                <p className="settings-bgg-brand-title">
-                  <a
-                    href={BGG_SITE_URL}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="settings-bgg-link"
-                  >
-                    BoardGameGeek
-                  </a>
-                  <ExternalLink size={13} aria-hidden="true" />
-                </p>
-                <p>{t('settings.bggExternalDescription')}</p>
-              </div>
-            </div>
-
-            <p className="settings-bgg-legal">{t('settings.bggLegalNotice')}</p>
-            <p className="settings-card-note">{t('settings.bggSyncOfflineHint')}</p>
-
-            <button
-              type="button"
-              className="settings-sync-btn"
-              onClick={handleSyncWithBGG}
-              disabled={bggSyncState === 'loading'}
-            >
-              <RefreshCw
-                size={14}
-                className={bggSyncState === 'loading' ? 'settings-spin' : ''}
-              />
-              {bggSyncState === 'loading'
-                ? t('settings.bggSyncGenerating')
-                : t('settings.bggSyncButton')}
-            </button>
-
-            {bggSyncFeedback && (
-              <p className={`settings-sync-feedback ${bggSyncState}`}>{bggSyncFeedback}</p>
-            )}
           </section>
 
           <section className="settings-card">

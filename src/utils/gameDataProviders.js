@@ -3,17 +3,29 @@ const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
 
 const normalizeBaseUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
 
-export const LUDOPEDIA_BFF_BASE = (() => {
-  const configuredBase = normalizeBaseUrl(import.meta.env.VITE_LUDOPEDIA_BFF_BASE);
-  if (configuredBase) return configuredBase;
+const normalizeLudopediaBase = (value) => {
+  const normalized = normalizeBaseUrl(value);
+  if (!normalized) return '';
+  if (typeof window === 'undefined') return normalized;
 
-  // Local fallback avoids relying on dev proxy when frontend runs standalone.
-  if (typeof window !== 'undefined') {
-    const host = String(window.location.hostname || '').toLowerCase();
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return 'http://localhost:8787/api/ludopedia';
-    }
+  const host = String(window.location.hostname || '').toLowerCase();
+  const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+  const localDirectBases = new Set([
+    'http://localhost:8787/api/ludopedia',
+    'http://127.0.0.1:8787/api/ludopedia',
+  ]);
+
+  // Keep same-origin requests in local dev to avoid CSP connect-src blocks.
+  if (isLocalHost && localDirectBases.has(normalized)) {
+    return '/api/ludopedia';
   }
+
+  return normalized;
+};
+
+export const LUDOPEDIA_BFF_BASE = (() => {
+  const configuredBase = normalizeLudopediaBase(import.meta.env.VITE_LUDOPEDIA_BFF_BASE);
+  if (configuredBase) return configuredBase;
 
   return '/api/ludopedia';
 })();
@@ -39,6 +51,10 @@ export const normalizeGameDataProviderMode = (value) => {
 
 export const OPEN_LIBRARY_CATALOG_KEY = 'meeplemind-open-library-catalog';
 export const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
+export const LUDOPEDIA_CATALOG_CACHE_KEY = 'meeplemind-ludopedia-catalog';
+
+// Non-boardgame filter for Ludopedia catalog (RPG books, supplements, etc.)
+export const LUDOPEDIA_NON_BOARDGAME_PATTERN = /\blivro\b|\brpg\b|roleplay|roleplaying|\bsuplemento\b|\bsourcebook\b|\bmanual\b|\bguia\b|\bVampiro: A Máscara\b|\bD&D\b|\bPathfinder\b|\bStarfinder\b|\bGURPS\b|\bTales from the Loop\b|\bVampire: The Dark Ages\b|\bCaptive\b|\b3DX\b|\b3D&T|\bMago: A Ascensão\b|\bLobisomem: O Apocalipse\b|\bHitodama - A Jornada das almas\b|\bMódulo Básico\b|\bVampiro - Sozinho na Escuridão\b|\bA Herança de Cthulhu\b/i;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -134,6 +150,20 @@ const toNumericString = (value) => {
   return Number.isFinite(parsed) ? String(parsed) : '';
 };
 
+// Extract display names from Ludopedia detail arrays (mecanicas, categorias, temas).
+// Each element may be a plain string or an object with a name field.
+const extractLudopediaNames = (arr) => {
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      return String(
+        item?.nm_mecanica || item?.nm_categoria || item?.nm_tema || item?.nome || item?.name || ''
+      ).trim();
+    })
+    .filter(Boolean);
+};
+
 const buildQuery = (query = {}) => {
   const searchParams = new URLSearchParams();
   Object.entries(query).forEach(([key, value]) => {
@@ -210,6 +240,26 @@ const bggProvider = {
     const xmlText = await fetchBggXml('/hot?type=boardgame');
     return parseBggHotGames(xmlText);
   },
+  async searchCatalogGames(term, _language = 'en-US', limit = 20) {
+    const xmlText = await fetchBggXml(
+      `/search?query=${encodeURIComponent(term)}&type=boardgame`
+    );
+    const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+    const items = Array.from(doc.querySelectorAll('item'));
+    return items
+      .slice(0, limit)
+      .map((item, index) => ({
+        id: item.getAttribute('id') || '',
+        rank: index + 1,
+        name:
+          item.querySelector('name[type="primary"]')?.getAttribute('value') ||
+          item.querySelector('name')?.getAttribute('value') ||
+          '',
+        thumbnail: '',
+        yearPublished: item.querySelector('yearpublished')?.getAttribute('value') || '',
+      }))
+      .filter((item) => item.name);
+  },
   buildOfflinePayload(items) {
     const safeItems = Array.isArray(items) ? items.filter((item) => item?.name) : [];
     return {
@@ -272,27 +322,98 @@ const ludopediaProvider = {
       description: '',
       minPlayers: toNumericString(details?.qt_jogadores_min),
       maxPlayers: toNumericString(details?.qt_jogadores_max),
+      playTimeMinutes: toNumericString(details?.vl_tempo_jogo),
+      mechanics: extractLudopediaNames(details?.mecanicas),
+      categories: extractLudopediaNames(details?.categorias),
+      themes: extractLudopediaNames(details?.temas),
       source: GAME_DATA_PROVIDER.LUDOPEDIA,
     };
   },
-  async fetchHotGames() {
-    const result = await fetchLudopediaJson('/jogos', {
-      tp_jogo: 'b',
-      rows: 50,
-      page: 1,
+  async fetchHotGames(language = 'pt-BR') {
+    const TOTAL_PAGES = 10;
+    const ROWS = 100;
+    const PAGE_BATCH = 3;
+    const allEntries = [];
+
+    for (let pageStart = 1; pageStart <= TOTAL_PAGES; pageStart += PAGE_BATCH) {
+      const pageEnd = Math.min(pageStart + PAGE_BATCH - 1, TOTAL_PAGES);
+      const pageNumbers = Array.from(
+        { length: pageEnd - pageStart + 1 },
+        (_, i) => pageStart + i
+      );
+
+      const results = await Promise.allSettled(
+        pageNumbers.map((page) =>
+          fetchLudopediaJson('/jogos', { tp_jogo: 'b', rows: ROWS, page })
+        )
+      );
+
+      results.forEach((res) => {
+        if (res.status === 'fulfilled') {
+          const entries = Array.isArray(res.value?.jogos) ? res.value.jogos : [];
+          allEntries.push(...entries);
+        }
+      });
+    }
+
+    // Deduplicate by id_jogo across pages.
+    const seen = new Set();
+    const unique = allEntries.filter((item) => {
+      const id = String(item?.id_jogo || '');
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
     });
 
-    const entries = Array.isArray(result?.jogos) ? result.jogos : [];
+    const usePtBr = language === 'pt-BR';
 
+    return unique
+      .filter((item) => {
+        const name = String(item?.nm_jogo || '').trim();
+        return name && !LUDOPEDIA_NON_BOARDGAME_PATTERN.test(name);
+      })
+      .map((item, index) => {
+        const nmJogo = String(item?.nm_jogo || '').trim();
+        const nmOriginal = String(item?.nm_original || '').trim();
+        const name = (!usePtBr && nmOriginal) ? nmOriginal : nmJogo;
+        return {
+          id: String(item?.id_jogo || ''),
+          rank: index + 1,
+          name,
+          namePtBr: nmJogo,
+          thumbnail: normalizeExternalImageUrl(item?.thumb || ''),
+          yearPublished: toNumericString(item?.ano_publicacao),
+        };
+      });
+  },
+  async searchCatalogGames(term, language = 'pt-BR', limit = 20) {
+    const safeLimit = Math.max(1, Math.min(Number(limit) || 20, 100));
+    const result = await fetchLudopediaJson('/jogos', {
+      search: term,
+      tp_jogo: 'b',
+      rows: safeLimit,
+      page: 1,
+    });
+    const entries = Array.isArray(result?.jogos) ? result.jogos : [];
+    const usePtBr = language === 'pt-BR';
     return entries
-      .map((item, index) => ({
-        id: String(item?.id_jogo || ''),
-        rank: index + 1,
-        name: String(item?.nm_jogo || '').trim(),
-        thumbnail: normalizeExternalImageUrl(item?.thumb || ''),
-        yearPublished: toNumericString(item?.ano_publicacao),
-      }))
-      .filter((item) => item.name);
+      .filter((item) => {
+        const name = String(item?.nm_jogo || '').trim();
+        return name && !LUDOPEDIA_NON_BOARDGAME_PATTERN.test(name);
+      })
+      .map((item, index) => {
+        const nmJogo = String(item?.nm_jogo || '').trim();
+        const nmOriginal = String(item?.nm_original || '').trim();
+        const name = (!usePtBr && nmOriginal) ? nmOriginal : nmJogo;
+        return {
+          id: String(item?.id_jogo || ''),
+          rank: index + 1,
+          name,
+          namePtBr: nmJogo,
+          thumbnail: normalizeExternalImageUrl(item?.thumb || ''),
+          yearPublished: toNumericString(item?.ano_publicacao),
+        };
+      });
   },
   buildOfflinePayload(items) {
     const safeItems = Array.isArray(items) ? items.filter((item) => item?.name) : [];
@@ -438,7 +559,7 @@ export const fetchProviderHotCatalogGames = async (
 
   for (const provider of providerOrder) {
     try {
-      const items = await provider.fetchHotGames();
+      const items = await provider.fetchHotGames(language);
       return {
         providerId: provider.id,
         items: Array.isArray(items) ? items : [],
@@ -454,6 +575,36 @@ export const fetchProviderHotCatalogGames = async (
     providerId: fallbackProvider.id,
     items: [],
   };
+};
+
+export const searchProviderCatalogGames = async (
+  term,
+  {
+    mode = GAME_DATA_PROVIDER.BGG,
+    language = 'en-US',
+    limit = 20,
+  } = {}
+) => {
+  const cleanTerm = String(term || '').trim();
+  if (!cleanTerm) return { providerId: null, items: [] };
+
+  const providerOrder = resolveProviderOrder(mode, language);
+  let lastError = null;
+
+  for (const provider of providerOrder) {
+    try {
+      const items = await provider.searchCatalogGames(cleanTerm, language, limit);
+      return {
+        providerId: provider.id,
+        items: Array.isArray(items) ? items : [],
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) throw lastError;
+  return { providerId: null, items: [] };
 };
 
 export const buildCatalogOfflinePayload = ({
