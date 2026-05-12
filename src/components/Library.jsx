@@ -46,6 +46,7 @@ import {
   GAME_DATA_PROVIDER,
   OPEN_LIBRARY_CATALOG_KEY,
   buildCatalogOfflinePayload,
+  enrichBggSearchResults,
   fetchProviderGameDetailsByName,
   fetchProviderHotCatalogGames,
   normalizeExternalImageUrl,
@@ -71,6 +72,7 @@ const isBoardgameCatalogItem = (item) => !NON_BOARDGAME_NAME_PATTERN.test(item?.
 
 const CATALOG_LOADING_ICONS = [Dices, Gamepad2, Swords, Joystick];
 const CATALOG_LOADING_STEP_MS = 480;
+const CATALOG_PAGE_SIZE = 20;
 
 const LEGACY_CATEGORY_LABEL_KEYS = {
   strategy: 'library.categoryStrategy',
@@ -598,7 +600,9 @@ export const Library = ({
   const [catalogIconIndex, setCatalogIconIndex] = useState(0);
   const [catalogSearchResults, setCatalogSearchResults] = useState([]);
   const [catalogSearchLoading, setCatalogSearchLoading] = useState(false);
+  const [catalogDisplayLimit, setCatalogDisplayLimit] = useState(CATALOG_PAGE_SIZE);
   const catalogSearchInputRef = useRef(null);
+  const catalogSearchGenRef = useRef(0);
   const bggDetailsCacheRef = useRef({});
   const addCoverInputRef = useRef(null);
   const editCoverInputRef = useRef(null);
@@ -938,12 +942,14 @@ export const Library = ({
   // Live search: local catalog first, API fallback when not found.
   useEffect(() => {
     const trimmed = catalogSearch.trim();
+    setCatalogDisplayLimit(CATALOG_PAGE_SIZE);
     if (trimmed.length < 2) {
       setCatalogSearchResults([]);
       setCatalogSearchLoading(false);
       return;
     }
     setCatalogSearchLoading(true);
+    const gen = ++catalogSearchGenRef.current;
     const timer = setTimeout(async () => {
       // 1. Search locally in the already-loaded catalog (fast, no network).
       const lower = trimmed.toLowerCase();
@@ -952,23 +958,37 @@ export const Library = ({
         String(g.namePtBr || '').toLowerCase().includes(lower)
       );
       if (localResults.length > 0) {
-        setCatalogSearchResults(localResults);
-        setCatalogSearchLoading(false);
+        if (gen === catalogSearchGenRef.current) {
+          setCatalogSearchResults(localResults);
+          setCatalogSearchLoading(false);
+        }
         return;
       }
 
       // 2. Not in local cache — call provider API.
       try {
-        const { items } = await searchProviderCatalogGames(trimmed, {
+        const { items, providerId } = await searchProviderCatalogGames(trimmed, {
           mode: gameDataProviderMode,
           language,
-          limit: 20,
         });
-        setCatalogSearchResults(Array.isArray(items) ? items : []);
+        const safeItems = Array.isArray(items) ? items : [];
+        if (gen !== catalogSearchGenRef.current) return;
+        setCatalogSearchResults(safeItems);
+        // 3. Enrich BGG search results with thumbnails in background.
+        if (safeItems.length > 0 && providerId === GAME_DATA_PROVIDER.BGG) {
+          enrichBggSearchResults(safeItems, (thumbnailMap) => {
+            if (gen !== catalogSearchGenRef.current) return;
+            setCatalogSearchResults((prev) =>
+              prev.map((item) =>
+                thumbnailMap[item.id] ? { ...item, thumbnail: thumbnailMap[item.id] } : item
+              )
+            );
+          });
+        }
       } catch {
-        setCatalogSearchResults([]);
+        if (gen === catalogSearchGenRef.current) setCatalogSearchResults([]);
       } finally {
-        setCatalogSearchLoading(false);
+        if (gen === catalogSearchGenRef.current) setCatalogSearchLoading(false);
       }
     }, 500);
     return () => clearTimeout(timer);
@@ -1406,8 +1426,9 @@ export const Library = ({
             )}
 
             {!hotLoading && !hotError && filteredHot.length > 0 && (
+              <>
               <ul className="library-card-grid catalog-grid">
-                {filteredHot.map((game) => {
+                {filteredHot.slice(0, catalogDisplayLimit).map((game) => {
                   const normalizedName = game.name.toLowerCase();
                   const inShelf = libraryNamesLower.has(normalizedName);
                   const inLibraryEntry = libraryByNameLower.get(normalizedName);
@@ -1500,6 +1521,18 @@ export const Library = ({
                   );
                 })}
               </ul>
+              {filteredHot.length > catalogDisplayLimit && (
+                <div className="catalog-load-more">
+                  <button
+                    type="button"
+                    className="catalog-load-more-btn"
+                    onClick={() => setCatalogDisplayLimit((prev) => prev + CATALOG_PAGE_SIZE)}
+                  >
+                    {t('library.catalogLoadMore')}
+                  </button>
+                </div>
+              )}
+              </>
             )}
 
             {!hotLoading && isSearchMode && catalogSearchLoading && (

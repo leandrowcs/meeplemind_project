@@ -240,14 +240,14 @@ const bggProvider = {
     const xmlText = await fetchBggXml('/hot?type=boardgame');
     return parseBggHotGames(xmlText);
   },
-  async searchCatalogGames(term, _language = 'en-US', limit = 20) {
+  async searchCatalogGames(term) {
     const xmlText = await fetchBggXml(
       `/search?query=${encodeURIComponent(term)}&type=boardgame`
     );
     const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
     const items = Array.from(doc.querySelectorAll('item'));
     return items
-      .slice(0, limit)
+      .slice(0, 200)
       .map((item, index) => ({
         id: item.getAttribute('id') || '',
         rank: index + 1,
@@ -478,6 +478,32 @@ const resolveProviderOrder = (mode, language) => {
   }
 
   return [selected];
+};
+
+export const enrichBggSearchResults = async (items, onBatchEnriched) => {
+  const toEnrich = items.filter((item) => item.id && !item.thumbnail);
+  if (!toEnrich.length) return;
+
+  const BATCH_SIZE = 20;
+  for (let i = 0; i < toEnrich.length; i += BATCH_SIZE) {
+    const batch = toEnrich.slice(i, i + BATCH_SIZE);
+    const ids = batch.map((item) => item.id).join(',');
+    try {
+      const xml = await fetchBggXml(`/thing?id=${ids}&type=boardgame`, 2, 1000);
+      const doc = new DOMParser().parseFromString(xml, 'text/xml');
+      const thumbnailMap = {};
+      doc.querySelectorAll('item').forEach((bggItem) => {
+        const id = bggItem.getAttribute('id');
+        const thumb = normalizeExternalImageUrl(
+          bggItem.querySelector('thumbnail')?.textContent?.trim() || ''
+        );
+        if (id && thumb) thumbnailMap[id] = thumb;
+      });
+      onBatchEnriched(thumbnailMap);
+    } catch {
+      // skip failed batch silently
+    }
+  }
 };
 
 export const listGameDataProviders = () => Object.values(PROVIDERS).map((provider) => ({

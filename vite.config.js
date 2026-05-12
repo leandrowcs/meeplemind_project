@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const ludopediaToken = (env.LUDOPEDIA_ACCESS_TOKEN || '').trim();
+  const bggToken = (env.BGG_ACCESS_TOKEN || '').trim();
 
   // When LUDOPEDIA_ACCESS_TOKEN is set, the Vite proxy calls Ludopedia directly —
   // no separate `npm run dev:ludopedia` server is needed.
@@ -88,11 +89,16 @@ export default defineConfig(({ mode }) => {
         },
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
-            // Strip credentials so BGG/Cloudflare doesn't return 401
             proxyReq.removeHeader('cookie');
             proxyReq.removeHeader('Cookie');
-            proxyReq.removeHeader('authorization');
-            proxyReq.removeHeader('Authorization');
+            if (bggToken) {
+              // New authenticated BGG API: forward Bearer token
+              proxyReq.setHeader('Authorization', `Bearer ${bggToken}`);
+            } else {
+              // Public XML API v2: strip credentials to avoid 401
+              proxyReq.removeHeader('authorization');
+              proxyReq.removeHeader('Authorization');
+            }
           });
         },
       },
