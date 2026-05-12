@@ -1160,7 +1160,7 @@ export const Library = ({
         themes: (language === 'pt-BR' && details.themes?.length) ? details.themes : previous.themes,
       };
     });
-  }, [libraryByNameLower, resolveBggDetails]);
+  }, [libraryByNameLower, resolveBggDetails, language]);
 
   const isSearchMode = catalogSearch.trim().length >= 2;
   const filteredHot = (isSearchMode
