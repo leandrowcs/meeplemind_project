@@ -425,9 +425,11 @@ function App() {
     );
   }
 
+  const showReloginBanner = needsReloginPrompt && !isAuthLoading;
+
   return (
-    <div className="app">
-      {needsReloginPrompt && !isAuthLoading && (
+    <div className={`app ${showReloginBanner ? 'app--with-relogin-banner' : ''}`}>
+      {showReloginBanner && (
         <div className="relogin-banner" role="alert">
           <p className="relogin-banner-message">{t('auth.reloginPrompt')}</p>
           <div className="relogin-banner-actions">
