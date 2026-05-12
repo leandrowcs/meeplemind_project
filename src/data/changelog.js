@@ -2,7 +2,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
-      'v4.0.8: Catálogo da Ludopedia agora carrega detalhes de cada jogo (jogadores, tempo de partida, mecânicas) com indicador de progresso animado. Dados enriquecidos são salvos em cache local para uso offline.',
+      'v4.1.0: Catálogo externo BGG aprimorado: busca retorna até 200 resultados com paginação (botão carregar mais), capas carregadas em segundo plano via endpoint `/thing`. Lista local com top 5.000 jogos do ranking BGG agora é o último fallback quando não há conexão, com badge de notificação ao usuário. Proxy Vercel configurado para resolver CORS do BGG em produção sem backend separado. Suporte a BGG_ACCESS_TOKEN para testes com API autenticada.',
+      'v4.0.8: Catálogo da Ludopedia agora carrega detalhes de cada jogo (jogadores, tempo de partida, mecânicas) com indicador de progresso animado. Dados enriquecidos são salvos em cache local para uso offline.',,
       'v4.0.7: Busca de jogos da Ludopedia agora funciona sem precisar conectar conta OAuth. O servidor usa o access_token estático do app como fallback, permitindo pesquisa de jogos imediata. OAuth continua disponível para acesso a dados pessoais futuros.',
       'v4.0.6: Conexão Ludopedia no localhost corrigida para ambientes com CSP. Quando a base estiver como `http://localhost:8787/api/ludopedia`, o app normaliza automaticamente para `/api/ludopedia` e usa o proxy do Vite, evitando bloqueio de `connect-src` e status falso de backend indisponível.',
       'v4.0.5: Correção no backend OAuth da Ludopedia para carregar automaticamente variáveis de `.env`/`.env.local` ao iniciar com `npm run dev:ludopedia`. Isso resolve o status `missing_env`, reativa o botão Conectar quando APP_ID/REDIRECT_URI já existem no arquivo e mostra feedback imediato no app quando o backend estiver indisponível.',
@@ -59,7 +60,8 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
-      'v4.0.8: Ludopedia catalog now loads per-game details (players, play time, mechanics) with an animated progress indicator. Enriched data is cached locally for offline use.',
+      'v4.1.0: Enhanced BGG external catalog: search now returns up to 200 results with pagination (load more button), covers loaded in background via the `/thing` endpoint. A bundled list of the top 5,000 BGG-ranked games is now the last fallback when offline, with a user-facing badge. Vercel rewrite proxy configured to solve BGG CORS in production without a separate backend. Support for BGG_ACCESS_TOKEN for testing with the authenticated API.',
+      'v4.0.8: Ludopedia catalog now loads per-game details (players, play time, mechanics) with an animated progress indicator. Enriched data is cached locally for offline use.',,
       'v4.0.7: Ludopedia game search now works without connecting an OAuth account. The server uses the static app access_token as a fallback, enabling immediate game lookup. OAuth remains available for future personal data access.',
       'v4.0.6: Fixed localhost Ludopedia connection under CSP environments. When the base is set to `http://localhost:8787/api/ludopedia`, the app now normalizes it to `/api/ludopedia` and uses Vite proxy, preventing `connect-src` blocks and false backend unavailable status.',
       'v4.0.5: Fixed Ludopedia OAuth backend to auto-load `.env`/`.env.local` when started with `npm run dev:ludopedia`. This resolves `missing_env` status, enables the Connect button when APP_ID/REDIRECT_URI are present, and gives immediate in-app feedback when backend availability fails.',
@@ -116,6 +118,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v4.1.0: Catalogue externe BGG amélioré : la recherche retourne jusqu\'à 200 résultats avec pagination (bouton charger plus), les couvertures sont chargées en arrière-plan via l\'endpoint `/thing`. Une liste locale avec le top 5 000 jeux du classement BGG est maintenant le dernier recours hors ligne, avec un badge de notification. Proxy Vercel configuré pour résoudre le CORS BGG en production sans backend séparé. Support du BGG_ACCESS_TOKEN pour les tests avec l\'API authentifiée.',
       'v4.0.8: Le catalogue Ludopedia charge maintenant les détails de chaque jeu (joueurs, durée, mécaniques) avec un indicateur de progression animé. Les données enrichies sont mises en cache local pour une utilisation hors ligne.',
       'v4.0.7: La recherche de jeux Ludopedia fonctionne maintenant sans connecter un compte OAuth. Le serveur utilise le access_token statique de l\'app comme solution de repli, permettant une recherche de jeux immédiate. OAuth reste disponible pour un accès futur aux données personnelles.',
       'v4.0.6: Connexion Ludopedia localhost corrigée pour les environnements avec CSP. Quand la base est `http://localhost:8787/api/ludopedia`, l\'app la normalise automatiquement vers `/api/ludopedia` et utilise le proxy Vite, évitant les blocages `connect-src` et le faux statut backend indisponible.',

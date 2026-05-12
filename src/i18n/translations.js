@@ -436,6 +436,8 @@ export const translations = {
     'library.bggEnglishNotice': 'A base de dados da BGG é em inglês. Títulos e buscas são exibidos em en-US por padrão.',
     'library.ludopediaPortugueseNotice': 'O catálogo da Ludopedia é em português. Alguns títulos podem aparecer traduzidos.',
     'library.bggSourceOnline': 'Fonte: BGG online',
+    'library.bggSourceBundled': 'Fonte: dados incluídos no app',
+    'library.bggSourceBundledHint': 'Os dados incluídos no app são uma versão estática do catálogo externo. Eles podem estar desatualizados em relação à fonte online.',
     'library.bggSourceOffline': 'Fonte: cache offline',
     'library.catalogSourceOnline': 'Fonte online: {provider}',
     'library.bggSourceOfflineHint': 'Você está vendo dados locais de fallback. Eles podem estar desatualizados em relação à fonte online.',
