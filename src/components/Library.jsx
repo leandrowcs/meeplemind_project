@@ -248,7 +248,11 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
   const sessionGameCategories = normalizeSessionGameCategories(game);
   // Raw strings from external sources (e.g. Ludopedia) that don't match app theme keys.
   const rawExternalThemes = Array.isArray(game.themes)
-    ? game.themes.filter((v) => v && !GAME_THEMES.includes(v))
+    ? game.themes.filter((v) => {
+      if (!v) return false;
+      const canonical = normalizeThemeValue(v);
+      return !canonical || !GAME_THEMES.includes(canonical);
+    })
     : [];
   const typeMeta = getTypeMetaByValue(game.gameType || '');
   const displayName = game.nameLocal?.[language] || game.name;

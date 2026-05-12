@@ -1,16 +1,20 @@
 export const GAME_THEMES = [
-  'fantasy', 'sci-fi', 'medieval', 'historical', 'war', 'space',
-  'pirates', 'horror', 'investigation', 'economic',
-  'secret-agents', 'adventure', 'transport',
-  'city-building', 'nature', 'animals', 'civilization', 'abstract', 'humor',
+  'abstract', 'secret-agents', 'animals', 'arab', 'arena', 'murder',
+  'adventure', 'aviation', 'civilization', 'city-building', 'racing', 'economic',
+  'energy', 'space', 'sports', 'fantasy', 'gladiators', 'war',
+  'historical', 'horror', 'humor', 'investigation', 'labyrinth', 'medical',
+  'medieval', 'mystery', 'music', 'nature', 'pirates', 'transport',
+  'trains', 'wild-west', 'zombie-terror',
 ];
 
 export const GAME_MECHANICS = [
-  'worker-placement', 'deck-building', 'area-control', 'resource-management',
-  'drafting', 'tile-placement', 'dice-rolling', 'cards', 'bluffing', 'coop-mechanic',
-  'player-elimination', 'auction', 'grid-movement', 'push-your-luck',
-  'engine-building', 'legacy', 'modular-map', 'storytelling', 'rpg',
-  'miniatures', 'campaign', 'betrayal', 'action-points',
+  'simultaneous-action', 'alliances', 'dice-allocation', 'worker-placement',
+  'acting-mime', 'bluffing', 'campaign', 'cards', 'tile-placement',
+  'deck-building', 'area-control', 'coop-mechanic', 'drafting',
+  'player-elimination', 'engine-building', 'resource-management', 'legacy',
+  'auction', 'modular-map', 'miniatures', 'grid-movement', 'negotiation',
+  'action-points', 'push-your-luck', 'rpg', 'dice-rolling', 'storytelling',
+  'bribery', 'betrayal', 'voting',
 ];
 
 export const GAME_CATEGORIES = [
