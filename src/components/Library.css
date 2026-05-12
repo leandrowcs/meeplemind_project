@@ -1356,13 +1356,13 @@
 
 /* ── Grid view: 2 cols on mobile, 3 on wider screens ── */
 .library-card-grid--grid {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 0.5rem;
 }
 
 @media (min-width: 480px) {
   .library-card-grid--grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 
@@ -1690,13 +1690,13 @@
   font-size: 0.82rem;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 460px) {
   .library-shelf-actions {
     grid-template-columns: 1fr;
   }
 
   .library-card-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .library-card-add-btn span {
