@@ -33,6 +33,7 @@ coverage-*.json
 
 # Internal docs
 docs/GOOGLE_CLOUD_SETUP.md
+docs/MeepleMind_*.json
 
 # Environment variables
 .env

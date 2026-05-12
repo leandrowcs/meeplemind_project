@@ -1082,7 +1082,7 @@ export const Profile = ({
                   <div className="profile-rival-grid">
                     <p><span>{t('profile.matches')}</span><strong>{rival.games}</strong></p>
                     <p className="profile-rival-grid-wins"><span>{t('stats.victories')}</span><strong>{rival.myWins}</strong></p>
-                    <p className="profile-rival-grid-losses"><span>{t('stats.defeats')}</span><strong>{Math.max(rival.games - rival.myWins, 0)}</strong></p>
+                    <p className="profile-rival-grid-losses"><span>{t('stats.defeats')}</span><strong>{rival.rivalWins}</strong></p>
                     <p><span>{t('stats.winRateLabel')}</span><strong>{rival.winRate}%</strong></p>
                   </div>
                   <p className="profile-subtle-text">

@@ -583,9 +583,9 @@ export const Library = ({
   const [editCoverError, setEditCoverError] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
-  const getCategoryLabel = useCallback((categoryValue) => {
-    const meta = getCategoryMetaByValue(categoryValue);
-    return meta ? t(meta.label) : categoryValue;
+  const getTypeLabel = useCallback((typeValue) => {
+    const key = GAMETYPE_LABEL_KEYS[typeValue];
+    return key ? t(key) : typeValue;
   }, [t]);
 
   // Tab state: 'shelf' | 'catalog'
@@ -659,25 +659,23 @@ export const Library = ({
   );
 
   const availableCategoryFilters = useMemo(() => {
-    const usedCategories = new Set();
+    const usedTypes = new Set();
     library.forEach((game) => {
-      normalizeGameCategories(game).forEach((categoryValue) => {
-        if (categoryValue) usedCategories.add(categoryValue);
-      });
+      (game.sessionGameCategories || []).forEach((v) => { if (v) usedTypes.add(v); });
     });
 
-    return Array.from(usedCategories)
-      .map((value) => getCategoryMetaByValue(value) || { value, label: '' })
+    return Array.from(usedTypes)
+      .map((value) => ({ value, label: GAMETYPE_LABEL_KEYS[value] || value }))
       .sort((a, b) => {
-        const labelA = a.label ? t(a.label) : a.value;
-        const labelB = b.label ? t(b.label) : b.value;
+        const labelA = GAMETYPE_LABEL_KEYS[a.value] ? t(GAMETYPE_LABEL_KEYS[a.value]) : a.value;
+        const labelB = GAMETYPE_LABEL_KEYS[b.value] ? t(GAMETYPE_LABEL_KEYS[b.value]) : b.value;
         return labelA.localeCompare(labelB);
       });
   }, [library, t]);
 
   const filteredLibrary = useMemo(() => {
     if (categoryFilter === 'all') return library;
-    return library.filter((game) => normalizeGameCategories(game).includes(categoryFilter));
+    return library.filter((game) => (game.sessionGameCategories || []).includes(categoryFilter));
   }, [library, categoryFilter]);
 
   const resolveBggDetails = useCallback(async (gameName) => {
@@ -1242,7 +1240,7 @@ export const Library = ({
           {/* View mode toggle + filter row */}
           <div className="library-view-toolbar">
             {availableCategoryFilters.length > 0 && (
-              <div className="library-quick-filters" role="group" aria-label={t('library.category')}>
+              <div className="library-quick-filters" role="group" aria-label={t('library.gameType')}>
                 <button
                   type="button"
                   className={`library-filter-btn ${categoryFilter === 'all' ? 'active' : ''}`}
@@ -1257,7 +1255,7 @@ export const Library = ({
                     className={`library-filter-btn ${categoryFilter === cat.value ? 'active' : ''}`}
                     onClick={() => setCategoryFilter(cat.value)}
                   >
-                    {getCategoryLabel(cat.value)}
+                    {getTypeLabel(cat.value)}
                   </button>
                 ))}
               </div>
@@ -1342,7 +1340,7 @@ export const Library = ({
                         <h3>{game.nameLocal?.[language] || game.name}</h3>
                         <div className="library-card-meta">
                           <span className="library-card-chip">
-                            {primaryCategory ? getCategoryLabel(primaryCategory) : t('library.categoryNone')}
+                            {primaryCategory ? (() => { const m = getCategoryMetaByValue(primaryCategory); return m ? t(m.label) : primaryCategory; })() : t('library.categoryNone')}
                           </span>
                           {typeMeta && <span className="library-card-chip subtle">{t(typeMeta.label)}</span>}
                           {count > 0 && <span className="library-card-chip subtle">{count}x</span>}
@@ -1542,7 +1540,7 @@ export const Library = ({
                           <h3>{game.name}</h3>
                           <div className="library-card-meta">
                             <span className="library-card-chip">
-                              {primaryCategory ? getCategoryLabel(primaryCategory) : currentCatalogProviderLabel}
+                              {primaryCategory ? (() => { const m = getCategoryMetaByValue(primaryCategory); return m ? t(m.label) : primaryCategory; })() : currentCatalogProviderLabel}
                             </span>
                             {game.yearPublished && (
                               <span className="library-card-chip subtle">{game.yearPublished}</span>
