@@ -1,7 +1,9 @@
 import { BGG_BUNDLED_CATALOG } from '../data/bggBundledCatalog.js';
 
-const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
-const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
+// Always use the /bggapi relative path — in dev it hits the Vite proxy,
+// in production it hits the Vercel rewrite (vercel.json).
+// This avoids CORS issues in both environments.
+const BGG_PROXY_BASE = '/bggapi';
 
 const normalizeBaseUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
 

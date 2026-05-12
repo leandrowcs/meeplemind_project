@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/bggapi/:path*",
+      "destination": "https://boardgamegeek.com/xmlapi2/:path*"
+    }
+  ]
+}
