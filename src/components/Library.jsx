@@ -4,6 +4,8 @@ import {
   BarChart3,
   BookOpen,
   CalendarDays,
+  ChevronDown,
+  ChevronUp,
   Check,
   CircleStar,
   Clock,
@@ -202,13 +204,33 @@ function computeGameStats(gameName, games, primaryPlayer) {
   let userDefeats = 0;
   let coopWins = 0;
   let coopDefeats = 0;
+  let hasCooperativeSessions = false;
+  let hasCompetitiveSessions = false;
+
+  sessions.forEach((session) => {
+    const isCooperativeSession =
+      session.gameType === 'cooperative'
+      || session.coopResult === 'win'
+      || session.coopResult === 'loss';
+
+    if (isCooperativeSession) {
+      hasCooperativeSessions = true;
+    } else {
+      hasCompetitiveSessions = true;
+    }
+  });
 
   if (primaryPlayer) {
     sessions.forEach((session) => {
       const playedByUser = (session.players || []).includes(primaryPlayer);
       if (!playedByUser) return;
 
-      if (session.gameType === 'cooperative') {
+      const isCooperativeSession =
+        session.gameType === 'cooperative'
+        || session.coopResult === 'win'
+        || session.coopResult === 'loss';
+
+      if (isCooperativeSession) {
         if (session.coopResult === 'win') coopWins += 1;
         if (session.coopResult === 'loss') coopDefeats += 1;
         return;
@@ -233,6 +255,8 @@ function computeGameStats(gameName, games, primaryPlayer) {
     userDefeats,
     coopWins,
     coopDefeats,
+    hasCooperativeSessions,
+    hasCompetitiveSessions,
   };
 }
 
@@ -241,6 +265,8 @@ function computeGameStats(gameName, games, primaryPlayer) {
 // ──────────────────────────────────────────────────
 function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG, canEdit, onClose, onEdit }) {
   const [imgError, setImgError] = useState(false);
+  const [statsCollapsed, setStatsCollapsed] = useState(false);
+  const isCooperativeOnlyGame = stats.hasCooperativeSessions && !stats.hasCompetitiveSessions;
   const categories = normalizeGameCategories(game);
   const mechanics = normalizeGameMechanics(game);
   const themes = normalizeSessionThemes(game);
@@ -399,78 +425,95 @@ function GameDetailsModal({ game, stats, t, language, primaryPlayer, loadingBGG,
           )}
 
           {/* Play stats */}
-          <div className="lib-details-section-title">{t('library.statsSection')}</div>
-          <div className="lib-details-stats">
-            {stats.timesPlayed === 0 ? (
-              <p className="lib-details-never-played">{t('library.neverPlayed')}</p>
-            ) : (
-              <>
-                <div className="lib-stat-row">
-                  <span className="lib-stat-icon"><Gamepad2 size={14} /></span>
-                  <span className="lib-stat-value">
-                    <strong>{stats.timesPlayed}</strong> {t('library.timesPlayed')}
-                  </span>
-                </div>
-
-                {primaryPlayer && (
-                  <>
-                    <div className="lib-stat-row">
-                      <span className="lib-stat-icon"><Trophy size={14} /></span>
-                      <span className="lib-stat-value">
-                        <strong>{t('stats.victories')}:</strong> {stats.userWins + stats.coopWins}
-                      </span>
-                    </div>
-                    <div className="lib-stat-row">
-                      <span className="lib-stat-icon"><X size={14} /></span>
-                      <span className="lib-stat-value">
-                        <strong>{t('stats.defeats')}:</strong> {stats.userDefeats + stats.coopDefeats}
-                      </span>
-                    </div>
-                  </>
-                )}
-
-                {stats.lastPlayed && (
+          <div className="lib-details-section-header">
+            <div className="lib-details-section-title">{t('library.statsSection')}</div>
+            <button
+              type="button"
+              className="lib-stats-toggle"
+              onClick={() => setStatsCollapsed((prev) => !prev)}
+              aria-expanded={!statsCollapsed}
+            >
+              {statsCollapsed ? t('library.statsExpand') : t('library.statsCollapse')}
+              {statsCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            </button>
+          </div>
+          {!statsCollapsed && (
+            <div className="lib-details-stats">
+              {stats.timesPlayed === 0 ? (
+                <p className="lib-details-never-played">{t('library.neverPlayed')}</p>
+              ) : (
+                <>
                   <div className="lib-stat-row">
-                    <span className="lib-stat-icon"><CalendarDays size={14} /></span>
+                    <span className="lib-stat-icon"><Gamepad2 size={14} /></span>
                     <span className="lib-stat-value">
-                      <strong>{t('library.lastPlayed')}:</strong>{' '}
-                      {formatLastPlayed(stats.lastPlayed)}
+                      <strong>{stats.timesPlayed}</strong> {t('library.timesPlayed')}
                     </span>
                   </div>
-                )}
 
-                {stats.players.length > 0 && (
-                  <div className="lib-stat-row lib-stat-players-row">
-                    <span className="lib-stat-icon"><Users size={14} /></span>
-                    <div className="lib-stat-players">
-                      <span className="lib-stat-label">{t('library.playersLabel')}:</span>
-                      <div className="lib-stat-player-chips">
-                        {stats.players.map((p) => (
-                          <span key={p} className="lib-player-chip">{p}</span>
-                        ))}
+                  {primaryPlayer && (
+                    <>
+                      <div className="lib-stat-row">
+                        <span className="lib-stat-icon"><Trophy size={14} /></span>
+                        <span className="lib-stat-value">
+                          <strong>{isCooperativeOnlyGame ? t('stats.coopWinsLabel') : t('stats.victories')}:</strong>{' '}
+                          {isCooperativeOnlyGame ? stats.coopWins : (stats.userWins + stats.coopWins)}
+                        </span>
+                      </div>
+                      <div className="lib-stat-row">
+                        <span className="lib-stat-icon"><X size={14} /></span>
+                        <span className="lib-stat-value">
+                          <strong>{t('stats.defeats')}:</strong>{' '}
+                          {isCooperativeOnlyGame ? stats.coopDefeats : (stats.userDefeats + stats.coopDefeats)}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
+                  {stats.lastPlayed && (
+                    <div className="lib-stat-row">
+                      <span className="lib-stat-icon"><CalendarDays size={14} /></span>
+                      <span className="lib-stat-value">
+                        <strong>{t('library.lastPlayed')}:</strong>{' '}
+                        {formatLastPlayed(stats.lastPlayed)}
+                      </span>
+                    </div>
+                  )}
+
+                  {stats.players.length > 0 && (
+                    <div className="lib-stat-row lib-stat-row-wide lib-stat-players-row">
+                      <span className="lib-stat-icon"><Users size={14} /></span>
+                      <div className="lib-stat-players">
+                        <span className="lib-stat-label">{t('library.playersLabel')}:</span>
+                        <div className="lib-stat-player-chips">
+                          {stats.players.map((p) => (
+                            <span key={p} className="lib-player-chip">{p}</span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {stats.topWinner ? (
-                  <div className="lib-stat-row">
-                    <span className="lib-stat-icon"><Trophy size={14} /></span>
-                    <span className="lib-stat-value">
-                      <strong>{t('library.topWinner')}:</strong>{' '}
-                      {stats.topWinner}{' '}
-                      <span className="lib-win-count">({winsLabel(stats.topWinnerCount)})</span>
-                    </span>
-                  </div>
-                ) : (
-                  <div className="lib-stat-row">
-                    <span className="lib-stat-icon"><Trophy size={14} /></span>
-                    <span className="lib-stat-value lib-stat-muted">{t('library.noWinner')}</span>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+                  {!isCooperativeOnlyGame && (
+                    stats.topWinner ? (
+                      <div className="lib-stat-row lib-stat-row-wide">
+                        <span className="lib-stat-icon"><Trophy size={14} /></span>
+                        <span className="lib-stat-value">
+                          <strong>{t('library.topWinner')}:</strong>{' '}
+                          {stats.topWinner}{' '}
+                          <span className="lib-win-count">({winsLabel(stats.topWinnerCount)})</span>
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="lib-stat-row lib-stat-row-wide">
+                        <span className="lib-stat-icon"><Trophy size={14} /></span>
+                        <span className="lib-stat-value lib-stat-muted">{t('library.noWinner')}</span>
+                      </div>
+                    )
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           <div className="lib-details-actions">
             {canEdit && (

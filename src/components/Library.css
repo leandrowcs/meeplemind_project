@@ -608,6 +608,13 @@
 }
 
 /* Stats section */
+.lib-details-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .lib-details-section-title {
   font-size: 0.7rem;
   font-weight: 700;
@@ -616,12 +623,32 @@
   color: var(--color-accent, #ea580c);
   padding-top: 0.25rem;
   border-top: 1px solid #1e293b;
+  flex: 1;
+}
+
+.lib-stats-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid rgba(251, 146, 60, 0.35);
+  background: rgba(234, 88, 12, 0.12);
+  color: #fdba74;
+  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lib-stats-toggle:hover {
+  background: rgba(234, 88, 12, 0.2);
 }
 
 .lib-details-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
 }
 
 .lib-details-never-played {
@@ -633,10 +660,15 @@
 
 .lib-stat-row {
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  font-size: 0.9rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-sm);
   color: var(--text-primary, #f9fafb);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.55);
+  min-width: 0;
 }
 
 .lib-stat-icon {
@@ -652,6 +684,10 @@
 .lib-stat-muted {
   color: var(--text-secondary, #9ca3af);
   font-style: italic;
+}
+
+.lib-stat-row-wide {
+  grid-column: 1 / -1;
 }
 
 .lib-win-count {
@@ -738,12 +774,20 @@
     padding: 0.5rem;
   }
 
+  .lib-details-stats {
+    grid-template-columns: 1fr;
+  }
+
   .lib-details-cover {
     height: 180px;
   }
 
   .lib-details-body {
     padding: 1rem;
+  }
+
+  .lib-stat-row-wide {
+    grid-column: auto;
   }
 }
 
