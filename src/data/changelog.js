@@ -2,8 +2,9 @@ export const CHANGELOG_BY_LANGUAGE = {
   'pt-BR': {
     title: 'Novidades',
     items: [
+      'v4.1.1: Visualização em grade adicionada na aba Estante da Biblioteca. Alterne entre lista e grade usando os botões no topo da estante. A preferência é salva automaticamente.',
       'v4.1.0: Catálogo externo BGG aprimorado: busca retorna até 200 resultados com paginação (botão carregar mais), capas carregadas em segundo plano via endpoint `/thing`. Lista local com top 5.000 jogos do ranking BGG agora é o último fallback quando não há conexão, com badge de notificação ao usuário. Proxy Vercel configurado para resolver CORS do BGG em produção sem backend separado. Suporte a BGG_ACCESS_TOKEN para testes com API autenticada.',
-      'v4.0.8: Catálogo da Ludopedia agora carrega detalhes de cada jogo (jogadores, tempo de partida, mecânicas) com indicador de progresso animado. Dados enriquecidos são salvos em cache local para uso offline.',,
+      'v4.0.8: Catálogo da Ludopedia agora carrega detalhes de cada jogo (jogadores, tempo de partida, mecânicas) com indicador de progresso animado. Dados enriquecidos são salvos em cache local para uso offline.',
       'v4.0.7: Busca de jogos da Ludopedia agora funciona sem precisar conectar conta OAuth. O servidor usa o access_token estático do app como fallback, permitindo pesquisa de jogos imediata. OAuth continua disponível para acesso a dados pessoais futuros.',
       'v4.0.6: Conexão Ludopedia no localhost corrigida para ambientes com CSP. Quando a base estiver como `http://localhost:8787/api/ludopedia`, o app normaliza automaticamente para `/api/ludopedia` e usa o proxy do Vite, evitando bloqueio de `connect-src` e status falso de backend indisponível.',
       'v4.0.5: Correção no backend OAuth da Ludopedia para carregar automaticamente variáveis de `.env`/`.env.local` ao iniciar com `npm run dev:ludopedia`. Isso resolve o status `missing_env`, reativa o botão Conectar quando APP_ID/REDIRECT_URI já existem no arquivo e mostra feedback imediato no app quando o backend estiver indisponível.',
@@ -15,14 +16,14 @@ export const CHANGELOG_BY_LANGUAGE = {
       'v3.1.15: Restaurado o estilo do seletor de idioma no SideMenu. Classes CSS foram alinhadas com o JSX atual (`menu-language-grid`, `menu-language-btn`, `menu-language-flag`).',
       'v3.1.14: Header da Home agora segue as mesmas configuracoes sticky/blur dos demais headers. SideMenu foi renderizado via portal no body e ajustado para abrir colado na borda direita sem espaco lateral.',
       'v3.1.13: Correção específica nas páginas Amigos e Biblioteca: o CSS local do menu de navegacao inferior foi ajustado para manter o nav dentro da viewport no mobile, removendo a rolagem horizontal residual.',
-      'v3.1.12: Ajustado posicionamento do menu de navegacao inferior para ficar 100% dentro da viewport no mobile e SideMenu lateral agora so renderiza quando aberto, evitando largura horizontal fantasma nas paginas internas.',
+      'v3.1.12: Ajustado posicionamento do menu de navegacao inferior para ficar 100% dentro da viewport no mobile e SideMenu lateral agora so renderiza quando aberto, evitando largura horizontal fantasma nas páginas internas.',
       'v3.1.11: Headers voltaram para dentro dos containers em Estatisticas, Biblioteca, Amigos, Perfil, Nova Partida e Historico, restaurando o sticky no Chrome mobile e mantendo sem rolagem horizontal.',
       'v3.1.10: Ajustado comportamento no Chrome mobile: headers sticky continuam fixos no topo e a rolagem horizontal foi removida com controle de overflow no elemento html.',
-      'v3.1.9: Corrigida regressao que desfixava os headers no topo apos o ajuste de rolagem horizontal; os headers sticky voltaram ao comportamento esperado.',
-      'v3.1.8: Corrigida a barra de rolagem horizontal que aparecia nas paginas fora da Home, com controle global de overflow horizontal no layout.',
+      'v3.1.9: Corrigida regressão que desfixava os headers no topo apos o ajuste de rolagem horizontal; os headers sticky voltaram ao comportamento esperado.',
+      'v3.1.8: Corrigida a barra de rolagem horizontal que aparecia nas páginas fora da Home, com controle global de overflow horizontal no layout.',
       'v3.1.7: Header de Biblioteca, Amigos, Perfil, Nova Partida e Historico agora segue o mesmo estilo visual do header de Estatisticas.',
       'v3.1.6: Headers de Estatisticas, Biblioteca, Amigos, Perfil e Nova Partida agora ficam fixos no topo durante a rolagem.',
-      'v3.1.5: Header da Nova Partida foi alinhado ao layout moderno de Estatisticas e Biblioteca, com bloco de titulo com icone e acao de voltar no topo.',
+      'v3.1.5: Header da Nova Partida foi alinhado ao layout moderno de Estatisticas e Biblioteca, com bloco de título com ícone e ação de voltar no topo.',
       'v3.1.4: Busca de amigos agora bloqueia auto-adicao por e-mail/UID atual e tenta entregar pedido de amizade para perfis publicos com o mesmo e-mail, reduzindo falhas quando existem documentos duplicados no Firestore.',
       'v3.1.3: O menu lateral agora usa fallback seguro ao carregar notificacoes. Se a consulta por e-mail falhar por regra/permissao, o app continua usando o documento atual sem exibir erro de carregamento.',
       'v3.1.2: Notificacoes de amizade agora consolidam documentos com o mesmo e-mail no Firestore. Isso corrige casos em que o pedido de "adicionar de volta" era salvo em um UID antigo e nao aparecia no dispositivo atual.',
@@ -60,6 +61,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'en-US': {
     title: "What's New",
     items: [
+      'v4.1.1: Grid view added to the Library shelf tab. Toggle between list and grid using the buttons at the top of your shelf. Your preference is saved automatically.',
       'v4.1.0: Enhanced BGG external catalog: search now returns up to 200 results with pagination (load more button), covers loaded in background via the `/thing` endpoint. A bundled list of the top 5,000 BGG-ranked games is now the last fallback when offline, with a user-facing badge. Vercel rewrite proxy configured to solve BGG CORS in production without a separate backend. Support for BGG_ACCESS_TOKEN for testing with the authenticated API.',
       'v4.0.8: Ludopedia catalog now loads per-game details (players, play time, mechanics) with an animated progress indicator. Enriched data is cached locally for offline use.',,
       'v4.0.7: Ludopedia game search now works without connecting an OAuth account. The server uses the static app access_token as a fallback, enabling immediate game lookup. OAuth remains available for future personal data access.',
@@ -118,6 +120,7 @@ export const CHANGELOG_BY_LANGUAGE = {
   'fr-CA': {
     title: 'Nouveautes',
     items: [
+      'v4.1.1: Vue grille ajoutée dans l\'onglet Étagère de la Bibliothèque. Basculez entre liste et grille avec les boutons en haut de l\'étagère. Votre préférence est sauvegardée automatiquement.',
       'v4.1.0: Catalogue externe BGG amélioré : la recherche retourne jusqu\'à 200 résultats avec pagination (bouton charger plus), les couvertures sont chargées en arrière-plan via l\'endpoint `/thing`. Une liste locale avec le top 5 000 jeux du classement BGG est maintenant le dernier recours hors ligne, avec un badge de notification. Proxy Vercel configuré pour résoudre le CORS BGG en production sans backend séparé. Support du BGG_ACCESS_TOKEN pour les tests avec l\'API authentifiée.',
       'v4.0.8: Le catalogue Ludopedia charge maintenant les détails de chaque jeu (joueurs, durée, mécaniques) avec un indicateur de progression animé. Les données enrichies sont mises en cache local pour une utilisation hors ligne.',
       'v4.0.7: La recherche de jeux Ludopedia fonctionne maintenant sans connecter un compte OAuth. Le serveur utilise le access_token statique de l\'app comme solution de repli, permettant une recherche de jeux immédiate. OAuth reste disponible pour un accès futur aux données personnelles.',

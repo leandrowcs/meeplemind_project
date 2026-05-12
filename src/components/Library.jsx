@@ -12,6 +12,8 @@ import {
   House,
   Info,
   Joystick,
+  LayoutGrid,
+  LayoutList,
   LoaderCircle,
   Pencil,
   Plus,
@@ -74,6 +76,7 @@ const isBoardgameCatalogItem = (item) => !NON_BOARDGAME_NAME_PATTERN.test(item?.
 const CATALOG_LOADING_ICONS = [Dices, Gamepad2, Swords, Joystick];
 const CATALOG_LOADING_STEP_MS = 480;
 const CATALOG_PAGE_SIZE = 20;
+const SHELF_VIEW_KEY = 'meeplemind-library-shelf-view';
 
 const LEGACY_CATEGORY_LABEL_KEYS = {
   strategy: 'library.categoryStrategy',
@@ -587,6 +590,14 @@ export const Library = ({
 
   // Tab state: 'shelf' | 'catalog'
   const [activeTab, setActiveTab] = useState('shelf');
+  const [shelfViewMode, setShelfViewMode] = useState(
+    () => localStorage.getItem(SHELF_VIEW_KEY) === 'grid' ? 'grid' : 'card'
+  );
+
+  const handleShelfViewToggle = useCallback((mode) => {
+    setShelfViewMode(mode);
+    try { localStorage.setItem(SHELF_VIEW_KEY, mode); } catch { /* ignore */ }
+  }, []);
   // BGG catalog state
   const [hotGames, setHotGames] = useState([]);
   const [hotLoading, setHotLoading] = useState(false);
@@ -1228,27 +1239,50 @@ export const Library = ({
             </button>
           </div>
 
-          {availableCategoryFilters.length > 0 && (
-            <div className="library-quick-filters" role="group" aria-label={t('library.category')}>
+          {/* View mode toggle + filter row */}
+          <div className="library-view-toolbar">
+            {availableCategoryFilters.length > 0 && (
+              <div className="library-quick-filters" role="group" aria-label={t('library.category')}>
+                <button
+                  type="button"
+                  className={`library-filter-btn ${categoryFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setCategoryFilter('all')}
+                >
+                  {t('history.filterAll')}
+                </button>
+                {availableCategoryFilters.map((cat) => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    className={`library-filter-btn ${categoryFilter === cat.value ? 'active' : ''}`}
+                    onClick={() => setCategoryFilter(cat.value)}
+                  >
+                    {getCategoryLabel(cat.value)}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="library-view-toggle" role="group" aria-label={t('library.viewToggleLabel')}>
               <button
                 type="button"
-                className={`library-filter-btn ${categoryFilter === 'all' ? 'active' : ''}`}
-                onClick={() => setCategoryFilter('all')}
+                className={`library-view-btn${shelfViewMode === 'card' ? ' active' : ''}`}
+                onClick={() => handleShelfViewToggle('card')}
+                aria-label={t('library.viewCard')}
+                title={t('library.viewCard')}
               >
-                {t('history.filterAll')}
+                <LayoutList size={15} />
               </button>
-              {availableCategoryFilters.map((cat) => (
-                <button
-                  key={cat.value}
-                  type="button"
-                  className={`library-filter-btn ${categoryFilter === cat.value ? 'active' : ''}`}
-                  onClick={() => setCategoryFilter(cat.value)}
-                >
-                  {getCategoryLabel(cat.value)}
-                </button>
-              ))}
+              <button
+                type="button"
+                className={`library-view-btn${shelfViewMode === 'grid' ? ' active' : ''}`}
+                onClick={() => handleShelfViewToggle('grid')}
+                aria-label={t('library.viewGrid')}
+                title={t('library.viewGrid')}
+              >
+                <LayoutGrid size={15} />
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Library list */}
           {filteredLibrary.length === 0 ? (
@@ -1257,7 +1291,7 @@ export const Library = ({
               <p>{t('library.noGames')}</p>
             </div>
           ) : (
-            <ul className="library-card-grid">
+            <ul className={`library-card-grid${shelfViewMode === 'grid' ? ' library-card-grid--grid' : ''}`}>
               {filteredLibrary.map((game) => {
                 const count = playCount[game.name.toLowerCase()] || 0;
                 const primaryCategory = normalizeGameCategories(game)[0] || '';

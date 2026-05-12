@@ -112,7 +112,7 @@ When adding files:
 ## 9. Versioning and release notes
 
 - Follow app version policy used in project workflow:
-  - Keep major.minor stable and increment patch (`3.1.X`) per chat-driven code update.
+  - Keep major.minor stable and increment patch (`4.1.X`) per chat-driven code update.
 - Update `package.json` version after each significant change or set of changes.
 - Update changelog entries in `src/data/changelog.js` when behavior changes are visible to users.
 - For significant features or changes, add a user-facing changelog entry with a clear description of the impact.
