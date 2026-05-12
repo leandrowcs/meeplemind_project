@@ -1153,8 +1153,10 @@ export const translations = {
     'library.ludopediaPortugueseNotice': 'The Ludopedia catalog is in Portuguese. Some titles may appear translated.',
     'library.bggSourceOnline': 'Source: BGG online',
     'library.bggSourceOffline': 'Source: offline cache',
+    'library.bggSourceBundled': 'Source: local BGG list',
     'library.catalogSourceOnline': 'Online source: {provider}',
     'library.bggSourceOfflineHint': 'You are viewing local fallback data. It may be outdated compared with the online source.',
+    'library.bggSourceBundledHint': 'No connection to BGG. Showing the local list with the top 5,000 games from the BGG ranking. Data may be outdated.',
 
     // Google Auth / Drive sync
     'auth.loginGoogle': 'Sign in with Google',
@@ -1865,8 +1867,10 @@ export const translations = {
     'library.ludopediaPortugueseNotice': 'Le catalogue Ludopedia est en portugais. Certains titres peuvent apparaître traduits.',
     'library.bggSourceOnline': 'Source : BGG en ligne',
     'library.bggSourceOffline': 'Source : cache hors ligne',
+    'library.bggSourceBundled': 'Source : liste locale BGG',
     'library.catalogSourceOnline': 'Source en ligne : {provider}',
     'library.bggSourceOfflineHint': 'Vous consultez des données locales de secours. Elles peuvent être moins à jour que la source en ligne.',
+    'library.bggSourceBundledHint': 'Pas de connexion au BGG. Affichage de la liste locale avec le top 5 000 jeux du classement BGG. Les données peuvent être obsolètes.',
     'library.nameLocalLabel': 'Nom en français (optionnel)',
     'library.nameLocalPlaceholder': 'Ex: Colons de Catane',
     'library.descriptionLocalLabel': 'Description en français (optionnelle)',

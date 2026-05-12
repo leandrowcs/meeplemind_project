@@ -1,3 +1,5 @@
+import { BGG_BUNDLED_CATALOG } from '../data/bggBundledCatalog.js';
+
 const BGG_BASE = 'https://boardgamegeek.com/xmlapi2';
 const BGG_PROXY_BASE = import.meta.env.DEV ? '/bggapi' : BGG_BASE;
 
@@ -52,6 +54,14 @@ export const normalizeGameDataProviderMode = (value) => {
 export const OPEN_LIBRARY_CATALOG_KEY = 'meeplemind-open-library-catalog';
 export const BGG_OFFLINE_CACHE_KEY = 'meeplemind-bgg-hot-offline';
 export const LUDOPEDIA_CATALOG_CACHE_KEY = 'meeplemind-ludopedia-catalog';
+
+export const readBundledBggCatalog = () => ({
+  generatedAt: null,
+  source: 'bundled',
+  provider: GAME_DATA_PROVIDER.BGG,
+  total: BGG_BUNDLED_CATALOG.length,
+  items: BGG_BUNDLED_CATALOG,
+});
 
 // Non-boardgame filter for Ludopedia catalog (RPG books, supplements, etc.)
 export const LUDOPEDIA_NON_BOARDGAME_PATTERN = /\blivro\b|\brpg\b|roleplay|roleplaying|\bsuplemento\b|\bsourcebook\b|\bmanual\b|\bguia\b|\bVampiro: A Máscara\b|\bD&D\b|\bPathfinder\b|\bStarfinder\b|\bGURPS\b|\bTales from the Loop\b|\bVampire: The Dark Ages\b|\bCaptive\b|\b3DX\b|\b3D&T|\bMago: A Ascensão\b|\bLobisomem: O Apocalipse\b|\bHitodama - A Jornada das almas\b|\bMódulo Básico\b|\bVampiro - Sozinho na Escuridão\b|\bA Herança de Cthulhu\b/i;

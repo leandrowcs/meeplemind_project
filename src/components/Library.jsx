@@ -50,6 +50,7 @@ import {
   fetchProviderGameDetailsByName,
   fetchProviderHotCatalogGames,
   normalizeExternalImageUrl,
+  readBundledBggCatalog,
   readCatalogOfflinePayload,
   searchProviderCatalogGames,
 } from '../utils/gameDataProviders';
@@ -1041,6 +1042,14 @@ export const Library = ({
           setCatalogProviderId(cachedLudoPayload.provider || GAME_DATA_PROVIDER.LUDOPEDIA);
           return;
         }
+        // Last resort: use the bundled BGG rank list.
+        const bundledPayload = readBundledBggCatalog();
+        setHotGames(bundledPayload.items);
+        setHotLoaded(true);
+        setHotError(false);
+        setCatalogDataSource('bundled');
+        setCatalogProviderId(GAME_DATA_PROVIDER.BGG);
+        return;
       } catch {
         // No valid offline cache available.
       }
@@ -1381,7 +1390,7 @@ export const Library = ({
 
             {!hotLoading && !hotError && (
               <div
-                className={`catalog-source-badge ${catalogDataSource === 'offline' ? 'offline' : 'online'}`}
+                className={`catalog-source-badge ${catalogDataSource === 'online' ? 'online' : 'offline'}`}
                 role="status"
                 aria-live="polite"
               >
@@ -1389,13 +1398,19 @@ export const Library = ({
                 <span>
                   {catalogDataSource === 'offline'
                     ? t('library.bggSourceOffline')
-                    : formatTemplate('library.catalogSourceOnline', { provider: currentCatalogProviderLabel })}
+                    : catalogDataSource === 'bundled'
+                      ? t('library.bggSourceBundled')
+                      : formatTemplate('library.catalogSourceOnline', { provider: currentCatalogProviderLabel })}
                 </span>
               </div>
             )}
 
             {!hotLoading && !hotError && catalogDataSource === 'offline' && (
               <p className="catalog-source-note">{t('library.bggSourceOfflineHint')}</p>
+            )}
+
+            {!hotLoading && !hotError && catalogDataSource === 'bundled' && (
+              <p className="catalog-source-note">{t('library.bggSourceBundledHint')}</p>
             )}
 
             {hotLoading && (
